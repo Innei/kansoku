@@ -21,6 +21,15 @@ export const toLineData = (pts: LinePoint[]): LineData[] =>
 export const toHistData = (pts: ColoredPoint[]): HistogramData[] =>
   pts.map((p) => ({ time: asTime(p.time), value: p.value, color: p.color }));
 
+const hexToRgba = (hex: string | undefined, alpha: number): string | undefined => {
+  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+  const n = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+};
+
+export const toVolumeData = (pts: ColoredPoint[]): HistogramData[] =>
+  pts.map((p) => ({ time: asTime(p.time), value: p.value, color: hexToRgba(p.color, 0.45) }));
+
 export const toCandleData = (cs: Candle[]): CandlestickData[] =>
   cs.map((c) => ({ time: asTime(c.time), open: c.open, high: c.high, low: c.low, close: c.close }));
 

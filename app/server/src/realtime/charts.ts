@@ -14,14 +14,17 @@ export async function subscribeChart(id: string, push: (envelope: string) => voi
 
   push(JSON.stringify({ type: "data", data: { built: doc.built } }));
 
-  const body = LIVE_TYPES.has(doc.type) ? refreshBody(doc.type, doc.input) : null;
-  if (!body) return () => {};
+  if (!LIVE_TYPES.has(doc.type) || !refreshBody(doc.type, doc.input)) return () => {};
 
   let handle = chartPollers.get(id);
   if (!handle) {
     handle = createPoller({
       intervalMs: CHART_INTERVAL_MS,
       task: async () => {
+        const latest = await loadChart(id);
+        if (!latest) throw new ClientError(`chart not found: ${id}`, undefined, 404);
+        const body = refreshBody(latest.type, latest.input);
+        if (!body) return { built: latest.built };
         const result = await buildChart(body);
         return { built: result.built };
       },

@@ -4,6 +4,7 @@ import type { IChartApi, ISeriesApi } from "lightweight-charts";
 import type { IntradayBuilt, TimeframeKey } from "../../../../shared/types";
 import {
   addPriceLine,
+  asTime,
   baseChart,
   markerTooltip,
   observeSize,
@@ -12,8 +13,8 @@ import {
   showLastBars,
   syncTimeScales,
   toCandleData,
-  toHistData,
   toLineData,
+  toVolumeData,
   toMarkers,
   type MarkerTooltipHandle,
 } from "../lw";
@@ -25,6 +26,8 @@ interface Handle {
   macd: IChartApi;
   candle: ISeriesApi<"Candlestick">;
   vol: ISeriesApi<"Histogram">;
+  session: ISeriesApi<"Histogram">;
+  macdSession: ISeriesApi<"Histogram">;
   emaSeries: ISeriesApi<"Line">[];
   hist: ISeriesApi<"Histogram">;
   dif: ISeriesApi<"Line">;
@@ -33,6 +36,16 @@ interface Handle {
   macdTip: MarkerTooltipHandle;
   dynamic: { chart: IChartApi; series: ISeriesApi<"Line"> }[];
 }
+
+const sessionBackdrop = (chart: IChartApi, scaleId: string): ISeriesApi<"Histogram"> => {
+  const series = chart.addHistogramSeries({
+    priceScaleId: scaleId,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+  chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0, bottom: 0 } });
+  return series;
+};
 
 export function useIntradayCharts(
   built: IntradayBuilt,
@@ -52,6 +65,7 @@ export function useIntradayCharts(
     if (!mainEl || !macdEl) return;
 
     const main = baseChart(mainEl, true);
+    const session = sessionBackdrop(main, "session");
     const candle = main.addCandlestickSeries({
       upColor: "#26a69a",
       downColor: "#ef5350",
@@ -66,6 +80,7 @@ export function useIntradayCharts(
       lastValueVisible: false,
     });
     main.priceScale("vol").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+    main.priceScale("right").applyOptions({ scaleMargins: { top: 0.08, bottom: 0.3 } });
 
     const emaCount = builtRef.current.timeframes.m5?.emas.length ?? 0;
     const emaSeries = Array.from({ length: emaCount }, (_, i) =>
@@ -79,6 +94,7 @@ export function useIntradayCharts(
     );
 
     const macd = baseChart(macdEl, true);
+    const macdSession = sessionBackdrop(macd, "msession");
     const hist = macd.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
     const dif = macd.addLineSeries({ color: "#42a5f5", lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
     const dea = macd.addLineSeries({ color: "#ff9800", lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
@@ -96,7 +112,7 @@ export function useIntradayCharts(
     const mainTip = markerTooltip(main, mainEl);
     const macdTip = markerTooltip(macd, macdEl);
 
-    handleRef.current = { main, macd, candle, vol, emaSeries, hist, dif, dea, mainTip, macdTip, dynamic: [] };
+    handleRef.current = { main, macd, candle, vol, session, macdSession, emaSeries, hist, dif, dea, mainTip, macdTip, dynamic: [] };
     lastTfRef.current = null;
 
     return () => {
@@ -128,7 +144,14 @@ export function useIntradayCharts(
     const wasAtRight = prevRange === null || prevRange.to >= barCountRef.current - 2;
 
     h.candle.setData(toCandleData(d.candles));
-    h.vol.setData(toHistData(d.volumes));
+    h.vol.setData(toVolumeData(d.volumes));
+    const sessData = (d.offSession ?? []).map((s) => ({
+      time: asTime(s.time),
+      value: 1,
+      color: s.kind === "overnight" ? "rgba(88,166,255,0.16)" : "rgba(88,166,255,0.09)",
+    }));
+    h.session.setData(sessData);
+    h.macdSession.setData(sessData);
     h.emaSeries.forEach((s, i) => {
       const emaLine = d.emas[i];
       s.setData(emaLine ? padLineData(emaLine.data, timeline) : []);

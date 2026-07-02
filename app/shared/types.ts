@@ -196,6 +196,13 @@ export interface EmaLine {
   data: LinePoint[];
 }
 
+export type SessionKind = "regular" | "pre" | "post" | "overnight";
+
+export interface OffSessionBar {
+  time: number;
+  kind: Exclude<SessionKind, "regular">;
+}
+
 export interface IntradayTfData {
   candles: Candle[];
   volumes: ColoredPoint[];
@@ -209,6 +216,7 @@ export interface IntradayTfData {
   macdConnectors: Connector[];
   autoDivergence: DivergencePair[];
   autoBeichi: DivergencePair[];
+  offSession?: OffSessionBar[];
 }
 
 export interface SwingPoint {
@@ -231,6 +239,53 @@ export interface MacdCross {
   type: "golden" | "death";
 }
 
+export type MacdStructureKind =
+  | "golden_above"
+  | "golden_below"
+  | "death_above"
+  | "death_below"
+  | "double_golden_below"
+  | "double_golden_above"
+  | "double_death_above"
+  | "double_death_below"
+  | "zero_cross_up"
+  | "zero_cross_down";
+
+export interface MacdStructureSignal {
+  kind: MacdStructureKind;
+  time: number;
+  dif: number;
+  bias: "bullish" | "bearish";
+  label: string;
+  implication: string;
+  confirmed: boolean;
+}
+
+export type CandlePatternKind =
+  | "bullish_engulfing"
+  | "bearish_engulfing"
+  | "morning_star"
+  | "evening_star"
+  | "hammer"
+  | "hanging_man"
+  | "inverted_hammer"
+  | "shooting_star"
+  | "dark_cloud_cover"
+  | "piercing_line"
+  | "bullish_harami"
+  | "bearish_harami"
+  | "three_white_soldiers"
+  | "three_black_crows";
+
+export interface CandlePattern {
+  kind: CandlePatternKind;
+  time: number;
+  price: number;
+  bias: "bullish" | "bearish";
+  label: string;
+  implication: string;
+}
+
 export interface IntradayTfSummary {
   last_dif: number | null;
   last_dea: number | null;
@@ -241,6 +296,9 @@ export interface IntradayTfSummary {
   last_cross: MacdCross | null;
   divergence_candidates: DivergencePair[];
   beichi_candidates: DivergencePair[];
+  structure_signals?: MacdStructureSignal[];
+  zero_tangle?: boolean;
+  candle_patterns?: CandlePattern[];
 }
 
 export interface IntradayEntryPlan {

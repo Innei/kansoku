@@ -12,9 +12,9 @@ import {
   showLastBars,
   syncTimeScales,
   toCandleData,
-  toHistData,
   toLineData,
   toMarkers,
+  toVolumeData,
 } from "../lw";
 
 const VP_WIDTH = 90;
@@ -128,7 +128,8 @@ export function useSepaCharts(
 
     const volSeries = main.addHistogramSeries({ priceFormat: { type: "volume" }, priceScaleId: "vol" });
     main.priceScale("vol").applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
-    volSeries.setData(toHistData(chart.volumes));
+    main.priceScale("right").applyOptions({ scaleMargins: { top: 0.06, bottom: 0.24 } });
+    volSeries.setData(toVolumeData(chart.volumes));
 
     let vpEnabled = true;
     const vpCtx = vpCanvas.getContext("2d");

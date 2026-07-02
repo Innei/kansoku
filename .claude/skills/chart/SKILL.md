@@ -193,10 +193,31 @@ climax top (volume ≥ 2.5×20MA + red close + local high), MA50/MA200 breakdown
 ```
 
 R/R is direction-aware (`long`: risk = entry−stop; `short`: risk = stop−entry);
-the sidebar flags rr < 2:1 in red. 金叉/死叉 + simplified 背离/背驰 are
-auto-detected and drawn on every render regardless of `prediction`. The
+the sidebar flags rr < 2:1 in red. MACD structure signals + simplified 背离/背驰
+are auto-detected and drawn on every render regardless of `prediction`. Every
+DIF/DEA cross is classified by zero-line position（零上/零下金叉、零上/零下死叉）
+plus structural patterns: 二次金叉（零下双金叉且低点抬高 → 底部确认）、空中加油
+（零上二次金叉 → 强势延续）、二次死叉（顶部确认 / 空头中继）、上穿/下穿零轴
+（趋势确认，last 2 bars marked 待确认 with a `?`）. Each marker's tooltip carries
+the implication text; `technicals.<tf>.structure_signals` (last 6) and
+`zero_tangle`（DIF 贴零轴缠绕 = 震荡市，交叉信号失效）expose the same data to the
+analysis workflow — read them in the preview step. The swing-based divergence
 auto-detectors only fire on confirmed swing pivots — the last 1-2 bars can never
 be flagged; read `last_dif/last_dea/last_hist` directly for the newest bar.
+
+14 classic K-line patterns are also auto-detected on the main pane (arrow
+markers, tooltip carries the implication): 单根——锤子线/上吊线/倒锤子/射击之星;
+双根——看涨吞没/看跌吞没/乌云盖顶/刺透形态/看涨孕线/看跌孕线; 三根——启明星/
+黄昏星/红三兵/三只乌鸦. All require a trend-context filter (4-bar net move into
+the pattern) plus a body-size filter vs the trailing 14-bar average, so quiet
+chop produces few marks. One pattern max per bar (stars > soldiers/crows >
+two-bar > single-bar). `technicals.<tf>.candle_patterns` (last 6) exposes them
+to the analysis workflow. Caveat: the newest bar may still be forming intraday —
+a pattern on it can repaint until the bar closes.
+
+Off-session bars (盘前/盘后浅蓝、夜盘深蓝) get a full-height backdrop on both
+panes — thin-volume price action outside regular hours is visually discounted at
+a glance. Regular hours = 09:30-16:00 ET (DST-aware via America/New_York).
 
 ## Storage
 

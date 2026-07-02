@@ -1,5 +1,6 @@
 import {
   AUTO_SIGNAL_META,
+  type CandlePattern,
   type ColoredPoint,
   type Connector,
   type DivergencePair,
@@ -17,7 +18,10 @@ import {
   type TimeframeKey,
 } from "../../../shared/types.js";
 import { ClientError } from "../errors.js";
+import { detectCandlePatterns } from "./candlePatterns.js";
 import { ema, findSwings, lineData, macd, pyRound, sma, toTs } from "./indicators.js";
+import { classifyMacdStructure, MACD_STRUCTURE_META, ZERO_TANGLE_NOTE, type MacdStructure } from "./macdStructure.js";
+import { offSessionBars } from "./session.js";
 
 export const TIMEFRAME_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
 export const TIMEFRAME_LABELS: Record<TimeframeKey, string> = { m5: "5分钟", m15: "15分钟", h1: "1小时" };
@@ -149,6 +153,8 @@ export interface CoercedTimeframe {
   macdDea: IntradayTfData["macdDea"];
   macdHist: ColoredPoint[];
   macdCrosses: MacdCross[];
+  structure: MacdStructure;
+  candlePatterns: CandlePattern[];
   autoDivergence: DivergencePair[];
   autoBeichi: DivergencePair[];
   lastClose: number;
@@ -205,6 +211,8 @@ export function coerceIntradayTimeframe(bars: RawBar[], key: string, emaPeriods 
   };
 
   const macdCrosses = findMacdCrosses(hist, timesTs);
+  const structure = classifyMacdStructure(dif, hist, timesTs);
+  const candlePatterns = detectCandlePatterns(opens, highs, lows, closes, timesTs);
 
   const histByTime = new Map<number, number>();
   for (let i = 0; i < hist.length; i++) {
@@ -228,6 +236,8 @@ export function coerceIntradayTimeframe(bars: RawBar[], key: string, emaPeriods 
     macdDea: lineData(timesTs, dea),
     macdHist: histBars,
     macdCrosses,
+    structure,
+    candlePatterns,
     autoDivergence: autoDivergence.slice(-2),
     autoBeichi: autoBeichi.slice(-2),
     lastClose: closes[closes.length - 1],
@@ -241,6 +251,9 @@ export function coerceIntradayTimeframe(bars: RawBar[], key: string, emaPeriods 
       last_cross: macdCrosses.length ? macdCrosses[macdCrosses.length - 1] : null,
       divergence_candidates: autoDivergence.slice(-3),
       beichi_candidates: autoBeichi.slice(-3),
+      structure_signals: structure.signals.slice(-6),
+      zero_tangle: structure.tangle,
+      candle_patterns: candlePatterns.slice(-6),
     },
   };
 }
@@ -443,17 +456,28 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
     const sig = signalsByTf[k];
     const autoDiv = autoPatternMarkers(tf.autoDivergence, "divergence", "#ab47bc");
     const autoBei = autoPatternMarkers(tf.autoBeichi, "beichi", "#ff8f00");
-    const crossMarkers: SeriesMarker[] = tf.macdCrosses.map((c, i) => ({
-      time: c.time,
-      position: "inBar",
-      color: c.type === "golden" ? "#26a69a" : "#ef5350",
-      shape: "circle",
-      text: c.type === "golden" ? "金叉" : "死叉",
-      id: `x-${i}`,
-      tooltip:
-        c.type === "golden"
-          ? `金叉 · ${barTimeShort(c.time)}\nDIF 上穿 DEA——短线动能转多，通常是买方接管的信号`
-          : `死叉 · ${barTimeShort(c.time)}\nDIF 下穿 DEA——短线动能转空，通常是卖方接管的信号`,
+    const tangleSuffix = tf.structure.tangle ? `\n${ZERO_TANGLE_NOTE}` : "";
+    const crossMarkers: SeriesMarker[] = tf.structure.signals.map((s, i) => {
+      const meta = MACD_STRUCTURE_META[s.kind];
+      const isZeroCross = s.kind === "zero_cross_up" || s.kind === "zero_cross_down";
+      const pending = s.confirmed ? "" : "（最新 K 线，待确认）";
+      return {
+        time: s.time,
+        position: "inBar",
+        color: meta.color,
+        shape: isZeroCross ? "square" : "circle",
+        text: s.confirmed ? s.label : `${s.label}?`,
+        id: `x-${i}`,
+        tooltip: `${s.bias === "bullish" ? "🟢" : "🔴"} ${s.label} · ${barTimeShort(s.time)}${pending}\n${s.implication}${tangleSuffix}`,
+      };
+    });
+    const patternMarkers: SeriesMarker[] = tf.candlePatterns.slice(-12).map((p) => ({
+      time: p.time,
+      position: p.bias === "bullish" ? "belowBar" : "aboveBar",
+      color: p.bias === "bullish" ? "#26a69a" : "#ef5350",
+      shape: p.bias === "bullish" ? "arrowUp" : "arrowDown",
+      text: p.label,
+      tooltip: `🕯️ 自动·${p.label}（简化算法，仅供参考）\n${barTimeShort(p.time)} $${p.price}\n${p.implication}`,
     }));
     timeframes[k] = {
       candles: tf.candles,
@@ -463,13 +487,14 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
       macdDea: tf.macdDea,
       macdHist: tf.macdHist,
       macdCrossMarkers: crossMarkers,
-      markers: [...sig.markers, ...autoDiv.markers, ...autoBei.markers]
+      markers: [...sig.markers, ...autoDiv.markers, ...autoBei.markers, ...patternMarkers]
         .sort((a, b) => a.time - b.time)
         .map((m, i) => ({ ...m, id: `m-${i}` })),
       priceConnectors: [...sig.priceConnectors, ...autoDiv.priceConnectors, ...autoBei.priceConnectors],
       macdConnectors: [...sig.macdConnectors, ...autoDiv.macdConnectors, ...autoBei.macdConnectors],
       autoDivergence: tf.autoDivergence,
       autoBeichi: tf.autoBeichi,
+      offSession: offSessionBars(tf.candles.map((c) => c.time)),
     };
   }
 

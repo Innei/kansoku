@@ -83,6 +83,11 @@ Using the timeframe data + Step 3's numbers, decide:
 
 1. **Direction + anchor** — `long` / `short` / `neutral`, anchored to a specific
    timeframe + time + price (never a bare directional call with no anchor).
+   **Timeframe roles（周期分工）**: h1 定趋势方向, m15 定结构与入场, m5 只做触发
+   与微调。**The anchor lives on m15 by default** — `anchor.timeframe` also sets
+   the dashboard's default tab. Anchor on m5 only for a pure scalp call, on h1
+   only for a swing-level statement. Align `anchor.time` to a bar boundary of its
+   timeframe (m15 → :00/:15/:30/:45).
 2. **Scenarios** — at least 2, probabilities summing to ~100%, each with a `path`
    (what the K-line likely does) and a `trigger` (what confirms it). Reuse the
    3-scenario discipline from `market-session-tracker` (Bull/Base/Bear-style).
