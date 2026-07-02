@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { AUTO_SIGNAL_META, type DivergencePair, type IntradayBuilt, type TimeframeKey } from "../../../../shared/types";
+import { formatMarketClock, formatMarketDateTime, formatMarketMonthDayTime } from "../../../../shared/time";
 import { fmt, signed, upDown } from "../../format";
 import { NewsSection } from "../NewsSection";
 import { TF_LABELS } from "./IntradayDashboard";
@@ -9,14 +10,12 @@ const DIRECTION_COLOR: Record<string, string> = { long: "#26a69a", short: "#ef53
 const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: "⚡", macd_beichi: "🌀" };
 const TF_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
 
-const barTime = (t: number) => new Date(t * 1000).toISOString().slice(5, 16).replace("T", " ");
+const barTime = (t: number) => formatMarketMonthDayTime(t, true);
 
 function predictionAgeText(updatedAt: string): string {
   const updated = new Date(updatedAt);
-  const hh = String(updated.getHours()).padStart(2, "0");
-  const mm = String(updated.getMinutes()).padStart(2, "0");
   const minutesAgo = Math.max(0, Math.floor((Date.now() - updated.getTime()) / 60_000));
-  return `更新于 ${hh}:${mm}（${minutesAgo} 分钟前）`;
+  return `更新于 ${formatMarketClock(updated, true)}（${minutesAgo} 分钟前）`;
 }
 
 function AutoSignalItem({ kindKey, pair }: { kindKey: string; pair: DivergencePair }) {
@@ -58,7 +57,7 @@ export function IntradaySidebar({ built, activeTf, predictionUpdatedAt, predicti
         <div className="symbol">{s.symbol}</div>
         <div className="name">{s.name}</div>
         <div className="price">${fmt(s.last)}</div>
-        <div className="price-date">{s.asOf} · 长桥证券</div>
+        <div className="price-date">{s.asOf ? formatMarketDateTime(s.asOf) : ""} · 长桥证券</div>
       </div>
 
       {p ? (
@@ -75,7 +74,7 @@ export function IntradaySidebar({ built, activeTf, predictionUpdatedAt, predicti
           {p.anchor && (
             <div className="verdict-reason">
               预测点：{TF_LABELS[p.anchor.timeframe] ?? p.anchor.timeframe} ·{" "}
-              {String(p.anchor.time).slice(0, 16).replace("T", " ")} · ${fmt(Number(p.anchor.price))}
+              {formatMarketDateTime(p.anchor.time)} · ${fmt(Number(p.anchor.price))}
             </div>
           )}
         </div>

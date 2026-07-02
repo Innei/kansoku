@@ -66,6 +66,7 @@ Base URL `http://localhost:5199`. All responses follow the
 | `GET /api/charts?type=&symbol=&limit=` | list chart metas (newest first) |
 | `POST /api/charts` | create a chart; body below |
 | `GET /api/charts/:id` | full chart doc |
+| `GET /api/charts/:id/built?count=` | ephemeral intraday rebuild with a larger bar window (history view; max 1000, never persisted) |
 | `PATCH /api/charts/:id` | merge fields into input and rebuild (e.g. add `prediction`) |
 | `DELETE /api/charts/:id` | remove a chart |
 | `GET /api/legacy` | list old single-file HTML archives (served at `/legacy/<file>`) |
@@ -241,10 +242,11 @@ these rules:
   hours (`GET /api/charts?stale=true` lists them; the SSE envelope and chart
   metas carry `prediction_updated_at` / `prediction_stale`). Each loop
   round: fetch the stale list → re-pull quote / capital flow / klines →
-  PATCH `prediction` only if scenarios materially changed, otherwise
-  re-PATCH the unchanged prediction to refresh its timestamp → append a
-  timestamped journal note on material revisions (revision discipline) →
-  stop the loop after 16:00 ET close.
+  PATCH `prediction` with scenarios revised only on material change, but
+  **always move `anchor` to the newest m5 bar time + latest price** — the
+  anchor marker must track the live tape, never sit minutes behind it →
+  append a timestamped journal note on material revisions (revision
+  discipline) → stop the loop after 16:00 ET close.
 
 ## Storage
 

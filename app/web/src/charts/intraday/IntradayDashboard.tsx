@@ -18,9 +18,10 @@ interface IntradayDashboardProps {
   built: IntradayBuilt;
   predictionUpdatedAt?: string;
   predictionStale?: boolean;
+  onLoadHistory?: () => void;
 }
 
-export function IntradayDashboard({ built, predictionUpdatedAt, predictionStale }: IntradayDashboardProps) {
+export function IntradayDashboard({ built, predictionUpdatedAt, predictionStale, onLoadHistory }: IntradayDashboardProps) {
   const [tf, setTf] = useState<TimeframeKey>(built.defaultTf in built.timeframes ? built.defaultTf : "m15");
   const [macdHeight, setMacdHeight] = useState(() => {
     const saved = Number(localStorage.getItem(MACD_HEIGHT_KEY));
@@ -29,7 +30,7 @@ export function IntradayDashboard({ built, predictionUpdatedAt, predictionStale 
   const [dragging, setDragging] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const macdRef = useRef<HTMLDivElement>(null);
-  useIntradayCharts(built, tf, mainRef, macdRef);
+  useIntradayCharts(built, tf, mainRef, macdRef, onLoadHistory);
 
   const onResizeStart = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();

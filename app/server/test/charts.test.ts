@@ -221,3 +221,66 @@ describe("GET / list staleness exposure and filtering", () => {
     vi.useRealTimers();
   });
 });
+
+const { Hono } = await import("hono");
+const { ClientError } = await import("../src/errors.js");
+
+function builtApp() {
+  const app = new Hono();
+  app.onError((err, c) => {
+    if (err instanceof ClientError) return c.json({ ok: false, error: err.message }, err.status === 404 ? 404 : 400);
+    throw err;
+  });
+  app.route("/", chartsRoute);
+  return app;
+}
+
+describe("GET /:id/built", () => {
+  it("rebuilds ephemerally with the requested count and never saves", async () => {
+    const doc = makeDoc();
+    store.loadChart.mockResolvedValue(doc);
+    build.refreshBody.mockReturnValue({ type: "intraday", symbol: doc.symbol, session: "intraday" });
+    build.buildChart.mockResolvedValue({ built: { kind: "intraday" }, meta: {} });
+
+    const res = await builtApp().request(`/${doc.id}/built?count=300`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.count).toBe(300);
+    expect(build.buildChart).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "intraday", symbol: doc.symbol, count: 300, title: doc.title }),
+    );
+    expect(store.saveChart).not.toHaveBeenCalled();
+  });
+
+  it("clamps count to 1000", async () => {
+    const doc = makeDoc();
+    store.loadChart.mockResolvedValue(doc);
+    build.refreshBody.mockReturnValue({ type: "intraday", symbol: doc.symbol });
+    build.buildChart.mockResolvedValue({ built: { kind: "intraday" }, meta: {} });
+
+    const res = await builtApp().request(`/${doc.id}/built?count=5000`);
+    const body = await res.json();
+    expect(body.data.count).toBe(1000);
+    expect(build.buildChart).toHaveBeenCalledWith(expect.objectContaining({ count: 1000 }));
+  });
+
+  it("rejects missing or invalid count", async () => {
+    const doc = makeDoc();
+    store.loadChart.mockResolvedValue(doc);
+    expect((await builtApp().request(`/${doc.id}/built`)).status).toBe(400);
+    expect((await builtApp().request(`/${doc.id}/built?count=abc`)).status).toBe(400);
+    expect((await builtApp().request(`/${doc.id}/built?count=-3`)).status).toBe(400);
+  });
+
+  it("rejects non-intraday charts", async () => {
+    store.loadChart.mockResolvedValue(makeDoc({ type: "flow" }));
+    const res = await builtApp().request("/some-flow/built?count=300");
+    expect(res.status).toBe(400);
+  });
+
+  it("404s on unknown chart", async () => {
+    store.loadChart.mockResolvedValue(null);
+    const res = await builtApp().request("/nope/built?count=300");
+    expect(res.status).toBe(404);
+  });
+});

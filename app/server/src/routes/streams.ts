@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { subscribeChart } from "../realtime/charts.js";
 import { subscribeQuotes } from "../realtime/quotes.js";
+import { clampViewCount } from "../services/history.js";
 
 const KEEPALIVE_MS = 15_000;
 
@@ -56,5 +57,6 @@ streamsRoute.get("/quotes", (c) => {
 
 streamsRoute.get("/charts/:id", (c) => {
   const id = c.req.param("id");
-  return sseEndpoint((push) => subscribeChart(id, push))(c);
+  const count = clampViewCount(c.req.query("count")) ?? undefined;
+  return sseEndpoint((push) => subscribeChart(id, push, count))(c);
 });

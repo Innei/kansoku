@@ -3,6 +3,7 @@ import type { ChartDoc } from "../../../shared/types.js";
 import { ClientError } from "../errors.js";
 import { BASE_URL } from "../env.js";
 import { buildChart, mergeForPatch, rebuild, refreshBody } from "../services/build.js";
+import { clampViewCount } from "../services/history.js";
 import { predictionStale } from "../services/staleness.js";
 import { allocateId, deleteChart, listCharts, loadChart, saveChart } from "../services/store.js";
 
@@ -54,6 +55,21 @@ chartsRoute.post("/", async (c) => {
     data: { id, url: chartUrl(id), type: result.type, title: result.title, symbol: result.symbol, ...result.meta },
     meta: { chart_type: result.type },
   });
+});
+
+chartsRoute.get("/:id/built", async (c) => {
+  const id = c.req.param("id");
+  const doc = await loadChart(id);
+  if (!doc) throw new ClientError(`chart not found: ${id}`, "GET /api/charts lists available ids", 404);
+  if (doc.type !== "intraday") {
+    throw new ClientError(`history view only supports intraday charts, got: ${doc.type}`, undefined, 400);
+  }
+  const count = clampViewCount(c.req.query("count"));
+  if (count === null) throw new ClientError("`count` must be a positive integer", "e.g. ?count=300", 400);
+  const body = refreshBody(doc.type, doc.input);
+  if (!body) throw new ClientError("chart has no symbol to refetch", undefined, 400);
+  const result = await buildChart({ ...body, count, title: doc.title });
+  return c.json({ ok: true, data: { built: result.built, count } });
 });
 
 chartsRoute.get("/:id", async (c) => {

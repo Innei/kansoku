@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
-import type { IChartApi, ISeriesApi } from "lightweight-charts";
+import type { IChartApi, ISeriesApi, LogicalRange } from "lightweight-charts";
 import type { IntradayBuilt, TimeframeKey } from "../../../../shared/types";
 import {
   addPriceLine,
@@ -47,24 +47,30 @@ const sessionBackdrop = (chart: IChartApi, scaleId: string): ISeriesApi<"Histogr
   return series;
 };
 
+const NEAR_LEFT_BARS = 10;
+
 export function useIntradayCharts(
   built: IntradayBuilt,
   activeTf: TimeframeKey,
   mainRef: RefObject<HTMLDivElement | null>,
   macdRef: RefObject<HTMLDivElement | null>,
+  onNearLeftEdge?: () => void,
 ): void {
   const handleRef = useRef<Handle | null>(null);
   const builtRef = useRef(built);
   builtRef.current = built;
   const lastTfRef = useRef<TimeframeKey | null>(null);
   const barCountRef = useRef(0);
+  const firstTimeRef = useRef<number | null>(null);
+  const onNearRef = useRef(onNearLeftEdge);
+  onNearRef.current = onNearLeftEdge;
 
   useEffect(() => {
     const mainEl = mainRef.current;
     const macdEl = macdRef.current;
     if (!mainEl || !macdEl) return;
 
-    const main = baseChart(mainEl, true);
+    const main = baseChart(mainEl, true, true);
     const session = sessionBackdrop(main, "session");
     const candle = main.addCandlestickSeries({
       upColor: "#26a69a",
@@ -93,7 +99,7 @@ export function useIntradayCharts(
       }),
     );
 
-    const macd = baseChart(macdEl, true);
+    const macd = baseChart(macdEl, true, true);
     const macdSession = sessionBackdrop(macd, "msession");
     const hist = macd.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
     const dif = macd.addLineSeries({ color: "#42a5f5", lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
@@ -112,10 +118,17 @@ export function useIntradayCharts(
     const mainTip = markerTooltip(main, mainEl);
     const macdTip = markerTooltip(macd, macdEl);
 
+    const onRangeChange = (range: LogicalRange | null) => {
+      if (range && range.from < NEAR_LEFT_BARS) onNearRef.current?.();
+    };
+    main.timeScale().subscribeVisibleLogicalRangeChange(onRangeChange);
+
     handleRef.current = { main, macd, candle, vol, session, macdSession, emaSeries, hist, dif, dea, mainTip, macdTip, dynamic: [] };
     lastTfRef.current = null;
+    firstTimeRef.current = null;
 
     return () => {
+      main.timeScale().unsubscribeVisibleLogicalRangeChange(onRangeChange);
       mainTip.destroy();
       macdTip.destroy();
       observers.forEach((ro) => ro.disconnect());
@@ -185,9 +198,15 @@ export function useIntradayCharts(
     if (lastTfRef.current !== activeTf) {
       lastTfRef.current = activeTf;
       showLastBars(h.main, d.candles);
-    } else if (wasAtRight) {
-      h.main.timeScale().scrollToRealTime();
+    } else {
+      const prepended = firstTimeRef.current === null ? 0 : timeline.indexOf(firstTimeRef.current);
+      if (prepended > 0 && prevRange) {
+        h.main.timeScale().setVisibleLogicalRange({ from: prevRange.from + prepended, to: prevRange.to + prepended });
+      } else if (wasAtRight) {
+        h.main.timeScale().scrollToRealTime();
+      }
     }
     barCountRef.current = d.candles.length;
+    firstTimeRef.current = timeline[0] ?? null;
   }, [built, activeTf]);
 }

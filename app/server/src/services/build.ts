@@ -252,7 +252,7 @@ export function refreshBody(type: ChartType, input: Record<string, unknown>): Re
 
 const PATCHABLE: Record<ChartType, string[]> = {
   sepa: ["name", "as_of_date", "position", "context"],
-  intraday: ["name", "as_of", "position", "prediction"],
+  intraday: ["name", "as_of", "position", "prediction", "session"],
   flow: ["subtitle"],
   kline: ["subtitle"],
   cohort: ["subtitle"],

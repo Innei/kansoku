@@ -17,6 +17,7 @@ import {
   type SeriesMarker,
   type TimeframeKey,
 } from "../../../shared/types.js";
+import { formatMarketMonthDayTime } from "../../../shared/time.js";
 import { ClientError } from "../errors.js";
 import { detectCandlePatterns } from "./candlePatterns.js";
 import { ema, findSwings, lineData, macd, pyRound, sma, toTs } from "./indicators.js";
@@ -31,7 +32,7 @@ const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: 
 const BEICHI_WEAKER_RATIO = 0.9;
 const MIN_PUSH_BARS = 3;
 
-const barTimeShort = (t: number) => new Date(t * 1000).toISOString().slice(5, 16).replace("T", " ");
+const barTimeShort = (t: number) => formatMarketMonthDayTime(t, true);
 
 export function findMacdCrosses(hist: (number | null)[], timesTs: number[]): MacdCross[] {
   const out: MacdCross[] = [];

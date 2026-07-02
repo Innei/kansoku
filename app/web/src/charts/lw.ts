@@ -7,10 +7,12 @@ import {
   type LineData,
   type SeriesMarker as LwMarker,
   type SeriesType,
+  type TickMarkType,
   type Time,
   type UTCTimestamp,
   type WhitespaceData,
 } from "lightweight-charts";
+import { formatMarketDateTime, formatMarketTick } from "../../../shared/time";
 import type { Candle, ColoredPoint, LinePoint, SeriesMarker } from "../../../shared/types";
 
 export const asTime = (t: number) => t as UTCTimestamp;
@@ -90,7 +92,12 @@ export function markerTooltip(chart: IChartApi, host: HTMLElement): MarkerToolti
   };
 }
 
-export function baseChart(el: HTMLElement, timeVisible: boolean): IChartApi {
+const marketTimeFormatter = (time: Time): string => (typeof time === "number" ? formatMarketDateTime(time) : String(time));
+
+const marketTickMarkFormatter = (time: Time, tickMarkType: TickMarkType): string | null =>
+  typeof time === "number" ? formatMarketTick(time, tickMarkType) : null;
+
+export function baseChart(el: HTMLElement, timeVisible: boolean, marketTime = false): IChartApi {
   return createChart(el, {
     width: el.clientWidth,
     height: el.clientHeight,
@@ -98,7 +105,17 @@ export function baseChart(el: HTMLElement, timeVisible: boolean): IChartApi {
     grid: { vertLines: { color: "#161b22" }, horzLines: { color: "#161b22" } },
     crosshair: { mode: 0 },
     rightPriceScale: { borderColor: "#21262d" },
-    timeScale: { borderColor: "#21262d", timeVisible, secondsVisible: false },
+    localization: marketTime
+      ? {
+          timeFormatter: marketTimeFormatter,
+        }
+      : undefined,
+    timeScale: {
+      borderColor: "#21262d",
+      timeVisible,
+      secondsVisible: false,
+      tickMarkFormatter: marketTime ? marketTickMarkFormatter : undefined,
+    },
   });
 }
 
