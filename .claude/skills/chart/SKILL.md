@@ -85,7 +85,7 @@ Every symbol also gets a stable dashboard URL, `http://localhost:5199/#/symbol/<
 that aggregates live data with the symbol's latest `intraday` analysis — it is
 the caller-facing counterpart of `GET /api/symbols/:sym/*`. `/#/charts/<id>`
 remains the frozen per-analysis archive; the cockpit page is a live view on top
-of the same underlying chart docs, not a replacement. These `/api/symbols/*`
+of the same underlying chart docs, not a replacement. During regular session the cockpit also carries a live AI comment stream and auto-reassessment (commentator + escalated analyst, gated on `AI_COMMENT_MODEL` / `AI_ANALYST_MODEL`) whose output shares the manual `intraday-signal` format. These `/api/symbols/*`
 routes are server plumbing for that page — direct callers rarely need them,
 listed here only for completeness:
 

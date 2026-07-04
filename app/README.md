@@ -85,6 +85,31 @@ pnpm start          # http://localhost:5199
 - **时段覆盖层**：盘前/盘后浅蓝、夜盘深蓝的整高背景（主图与 MACD 副图同步），正常盘 = 09:30-16:00 ET，纽约时区实算，夏令时自动正确。
 - **交互**：主图与 MACD 副图之间有拖拽分隔条（MACD 高度 100-340px，记忆在浏览器本地）；成交量柱半透明且与 K 线纵向分区，互不遮挡。
 
+## AI 实时分析
+
+驾驶舱（Cockpit）在盘中会自动跑一套 AI 分析，产物和你手动写的日内多周期结论（`intraday-signal`）同一格式，直接落进点评流。分两层：
+
+- **点评员（commentator）**：轻量、频繁。server 每 60 秒扫一遍当天有 intraday 分析的标的，检测到触发信号（MACD 交叉、突破关键价位、资金流翻向、放量）或每 5 分钟心跳一次，就拿实时快照（报价 + 5 分钟 K 线 MACD + 资金流 + 已归档预测）让点评员写一两句中文白话点评。判断和已归档预测明显相反、或价格触及止损/目标时，会升级（escalate）。
+- **分析员（analyst）**：重量、少跑。被点评员升级触发（同一标的 30 分钟冷却）时才启动，做完整的多周期重估，最后落一张新的 intraday 图并写点评。
+
+两层都只在正常盘时段（09:30–16:00 ET）运行。
+
+**环境变量**（模型串格式 `provider/id`，如 `anthropic/claude-haiku-4-5`）：
+
+- `AI_COMMENT_MODEL` — 点评员用的模型。缺失则整个点评层停用，server 照常启动。
+- `AI_ANALYST_MODEL` — 分析员用的模型。缺失则升级时不跑分析员。
+
+**点评存哪**：`journal/charts/data/comments/<SYMBOL>-YYYY-MM-DD.json`（跟 journal 一起被 gitignore），SSE 实时推给打开的驾驶舱页面。
+
+**冒烟脚本**（真调模型、真拉行情，会往当天点评文件里写真实点评）：
+
+```bash
+pnpm -C app/server exec tsx scripts/ai-smoke.ts MRVL.US            # 只跑点评员
+pnpm -C app/server exec tsx scripts/ai-smoke.ts MRVL.US --analyst  # 再跑一遍分析员（会落新图）
+```
+
+脚本自动读仓库根目录 `.env` 里的模型配置，打印解析到的模型、跑对应层、打印落盘的点评（分析员那趟还打印新图 chartId）。模型环境变量缺失时报错并非零退出。不进 CI。
+
 ## 数据存哪
 
 - 每张图一个 JSON：`journal/charts/data/YYYY-MM-DD-<slug>.json`（带 `schema_version`，跟着 journal 一起被 gitignore）。前端永远用最新代码渲染旧数据，改组件不影响历史图表。
