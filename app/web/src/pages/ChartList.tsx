@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { ChartMeta, LegacyChart } from "../../../shared/types";
+import { formatMarketClock } from "../../../shared/time";
 import { useQuery } from "../apiHooks";
 import { QuoteBar } from "../QuoteBar";
 
@@ -8,54 +9,121 @@ interface MetaWithUrl extends ChartMeta {
   prediction_stale: boolean;
 }
 
+const TYPES = ["sepa", "intraday", "flow", "cohort"] as const;
+const WEEKDAY = ["日", "一", "二", "三", "四", "五", "六"];
+
+function dateLabel(date: string): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  return Number.isNaN(d.getTime()) ? date : `${date} 周${WEEKDAY[d.getUTCDay()]}`;
+}
+
+function timeOf(meta: ChartMeta): string {
+  return formatMarketClock(meta.created_at, true);
+}
+
+function groupBy(charts: MetaWithUrl[], key: (m: MetaWithUrl) => string): [string, MetaWithUrl[]][] {
+  const groups = new Map<string, MetaWithUrl[]>();
+  for (const m of charts) {
+    const k = key(m);
+    const list = groups.get(k);
+    if (list) list.push(m);
+    else groups.set(k, [m]);
+  }
+  return [...groups.entries()];
+}
+
+function ChartCard({ meta }: { meta: MetaWithUrl }) {
+  return (
+    <a className="chart-card" href={`#/charts/${encodeURIComponent(meta.id)}`}>
+      <div className="chart-card-head">
+        <span className={`badge ${meta.type}`}>{meta.type}</span>
+        {meta.symbol && <span className="sym">{meta.symbol.replace(/\.US$/, "")}</span>}
+        {meta.prediction_stale && <span className="stale-dot" title="预测已过期" />}
+        <span className="time">{timeOf(meta)}</span>
+      </div>
+      <div className="chart-card-title">{meta.title}</div>
+    </a>
+  );
+}
+
 export function ChartList() {
   const [type, setType] = useState("");
   const [symbol, setSymbol] = useState("");
+  const [view, setView] = useState<"date" | "symbol">("date");
   const [showLegacy, setShowLegacy] = useState(false);
 
   const chartsUrl = useMemo(() => {
     const params = new URLSearchParams();
     if (type) params.set("type", type);
-    if (symbol) params.set("symbol", symbol);
     const query = params.toString();
     return `/api/charts${query ? `?${query}` : ""}`;
-  }, [type, symbol]);
+  }, [type]);
 
   const { data: charts, error } = useQuery<MetaWithUrl[]>(chartsUrl);
   const { data: legacyData } = useQuery<LegacyChart[]>("/api/legacy");
   const legacy = legacyData ?? [];
 
+  const filtered = useMemo(() => {
+    if (!charts) return null;
+    const needle = symbol.trim().toUpperCase();
+    if (!needle) return charts;
+    return charts.filter((m) => m.symbol?.toUpperCase().includes(needle));
+  }, [charts, symbol]);
+
+  const groups = useMemo(() => {
+    if (!filtered) return [];
+    if (view === "date") return groupBy(filtered, (m) => m.id.slice(0, 10)).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+    const latest = (metas: MetaWithUrl[]) => metas.reduce((mx, m) => (m.created_at > mx ? m.created_at : mx), "");
+    return groupBy(filtered, (m) => m.symbol ?? "").sort((a, b) => {
+      if (!a[0] !== !b[0]) return a[0] ? -1 : 1;
+      return latest(a[1]) < latest(b[1]) ? 1 : -1;
+    });
+  }, [filtered, view]);
+
   return (
-    <div className="page">
-      <h1>Trade Charts</h1>
+    <div className="page home-page">
+      <h1>图表库</h1>
       <div className="sub">
-        图表数据存于 journal/charts/data · 渲染永远是最新版 · <a href="#/overview">盘中总览 →</a>
+        图表数据存于 journal/charts/data · 渲染永远是最新版 · <a href="#/">← 首页</a>
       </div>
       <QuoteBar />
-      <div className="filters">
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="">全部类型</option>
-          <option value="sepa">sepa</option>
-          <option value="intraday">intraday</option>
-          <option value="flow">flow</option>
-          <option value="cohort">cohort</option>
-        </select>
+      <div className="chartlist-toolbar">
+        <span className={`filter-chip ${type === "" ? "active" : ""}`} onClick={() => setType("")}>
+          全部
+        </span>
+        {TYPES.map((t) => (
+          <span key={t} className={`filter-chip ${type === t ? "active" : ""}`} onClick={() => setType(t)}>
+            {t}
+          </span>
+        ))}
         <input
+          className="quickbar-search"
           placeholder="按 symbol 过滤，如 MRVL"
           value={symbol}
           onChange={(e) => setSymbol(e.target.value)}
         />
+        <span className="toolbar-spacer" />
+        <span className={`filter-chip ${view === "date" ? "active" : ""}`} onClick={() => setView("date")}>
+          按日期
+        </span>
+        <span className={`filter-chip ${view === "symbol" ? "active" : ""}`} onClick={() => setView("symbol")}>
+          按标的
+        </span>
       </div>
       {error && <div className="error-box">{error}</div>}
-      {charts && charts.length === 0 && <div className="empty">还没有图表 —— 让 Claude 出一张即可出现在这里</div>}
-      {charts?.map((m) => (
-        <a key={m.id} className="chart-row" href={`#/charts/${encodeURIComponent(m.id)}`}>
-          <span className="date">{m.id.slice(0, 10)}</span>
-          <span className={`badge ${m.type}`}>{m.type}</span>
-          <span className="title">{m.title}</span>
-          {m.symbol && <span className="sym">{m.symbol}</span>}
-          {m.prediction_stale && <span className="stale-dot" title="预测已过期" />}
-        </a>
+      {filtered && filtered.length === 0 && <div className="empty">没有匹配的图表 —— 让 Claude 出一张即可出现在这里</div>}
+      {groups.map(([key, metas]) => (
+        <div key={key} className="chart-group">
+          <div className="chart-group-head">
+            <span className="label">{view === "date" ? dateLabel(key) : key ? key.replace(/\.US$/, "") : "无标的"}</span>
+            <span className="count">{metas.length} 张</span>
+          </div>
+          <div className="chart-grid">
+            {metas.map((m) => (
+              <ChartCard key={m.id} meta={m} />
+            ))}
+          </div>
+        </div>
       ))}
       {legacy.length > 0 && (
         <>
