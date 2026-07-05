@@ -8,6 +8,7 @@ import { PredictionTab } from "../charts/intraday/tabs/PredictionTab";
 import { resolveIntradayTf, useIntradayDoc } from "../charts/intraday/useIntradayDoc";
 import type { SidebarTab } from "../charts/SidebarTabs";
 import { TopbarQuote } from "../QuoteBar";
+import { Badge, Dot, Empty, ErrorBox } from "../ui";
 import { AiTab } from "./cockpit/AiTab";
 import { EnvTab } from "./cockpit/EnvTab";
 import { FlowTab } from "./cockpit/FlowTab";
@@ -78,10 +79,10 @@ export function SymbolCockpit({ sym }: { sym: string }) {
       <div className="page">
         <h1>{sym}</h1>
         {latestError ? (
-          <div className="error-box">{latestError}</div>
+          <ErrorBox>{latestError}</ErrorBox>
         ) : (
           <>
-            <div className="empty">这只股票还没有 intraday 分析——点下面按钮让 AI 生成，或跑一次 intraday-signal</div>
+            <Empty>这只股票还没有 intraday 分析——点下面按钮让 AI 生成，或跑一次 intraday-signal</Empty>
             <GenerateAnalysis sym={sym} onReady={markGeneratedReady} />
           </>
         )}
@@ -95,7 +96,7 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   if (error) {
     return (
       <div className="page">
-        <div className="error-box">{error}</div>
+        <ErrorBox>{error}</ErrorBox>
         <p>
           <a href="#/">← 返回列表</a>
         </p>
@@ -103,7 +104,12 @@ export function SymbolCockpit({ sym }: { sym: string }) {
     );
   }
 
-  if (!doc || doc.built.kind !== "intraday") return <div className="page empty">加载中…</div>;
+  if (!doc || doc.built.kind !== "intraday")
+    return (
+      <div className="page">
+        <Empty>加载中…</Empty>
+      </div>
+    );
 
   const activeIntradayTf = resolveIntradayTf(doc.built, intradayTf);
   const s = doc.built.sidebar;
@@ -150,7 +156,7 @@ export function SymbolCockpit({ sym }: { sym: string }) {
       key: "ai",
       label: (
         <>
-          AI 点评{unread > 0 && <span className="ai-unread">{unread}</span>}
+          AI 点评{unread > 0 && <Badge tone="down" className="unread-badge">{unread}</Badge>}
         </>
       ),
       content: <AiTab symbol={sym} comments={comments} error={commentsError} />,
@@ -167,12 +173,12 @@ export function SymbolCockpit({ sym }: { sym: string }) {
         <span className="topbar-actions">
           {latestAlert && (
             <button
-              className={`ai-badge ${latestAlert.level}`}
+              className={`badge badge--${latestAlert.level === "alert" ? "down" : "accent"} alert-badge`}
               onClick={() => setActiveTab("ai")}
               title={latestAlert.text}
             >
-              <span className="dot" />
-              <span className="ai-badge-text">
+              <Dot tone={latestAlert.level === "alert" ? "down" : "accent"} pulse />
+              <span className="alert-badge-text">
                 AI {latestAlert.level === "alert" ? "警报" : "提醒"} {formatMarketClock(latestAlert.ts)} ·{" "}
                 {latestAlert.trigger ?? latestAlert.text}
               </span>

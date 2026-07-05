@@ -4,6 +4,7 @@ import { formatMarketDateTime } from "../../../../shared/time";
 import { fmt, signed } from "../../format";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../../charts/intraday/directionLabels";
 import { theme } from "../../theme";
+import { Badge, SectionTitle } from "../../ui";
 
 const OUTCOME_LABEL: Record<OutcomeStatus, string> = {
   hit_target: "✅ 到目标",
@@ -19,7 +20,7 @@ interface HistoryTabProps {
 export function HistoryTab({ rows, currentId }: HistoryTabProps) {
   return (
     <>
-      <div className="section-title">历史分析</div>
+      <SectionTitle>历史分析</SectionTitle>
       {rows.map((row) => (
         <a
           key={row.id}
@@ -30,7 +31,7 @@ export function HistoryTab({ rows, currentId }: HistoryTabProps) {
           <div className="zone-head">
             <span className="zone-label plain">
               {formatMarketDateTime(row.created_at)}
-              {row.id === currentId && <span className="p123-badge confirmed">当前</span>}
+              {row.id === currentId && <Badge tone="up" className="p123-badge">当前</Badge>}
             </span>
             <span className="zone-range">{row.direction ? DIRECTION_LABEL[row.direction] : "—"}</span>
           </div>

@@ -102,7 +102,7 @@ export function IntradayDashboard({
               </span>
             ))}
             <span>
-              <span className="swatch" style={{ background: "rgba(88,166,255,0.4)" }} />
+              <span className="swatch" style={{ background: "rgba(232,232,232,0.3)" }} />
               盘前/盘后 · 深色为夜盘
             </span>
           </div>

@@ -3,6 +3,7 @@ import { AUTO_SIGNAL_META, type DivergencePair, type IntradayPriceZone, type Int
 import { formatMarketMonthDayTime } from "../../../../../shared/time";
 import { fmt } from "../../../format";
 import { theme } from "../../../theme";
+import { Badge } from "../../../ui";
 
 const ZONE_KIND_LABEL: Record<string, string> = {
   entry: "入场区",
@@ -24,7 +25,9 @@ export function Pattern123Item({ pat }: { pat: Pattern123 }) {
       <div>
         <div className="check-label">
           {pat.label}
-          <span className={`p123-badge${confirmed ? " confirmed" : ""}`}>{confirmed ? "已确认" : "酝酿中"}</span>
+          <Badge tone={confirmed ? "up" : "accent"} className="p123-badge">
+            {confirmed ? "已确认" : "酝酿中"}
+          </Badge>
         </div>
         <div className="check-val">
           ① {barTime(pat.p1.time)} ${fmt(pat.p1.price)} → ② ${fmt(pat.p2.price)} → ③ {barTime(pat.p3.time)} $

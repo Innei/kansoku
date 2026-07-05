@@ -103,7 +103,7 @@ export function baseChart(el: HTMLElement, timeVisible: boolean, marketTime = fa
     width: el.clientWidth,
     height: el.clientHeight,
     layout: { background: { color: theme.bgSurface }, textColor: theme.textSecondary },
-    grid: { vertLines: { color: theme.border }, horzLines: { color: theme.border } },
+    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
     crosshair: { mode: 0 },
     rightPriceScale: { borderColor: theme.border },
     localization: marketTime

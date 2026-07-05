@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CockpitComment } from "../../../../shared/types";
 import { formatMarketClock } from "../../../../shared/time";
+import { Badge, Button, Spinner } from "../../ui";
 import { buildFeed } from "./aiFeed";
 import { useReassessSymbol } from "./useReassessSymbol";
 
 const LEVEL_LABEL: Record<string, string> = { info: "info", warn: "warn", alert: "alert", error: "error" };
+const LEVEL_TONE: Record<string, "up" | "down" | "accent" | "solid" | undefined> = {
+  info: undefined,
+  warn: "accent",
+  alert: "down",
+  error: "solid",
+};
 const SOURCE_LABEL: Record<string, string> = { analyst: "分析员", system: "系统" };
 const RUN_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -26,7 +33,9 @@ function CommentItem({ comment }: { comment: CockpitComment }) {
       <span className="t">{formatMarketClock(comment.ts)}</span>
       <div className="body">
         <p>
-          <span className={`ai-lv ${comment.level}`}>{LEVEL_LABEL[comment.level] ?? comment.level}</span>
+          <Badge tone={LEVEL_TONE[comment.level]} className="level-badge">
+            {LEVEL_LABEL[comment.level] ?? comment.level}
+          </Badge>
           {comment.text}
         </p>
         {meta.length > 0 && (
@@ -103,10 +112,10 @@ export function AiTab({
   return (
     <div className="ai-tab">
       <div className="ai-reassess">
-        <button className="ai-btn" onClick={runReassess} disabled={pending || running}>
-          {running && <span className="ai-spin" />}
+        <Button onClick={runReassess} disabled={pending || running}>
+          {running && <Spinner />}
           {running ? "重估进行中…" : "重新分析"}
-        </button>
+        </Button>
         {hint && <span className="ai-hint">{hint}</span>}
       </div>
 
