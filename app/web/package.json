@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "lightweight-charts": "^4.2.3",
+    "lucide-react": "^1.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "recharts": "^3.9.1"

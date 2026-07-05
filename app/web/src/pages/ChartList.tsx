@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import type { ChartMeta, LegacyChart } from "../../../shared/types";
 import { formatMarketClock } from "../../../shared/time";
 import { useQuery } from "../apiHooks";
@@ -85,7 +86,10 @@ export function ChartList() {
     <div className="page home-page">
       <h1>图表库</h1>
       <div className="sub">
-        图表数据存于 journal/charts/data · 渲染永远是最新版 · <a href="#/">← 首页</a>
+        图表数据存于 journal/charts/data · 渲染永远是最新版 ·{" "}
+        <a href="#/">
+          <ArrowLeft className="icon" size={13} /> 首页
+        </a>
       </div>
       <QuoteBar />
       <div className="chartlist-toolbar">
@@ -124,7 +128,8 @@ export function ChartList() {
       {legacy.length > 0 && (
         <>
           <SectionTitle className="legacy-toggle" onClick={() => setShowLegacy(!showLegacy)}>
-            旧版单文件 HTML 存档（{legacy.length}） {showLegacy ? "▾" : "▸"}
+            旧版单文件 HTML 存档（{legacy.length}）{" "}
+            {showLegacy ? <ChevronDown className="icon" size={13} /> : <ChevronRight className="icon" size={13} />}
           </SectionTitle>
           {showLegacy &&
             legacy.map((f) => (

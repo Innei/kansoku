@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 export interface LayerItem {
   key: string;
@@ -23,7 +24,9 @@ export function LayerPanel({ groups }: { groups: LayerGroup[] }) {
     <div className={`layer-panel${collapsed ? " collapsed" : ""}`}>
       <div className="lp-header" onClick={() => setCollapsed(!collapsed)}>
         <span>图层</span>
-        <span className="lp-arrow">▾</span>
+        <span className="lp-arrow">
+          {collapsed ? <ChevronRight className="icon" size={12} /> : <ChevronDown className="icon" size={12} />}
+        </span>
       </div>
       <div className="lp-body">
         {groups.map((g) => (

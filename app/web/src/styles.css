@@ -199,6 +199,7 @@ a:hover { color: var(--accent); }
 .chart-row .sym { font-size: var(--fs-base); color: var(--text-secondary); }
 
 .empty { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: var(--fs-md); }
+.icon { vertical-align: -2px; }
 .error-box {
   padding: 14px;
   background: var(--bg-surface);
@@ -334,7 +335,7 @@ a:hover { color: var(--accent); }
 .check-item.fail { border-left-color: var(--down); }
 .check-item.unknown { border-left-color: var(--text-muted); }
 .check-item.signal { border-left-color: var(--accent); }
-.check-icon { font-size: var(--fs-md); }
+.check-icon { display: flex; align-items: center; font-size: var(--fs-md); }
 .check-label { font-size: var(--fs-base); color: var(--text-primary); font-weight: 500; }
 .check-val { font-size: var(--fs-sm); color: var(--text-secondary); margin-top: 2px; }
 .p123-badge { margin-left: 6px; }
@@ -385,9 +386,8 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   color: var(--text-primary); font-weight: 500; font-size: var(--fs-xs);
 }
 .lp-header:hover { background: var(--bg-hover); }
-.lp-arrow { font-size: var(--fs-xs); transition: transform 0.15s; opacity: 0.6; }
+.lp-arrow { display: inline-flex; opacity: 0.6; }
 .layer-panel.collapsed { min-width: 0; max-width: none; }
-.layer-panel.collapsed .lp-arrow { transform: rotate(-90deg); }
 .lp-body { padding: 4px 8px 6px; max-height: 70vh; overflow-y: auto; border-top: 1px solid var(--border); }
 .layer-panel.collapsed .lp-body { display: none; }
 .lp-group { margin-bottom: 5px; }

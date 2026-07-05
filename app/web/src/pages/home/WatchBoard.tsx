@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check } from "lucide-react";
 import type { OverviewBoard, OverviewRow } from "../../../../shared/types";
 import { formatMarketClock } from "../../../../shared/time";
 import { api, errorMessage } from "../../api";
@@ -33,7 +34,17 @@ function ReassessButton({ symbol }: { symbol: string }) {
   };
 
   const label =
-    state === "running" ? "分析中…" : state === "done" ? "已触发 ✓" : state === "failed" ? "未启动" : "重新分析";
+    state === "running" ? (
+      "分析中…"
+    ) : state === "done" ? (
+      <>
+        已触发 <Check className="icon" size={13} />
+      </>
+    ) : state === "failed" ? (
+      "未启动"
+    ) : (
+      "重新分析"
+    );
   const btnState = state === "running" ? "busy" : state === "idle" ? undefined : state;
   return (
     <Button className="reassess-action" state={btnState} onClick={run} disabled={state === "running"}>
