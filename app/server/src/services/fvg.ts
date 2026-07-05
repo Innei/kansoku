@@ -2,6 +2,8 @@ import type { Candle, IntradayFvgZone } from "../../../shared/types.js";
 
 const ATR_PERIOD = 14;
 export const FVG_ATR_RATIO = 0.25;
+export const FVG_MIN_PCT = 0.003;
+export const FVG_MAX_AGE = 40;
 
 function atr(candles: Candle[], period: number): (number | null)[] {
   const tr: number[] = [];
@@ -49,9 +51,12 @@ export function detectFvgZones(candles: Candle[]): IntradayFvgZone[] {
       high = prev.low;
     }
     if (!kind) continue;
+    if (n - 1 - i > FVG_MAX_AGE) continue;
 
+    const size = high - low;
+    if (size / ((high + low) / 2) < FVG_MIN_PCT) continue;
     const a = atrArr[i];
-    if (a !== null && high - low < FVG_ATR_RATIO * a) continue;
+    if (a !== null && size < FVG_ATR_RATIO * a) continue;
 
     let filled = false;
     for (let j = i + 2; j < n; j++) {

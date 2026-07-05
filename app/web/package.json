@@ -10,9 +10,11 @@
     "lucide-react": "^1.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-is": "^19.0.0",
     "recharts": "^3.9.1"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

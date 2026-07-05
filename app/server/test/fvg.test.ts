@@ -77,6 +77,21 @@ describe("detectFvgZones", () => {
     expect(zones[0].kind).toBe("bullish");
   });
 
+  it("filters gaps thinner than the percentage-of-price floor", () => {
+    const candles = series([
+      [998, 999],
+      [1000, 1002],
+      [1001, 1003],
+    ]);
+    expect(detectFvgZones(candles)).toHaveLength(0);
+  });
+
+  it("drops an unfilled gap that is older than the freshness window", () => {
+    const rising = Array.from({ length: 42 }, (_, k) => [11 + k * 0.5, 13 + k * 0.5] as [number, number]);
+    const candles = series([[9, 10], [10.5, 12.5], [12, 13], ...rising]);
+    expect(detectFvgZones(candles)).toHaveLength(0);
+  });
+
   it("skips the volatility filter when there is too little history", () => {
     const candles = series([
       [9, 10],

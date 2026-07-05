@@ -1,8 +1,11 @@
 packages:
   - server
   - web
+autoInstallPeers: false
+ignoredOptionalDependencies:
+  - esbuild
+  - tsx
 allowBuilds:
   '@google/genai': false
   better-sqlite3: true
-  esbuild: true
   protobufjs: false

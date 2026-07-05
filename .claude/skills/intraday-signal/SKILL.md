@@ -5,8 +5,9 @@ description: >
   pulls K-line across three timeframes, reads MACD + swing structure, writes a
   direction call (long/short/neutral) with an explicit anchor price, 3-scenario
   forward read, a range-bound playbook (long tactic + short tactic), an
-  entry/stop/target plan with direction-aware R/R, and Pin Bar / MACD-divergence
-  signal annotations — then renders it via the `chart` skill (type `intraday`,
+  entry/stop/target plan with direction-aware R/R, and MACD-divergence signal
+  annotations (candle patterns like Pin Bar are auto-detected server-side) —
+  then renders it via the `chart` skill (type `intraday`,
   POST preview → PATCH prediction) and logs a journal entry. US-only, single-symbol, short horizon (intraday to
   a few sessions) — a companion to `market-session-tracker`, not a replacement.
   Triggers: 短线预测、日内多周期、做多做空、5分钟15分钟1小时、MACD 背离、
@@ -19,8 +20,8 @@ description: >
 Single-symbol, short-horizon technical read across 5 分钟 / 15 分钟 / 1 小时—
 produces an explicit long/short call anchored to a price, a probability-weighted
 forward read, and a concrete entry/stop/target plan, backed by named K-line
-signals (Pin Bar, MACD divergence). Ends by rendering an interactive dashboard
-and writing a journal entry.
+signals (MACD divergence plus server-side auto-detected candle patterns such as
+Pin Bar). Ends by rendering an interactive dashboard and writing a journal entry.
 
 > **Scope**: one symbol per run. For a cross-section "where is money moving"
 > question use `capital-rotation`; for live tracking of a watchlist across a
@@ -112,11 +113,16 @@ Using the timeframe data + Step 3's numbers, decide:
    direction-aware: for `long`, `risk = entry-stop`, `reward = target2-entry`;
    for `short`, `risk = stop-entry`, `reward = entry-target2`. **State the R/R
    explicitly; if < 2:1, say so — do not silently proceed with a poor ratio.**
-5. **Signals** — Pin Bar / MACD divergence / other, each anchored to a specific
-   `timeframe` + `time` + `price` (divergence needs the two comparison points,
-   each ideally carrying `macd_value` so the dashboard can draw the connecting
-   line on the MACD sub-pane too). Never write "看起来背离了" without pointing
-   at the two actual bars being compared.
+5. **Signals** — MACD divergence / other custom notes, each anchored to a
+   specific `timeframe` + `time` + `price` (divergence needs the two comparison
+   points, each ideally carrying `macd_value` so the dashboard can draw the
+   connecting line on the MACD sub-pane too). Never write "看起来背离了" without
+   pointing at the two actual bars being compared. **Never emit a `pin_bar` (or
+   any candle-shape) signal type** — candle patterns (pin bar / hammer /
+   engulfing / stars …) are auto-detected server-side and drawn as 🕯️ markers;
+   hand-labeling duplicates the detector and has mislabeled shapes before. If a
+   candle pattern matters to the thesis, cite the auto-detected marker in the
+   report, or anchor an `other`-type note to that bar.
 6. **`context`** — besides `prediction`, write the `context` payload (see
    `chart` skill's `context` schema): tag every news/sentiment item pulled in
    Step 2 with `source` + `tag` + a one-line `note`, list what was actually
@@ -153,7 +159,7 @@ Present in this order (mirrors the user's original ask):
 2. 情景推演（后续 K 线可能的多种走势，带百分比）
 3. 震荡应对（若为震荡情景：多、空两种打法）
 4. 入场计划（盈亏比 + 具体入场点/止损/目标）
-5. 支撑信号（Pin Bar / MACD 背离等，指到具体 K 线）
+5. 支撑信号（MACD 背离 + 服务端自动检测的 K 线形态如 Pin Bar，指到具体 K 线）
 6. 图表链接：主链接是标的驾驶舱 `http://localhost:5199/#/symbol/<SYM>`（聚合活数据 +
    最新分析），存档链接 `data.url`（本次分析的冻结快照）附后
 7. 免责声明：仅供参考，不构成投资建议
@@ -175,6 +181,7 @@ the journal's narrative record.
 - ❌ A range-bound call that only covers one direction (must give both long and short tactics)
 - ❌ Omitting or silently glossing over an R/R below 2:1
 - ❌ "看起来有背离" without naming the two specific bars being compared
+- ❌ Hand-labeling a `pin_bar` / candle-shape signal — the server auto-detects candle patterns; AI signals are macd_divergence and `other` notes only
 - ❌ Skipping the preview call and guessing MACD values instead of reading them
 - ❌ Skipping the journal write
 - ❌ Contradicting a live `market-session-tracker` read for the same symbol without reconciling — this is a narrower, single-symbol lens, not an override

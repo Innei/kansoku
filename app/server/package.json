@@ -3,17 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
+    "dev": "vite-node --watch src/index.ts",
+    "start": "vite-node src/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.0.1",
-    "drizzle-kit": "^0.31.10",
-    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
+    "vite-node": "^6.0.0",
     "vitest": "^4.1.9"
   },
   "dependencies": {

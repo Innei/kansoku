@@ -63,6 +63,79 @@ describe("detectCandlePatterns", () => {
     );
   });
 
+  it("detects a neutral lower pin bar in a range when it pokes a fresh local low", () => {
+    const rangeBars = [
+      smallGreen(100),
+      smallRed(100.5),
+      smallGreen(100.2),
+      smallRed(100.4),
+      smallGreen(100.1),
+      smallRed(100.3),
+    ];
+    const pin = { open: 100, high: 100.25, low: 98.5, close: 100.2 };
+
+    expect(detect([...rangeBars, pin]).map((p) => p.kind)).toContain("pin_bar_lower");
+  });
+
+  it("rejects a range pin bar whose low is not a local extreme", () => {
+    const deeperEarlierLow = { open: 100.4, high: 100.6, low: 98, close: 100.3 };
+    const bars = [
+      smallGreen(100),
+      smallRed(100.5),
+      deeperEarlierLow,
+      smallRed(100.4),
+      smallGreen(100.1),
+      smallRed(100.3),
+      { open: 100, high: 100.25, low: 98.5, close: 100.2 },
+    ];
+
+    expect(detect(bars).map((p) => p.kind)).not.toContain("pin_bar_lower");
+  });
+
+  it("rejects a range pin bar smaller than the average bar range", () => {
+    const wideQuiet = (close: number): TestBar => ({ open: close - 0.2, high: close + 4, low: close - 0.3, close });
+    const bars = [
+      wideQuiet(100),
+      wideQuiet(100.3),
+      wideQuiet(100),
+      wideQuiet(100.3),
+      wideQuiet(100),
+      wideQuiet(100.3),
+      { open: 100, high: 100.25, low: 98.5, close: 100.2 },
+    ];
+
+    expect(detect(bars).map((p) => p.kind)).not.toContain("pin_bar_lower");
+  });
+
+  it("prefers hammer over neutral pin bar when a downtrend precedes the candle", () => {
+    const bars = [
+      smallRed(105),
+      smallRed(104),
+      smallRed(103),
+      smallRed(102),
+      smallRed(101),
+      { open: 100, high: 100.25, low: 98.5, close: 100.2 },
+    ];
+    const kinds = detect(bars).map((p) => p.kind);
+
+    expect(kinds).toContain("hammer");
+    expect(kinds).not.toContain("pin_bar_lower");
+  });
+
+  it("detects a neutral upper pin bar in a range when it pokes a fresh local high", () => {
+    const rangeBars = [
+      smallGreen(100),
+      smallRed(100.5),
+      smallGreen(100.2),
+      smallRed(100.4),
+      smallGreen(100.1),
+      smallRed(100.3),
+    ];
+    const pin = { open: 100, high: 101.7, low: 99.95, close: 100.2 };
+
+    expect(detect([...rangeBars, pin]).map((p) => p.kind)).toContain("pin_bar_upper");
+  });
+
   it("requires bullish harami to use an opposite-color second candle", () => {
     const sameColorHarami = [
       smallRed(104),

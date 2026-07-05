@@ -282,6 +282,8 @@ export type CandlePatternKind =
   | "hanging_man"
   | "inverted_hammer"
   | "shooting_star"
+  | "pin_bar_lower"
+  | "pin_bar_upper"
   | "dark_cloud_cover"
   | "piercing_line"
   | "bullish_harami"

@@ -4,7 +4,6 @@ import type { IChartApi, ISeriesApi, LogicalRange } from "lightweight-charts";
 import type { IntradayBuilt, IntradayPriceZone, SeriesMarker, TimeframeKey } from "../../../../shared/types";
 import {
   addPriceLine,
-  asTime,
   baseChart,
   markerTooltip,
   observeSize,
@@ -20,6 +19,7 @@ import {
 } from "../lw";
 import type { IndicatorToggleKey } from "./useIndicatorToggles";
 import { FvgPrimitive } from "./fvgPrimitive";
+import { SessionBgPrimitive } from "./sessionPrimitive";
 import { seriesPalette, theme } from "../../theme";
 
 export const EMA_COLORS = [theme.accent, theme.textPrimary, theme.textSecondary, theme.up, theme.down] as const;
@@ -29,8 +29,8 @@ interface Handle {
   macd: IChartApi;
   candle: ISeriesApi<"Candlestick">;
   vol: ISeriesApi<"Histogram">;
-  session: ISeriesApi<"Histogram">;
-  macdSession: ISeriesApi<"Histogram">;
+  session: SessionBgPrimitive;
+  macdSession: SessionBgPrimitive;
   emaSeries: ISeriesApi<"Line">[];
   hist: ISeriesApi<"Histogram">;
   dif: ISeriesApi<"Line">;
@@ -41,16 +41,6 @@ interface Handle {
   planLines: ReturnType<typeof addPriceLine>[];
   fvg: FvgPrimitive;
 }
-
-const sessionBackdrop = (chart: IChartApi, scaleId: string): ISeriesApi<"Histogram"> => {
-  const series = chart.addHistogramSeries({
-    priceScaleId: scaleId,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-  chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0, bottom: 0 } });
-  return series;
-};
 
 const NEAR_LEFT_BARS = 10;
 
@@ -89,7 +79,6 @@ export function useIntradayCharts(
     if (!mainEl || !macdEl) return;
 
     const main = baseChart(mainEl, true, true);
-    const session = sessionBackdrop(main, "session");
     const candle = main.addCandlestickSeries({
       upColor: theme.up,
       downColor: theme.down,
@@ -106,6 +95,8 @@ export function useIntradayCharts(
     main.priceScale("vol").applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
     main.priceScale("right").applyOptions({ scaleMargins: { top: 0.08, bottom: 0.3 } });
 
+    const session = new SessionBgPrimitive();
+    candle.attachPrimitive(session);
     const fvg = new FvgPrimitive();
     candle.attachPrimitive(fvg);
 
@@ -121,8 +112,9 @@ export function useIntradayCharts(
     );
 
     const macd = baseChart(macdEl, true, true);
-    const macdSession = sessionBackdrop(macd, "msession");
     const hist = macd.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
+    const macdSession = new SessionBgPrimitive();
+    hist.attachPrimitive(macdSession);
     const dif = macd.addLineSeries({ color: theme.accent, lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
     const dea = macd.addLineSeries({ color: seriesPalette[4], lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
 
@@ -171,13 +163,8 @@ export function useIntradayCharts(
 
     h.candle.setData(toCandleData(d.candles));
     h.vol.setData(toVolumeData(d.volumes));
-    const sessData = (d.offSession ?? []).map((s) => ({
-      time: asTime(s.time),
-      value: 1,
-      color: s.kind === "overnight" ? "rgba(10,10,10,0.5)" : "rgba(232,232,232,0.04)",
-    }));
-    h.session.setData(sessData);
-    h.macdSession.setData(sessData);
+    h.session.setData(d.offSession ?? []);
+    h.macdSession.setData(d.offSession ?? []);
     h.emaSeries.forEach((s, i) => {
       const emaLine = d.emas[i];
       s.setData(toggles.ema && emaLine ? padLineData(emaLine.data, timeline) : []);

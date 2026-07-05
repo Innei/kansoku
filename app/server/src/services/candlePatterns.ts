@@ -11,6 +11,9 @@ const HARAMI_BODY_RATIO = 0.6;
 const TREND_MIN_BODY_RATIO = 1;
 const TREND_MIN_DIRECTIONAL_STEPS = 2;
 const CLOSE_NEAR_EXTREME_BODY_RATIO = 0.5;
+const PIN_BAR_EXTREME_LOOKBACK = 5;
+const PIN_BAR_MIN_RANGE_RATIO = 1;
+const AVG_RANGE_WINDOW = 14;
 
 export const CANDLE_PATTERN_META: Record<
   CandlePatternKind,
@@ -63,6 +66,18 @@ export const CANDLE_PATTERN_META: Record<
     bias: "bearish",
     strong: false,
     implication: "上涨末端长上影小实体——冲高被抛压砸回，见顶警示；跌破其低点则确认",
+  },
+  pin_bar_lower: {
+    label: "下影针线",
+    bias: "bullish",
+    strong: false,
+    implication: "横盘中扎出局部新低的长下影小实体——区间下沿被买盘拒绝；无趋势背景，强度低于锤子线，需下一根收在实体上方确认",
+  },
+  pin_bar_upper: {
+    label: "上影针线",
+    bias: "bearish",
+    strong: false,
+    implication: "横盘中冲出局部新高的长上影小实体——区间上沿被抛压拒绝；无趋势背景，强度低于射击之星，需下一根收在实体下方确认",
   },
   dark_cloud_cover: {
     label: "乌云盖顶",
@@ -137,6 +152,34 @@ export function detectCandlePatterns(
       count += 1;
     }
     return count ? sum / count : 0;
+  };
+
+  const avgRange = (i: number) => {
+    const from = Math.max(0, i - AVG_RANGE_WINDOW);
+    let sum = 0;
+    let count = 0;
+    for (let j = from; j < i; j++) {
+      if (!validBar(j)) continue;
+      sum += range(j);
+      count += 1;
+    }
+    return count ? sum / count : 0;
+  };
+
+  const isLocalLow = (i: number) => {
+    if (i < PIN_BAR_EXTREME_LOOKBACK) return false;
+    for (let j = i - PIN_BAR_EXTREME_LOOKBACK; j < i; j++) {
+      if (!validBar(j) || lows[j] <= lows[i]) return false;
+    }
+    return true;
+  };
+
+  const isLocalHigh = (i: number) => {
+    if (i < PIN_BAR_EXTREME_LOOKBACK) return false;
+    for (let j = i - PIN_BAR_EXTREME_LOOKBACK; j < i; j++) {
+      if (!validBar(j) || highs[j] >= highs[i]) return false;
+    }
+    return true;
   };
 
   const trendInto = (s: number, direction: "down" | "up") => {
@@ -338,6 +381,10 @@ export function detectCandlePatterns(
     else if (longLower && uptrendInto(i)) push("hanging_man", i, highs[i]);
     else if (longUpper && downtrendInto(i)) push("inverted_hammer", i, lows[i]);
     else if (longUpper && uptrendInto(i)) push("shooting_star", i, highs[i]);
+    else if (r >= PIN_BAR_MIN_RANGE_RATIO * avgRange(i) && avgRange(i) > 0) {
+      if (longLower && isLocalLow(i)) push("pin_bar_lower", i, lows[i]);
+      else if (longUpper && isLocalHigh(i)) push("pin_bar_upper", i, highs[i]);
+    }
   }
 
   return out.sort((a, b) => a.time - b.time);
