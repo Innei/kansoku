@@ -351,13 +351,7 @@ a:hover { color: var(--accent); }
 .check-icon { font-size: 14px; }
 .check-label { font-size: 12px; color: #d1d1d1; font-weight: 500; }
 .check-val { font-size: 11px; color: #949494; margin-top: 2px; }
-.p123-badge {
-  margin-left: 6px; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;
-  color: #ffc107; background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.4);
-}
-.p123-badge.confirmed {
-  color: #26a69a; background: rgba(38, 166, 154, 0.15); border-color: rgba(38, 166, 154, 0.4);
-}
+.p123-badge { margin-left: 6px; }
 
 .zone-item { display: block; padding: 8px 10px; margin-bottom: 6px; background: #121212; border-left: 3px solid var(--zc); }
 a.zone-item { color: inherit; }
@@ -371,6 +365,7 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
 .zone-meta { font-size: 10px; color: #949494; margin-top: 3px; line-height: 1.45; }
 .zone-meta.md { font-size: 11px; }
 .zone-sources { font-size: 10px; color: #777777; margin-top: 4px; line-height: 1.35; }
+.zone-sources-inline { color: var(--text-muted); }
 
 .note-block { font-size: 11px; color: #949494; margin-top: 6px; line-height: 1.4; }
 .note-block.strong { color: #d1d1d1; background: #121212; padding: 7px 8px; border-left: 2px solid #58a6ff; }
@@ -388,7 +383,7 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
   font-size: 10px; color: #777777; margin-top: 8px; line-height: 1.5;
   border-left: 2px solid #272727; padding-left: 8px;
 }
-.hypo-badge { font-size: 10px; background: #444; padding: 1px 6px; color: #ddd; margin-left: 6px; }
+.hypo-badge { margin-left: 6px; }
 .warn-red { color: #ef5350; }
 
 .vp-canvas { position: absolute; top: 0; right: 0; pointer-events: none; z-index: 5; }
@@ -438,18 +433,13 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
 .sidebar-tab-bar button:hover { color: #f6f6f6; }
 .sidebar-tab-bar button[aria-selected="true"] { color: #f6f6f6; border-bottom-color: #58a6ff; }
 
-.news-badge.context-tag { background: #272727; color: #ffb74d; }
-.news-badge.context-source { background: #272727; color: #949494; }
-
 .news-item {
   display: block; padding: 7px 8px; margin-bottom: 4px; background: #121212;
   border-left: 2px solid #363636; text-decoration: none;
 }
-.news-item:hover { border-left-color: #58a6ff; text-decoration: none; }
-.news-item:hover .news-title { color: #58a6ff; }
+.news-item:hover { border-left-color: var(--accent); text-decoration: none; }
+.news-item:hover .news-title { color: var(--accent); }
 .news-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #777777; font-variant-numeric: tabular-nums; }
-.news-badge { font-size: 9px; padding: 0 5px; border-radius: 8px; background: #1f6feb33; color: #58a6ff; }
-.news-badge.community { background: #272727; color: #949494; }
 .news-title { display: block; font-size: 12px; color: #d1d1d1; line-height: 1.45; margin-top: 3px; }
 
 .marker-tooltip {
@@ -464,36 +454,16 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
   font-size: 10px; color: #777777; line-height: 1.4;
 }
 
-.ai-badge {
+.alert-badge {
   display: inline-flex; align-items: center; gap: 6px; max-width: 320px;
-  background: rgba(255, 193, 7, 0.12); border: 1px solid rgba(255, 193, 7, 0.45);
-  color: #ffc107; border-radius: 14px; padding: 3px 10px 3px 8px;
-  font-size: 11px; cursor: pointer; white-space: nowrap;
+  padding: 3px 10px 3px 8px; cursor: pointer; white-space: nowrap; text-transform: none;
+  letter-spacing: normal;
 }
-.ai-badge.alert { background: rgba(239, 83, 80, 0.12); border-color: rgba(239, 83, 80, 0.45); color: #ef5350; }
-.ai-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; animation: pulse 1.6s infinite; }
-.ai-badge-text { overflow: hidden; text-overflow: ellipsis; }
+.alert-badge-text { overflow: hidden; text-overflow: ellipsis; }
 
-.ai-unread {
-  display: inline-block; min-width: 15px; text-align: center; margin-left: 4px;
-  background: rgba(239, 83, 80, 0.18); color: #ef5350; border-radius: 8px;
-  font-size: 10px; padding: 0 4px;
-}
+.unread-badge { margin-left: 4px; }
 
 .ai-reassess { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.ai-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: #1c1c1c; border: 1px solid #363636; color: #d1d1d1;
-  border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer;
-}
-.ai-btn:hover:not([disabled]) { border-color: #58a6ff; }
-.ai-btn[disabled] { color: #949494; cursor: default; }
-.ai-spin {
-  width: 11px; height: 11px; border-radius: 50%;
-  border: 2px solid #363636; border-top-color: #ffc107;
-  animation: ai-rot 0.9s linear infinite;
-}
-@keyframes ai-rot { to { transform: rotate(360deg); } }
 .ai-hint { font-size: 11px; color: #949494; }
 
 .ai-tab, .ai-feed { min-width: 0; max-width: 100%; }
@@ -506,14 +476,7 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
   overflow-wrap: anywhere; word-break: break-word;
 }
 .ai-item.dim .t, .ai-item.dim p { color: #777777; }
-.ai-lv {
-  display: inline-block; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
-  border-radius: 3px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px;
-}
-.ai-lv.info { background: #272727; color: #949494; }
-.ai-lv.warn { background: rgba(255, 193, 7, 0.14); color: #ffc107; }
-.ai-lv.alert { background: rgba(239, 83, 80, 0.16); color: #ef5350; }
-.ai-lv.error { background: #ef5350; color: #121212; }
+.level-badge { margin-right: 6px; vertical-align: 1px; }
 .ai-meta {
   font-size: 11px; color: #777777; margin-top: 4px;
   overflow-wrap: anywhere; word-break: break-word;
@@ -527,10 +490,6 @@ a.zone-item:hover { text-decoration: none; background: #1c1c1c; }
 }
 .ai-fold:hover { color: #949494; }
 .ai-fold.open { color: #949494; }
-
-@media (prefers-reduced-motion: reduce) {
-  .ai-badge .dot, .ai-spin { animation: none; }
-}
 
 .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
 .symbol-card-head { display: flex; align-items: center; gap: 8px; }

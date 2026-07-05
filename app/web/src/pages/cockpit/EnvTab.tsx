@@ -3,6 +3,7 @@ import type { BenchmarkSeries, CockpitPosition, RelativeVolume } from "../../../
 import { fullTime, hhmm, tooltipContentStyle, tooltipLabelStyle } from "../../charts/simple/theme";
 import { fmt, signed, upDown } from "../../format";
 import { seriesPalette, theme } from "../../theme";
+import { Num, SectionTitle } from "../../ui";
 
 const BENCHMARK_COLORS = [seriesPalette[0], seriesPalette[2], seriesPalette[3]];
 
@@ -89,7 +90,7 @@ export function EnvTab({ position, positionError, benchmark, benchmarkError, rel
     <>
       {relvol && (
         <>
-          <div className="section-title">量能对比（对齐前 {relvol.days_used} 日同时段）</div>
+          <SectionTitle>量能对比（对齐前 {relvol.days_used} 日同时段）</SectionTitle>
           <div className="grid2">
             <div className="k">今天 vs 均值</div>
             <div className={`v ${relvolTone(relvol.ratio)}`}>×{relvol.ratio.toFixed(2)}</div>
@@ -102,7 +103,7 @@ export function EnvTab({ position, positionError, benchmark, benchmarkError, rel
       )}
       {position && (
         <>
-          <div className="section-title">持仓</div>
+          <SectionTitle>持仓</SectionTitle>
           <div className="grid2">
             <div className="k">持仓</div>
             <div className="v">{position.shares} sh</div>
@@ -117,19 +118,19 @@ export function EnvTab({ position, positionError, benchmark, benchmarkError, rel
             {position.distances?.stop_pct != null && (
               <>
                 <div className="k">离止损</div>
-                <div className="v">{signed(position.distances.stop_pct)}%</div>
+                <div className="v"><Num value={position.distances.stop_pct} diff suffix="%" /></div>
               </>
             )}
             {position.distances?.target1_pct != null && (
               <>
                 <div className="k">离目标1</div>
-                <div className="v">{signed(position.distances.target1_pct)}%</div>
+                <div className="v"><Num value={position.distances.target1_pct} diff suffix="%" /></div>
               </>
             )}
             {position.distances?.target2_pct != null && (
               <>
                 <div className="k">离目标2</div>
-                <div className="v">{signed(position.distances.target2_pct)}%</div>
+                <div className="v"><Num value={position.distances.target2_pct} diff suffix="%" /></div>
               </>
             )}
           </div>
@@ -137,9 +138,9 @@ export function EnvTab({ position, positionError, benchmark, benchmarkError, rel
       )}
       {positionError && !position && <div className="note-block">持仓数据获取失败：{positionError}</div>}
 
-      <div className="section-title" style={{ marginTop: position ? 16 : 0 }}>
+      <SectionTitle style={{ marginTop: position ? 16 : 0 }}>
         环境对照（相对首点百分比）
-      </div>
+      </SectionTitle>
       {benchmark && benchmark.length > 0 ? (
         <BenchmarkChart series={benchmark} />
       ) : benchmarkError ? (

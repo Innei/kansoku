@@ -1,5 +1,6 @@
 import type { ContextNewsItem, ContextNewsSource, ContextNewsTag, IntradayContext, NewsItem } from "../../../../../shared/types";
 import { formatMarketMonthDayTime } from "../../../../../shared/time";
+import { Badge, SectionTitle } from "../../../ui";
 import { NewsSection } from "../../NewsSection";
 
 const TAG_LABEL: Record<ContextNewsTag, string> = {
@@ -22,8 +23,8 @@ function ContextNewsRow({ item }: { item: ContextNewsItem }) {
     <>
       <span className="news-meta">
         {formatMarketMonthDayTime(item.time)}
-        <span className="news-badge context-tag">{TAG_LABEL[item.tag] ?? item.tag}</span>
-        <span className="news-badge context-source">{SOURCE_LABEL[item.source] ?? item.source}</span>
+        <Badge tone="accent">{TAG_LABEL[item.tag] ?? item.tag}</Badge>
+        <Badge>{SOURCE_LABEL[item.source] ?? item.source}</Badge>
       </span>
       <span className="news-title">{item.title}</span>
       {item.note && <div className="zone-meta md">{item.note}</div>}
@@ -51,7 +52,7 @@ export function NewsTab({ context, news }: NewsTabProps) {
     <>
       {contextNews.length > 0 && (
         <>
-          <div className="section-title">消息面结论</div>
+          <SectionTitle>消息面结论</SectionTitle>
           {contextNews.map((item, i) => (
             <ContextNewsRow key={i} item={item} />
           ))}

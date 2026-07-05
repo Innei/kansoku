@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import type { SepaBuilt } from "../../../../shared/types";
 import { fmt, signed, upDown } from "../../format";
 import { NewsSection } from "../NewsSection";
-import { theme } from "../../theme";
+import { Badge, Num, SectionTitle } from "../../ui";
 
 const CHECK_ICON: Record<string, string> = { pass: "✅", fail: "❌", unknown: "⚠" };
 
@@ -32,7 +32,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
 
       {s.stage.length > 0 && (
         <>
-          <div className="section-title">阶段判断</div>
+          <SectionTitle>阶段判断</SectionTitle>
           <div className="grid2">
             {s.stage.map((row) => (
               <StageRow key={row.k} k={row.k} v={row.v} />
@@ -41,7 +41,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
         </>
       )}
 
-      <div className="section-title">趋势模板 8 条</div>
+      <SectionTitle>趋势模板 8 条</SectionTitle>
       {s.checks.map((c) => (
         <div key={c.label} className={`check-item ${c.status}`}>
           <div className="check-icon">{CHECK_ICON[c.status] ?? "⚠"}</div>
@@ -52,33 +52,33 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
         </div>
       ))}
 
-      <div className="section-title">关键数值</div>
+      <SectionTitle>关键数值</SectionTitle>
       <div className="grid2">
         <div className="k">距 52w 高 ${fmt(kv.high52w)}</div>
         <div className="v down">{signed(kv.h52Pct)}%</div>
         <div className="k">距 52w 低 ${fmt(kv.low52w)}</div>
         <div className="v up">{signed(kv.l52Pct, 0)}%</div>
         <div className="k">距 MA50</div>
-        <div className={`v ${upDown(kv.ma50Pct)}`}>{signed(kv.ma50Pct)}%</div>
+        <div className="v"><Num value={kv.ma50Pct} diff suffix="%" /></div>
         <div className="k">距 MA200</div>
-        <div className={`v ${upDown(kv.ma200Pct)}`}>{signed(kv.ma200Pct)}%</div>
+        <div className="v"><Num value={kv.ma200Pct} diff suffix="%" /></div>
         {kv.rs21d !== null && (
           <>
             <div className="k">RS 21d (vs SPY)</div>
-            <div className={`v ${upDown(kv.rs21d)}`}>{signed(kv.rs21d, 1)} pp</div>
+            <div className="v"><Num value={kv.rs21d} diff digits={1} suffix=" pp" /></div>
           </>
         )}
         {kv.rs126d !== null && (
           <>
             <div className="k">RS 126d (vs SPY)</div>
-            <div className={`v ${upDown(kv.rs126d)}`}>{signed(kv.rs126d, 1)} pp</div>
+            <div className="v"><Num value={kv.rs126d} diff digits={1} suffix=" pp" /></div>
           </>
         )}
       </div>
 
       {zones.length > 0 && (
         <>
-          <div className="section-title">支撑区</div>
+          <SectionTitle>支撑区</SectionTitle>
           {zones.map((z, i) => (
             <div key={i} className="zone-item" style={{ "--zc": z.axis_color } as CSSProperties}>
               <div className="zone-head">
@@ -89,7 +89,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
               </div>
               <div className="zone-meta">
                 {z.note}
-                {z.sources.length > 0 && <span style={{ color: theme.textMuted }}> · {z.sources.join(" / ")}</span>}
+                {z.sources.length > 0 && <span className="zone-sources-inline"> · {z.sources.join(" / ")}</span>}
               </div>
             </div>
           ))}
@@ -98,10 +98,10 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
 
       {ep && (
         <>
-          <div className="section-title">
+          <SectionTitle>
             入场计划
-            {ep.hypothetical && <span className="hypo-badge">假设性</span>}
-          </div>
+            {ep.hypothetical && <Badge className="hypo-badge">假设性</Badge>}
+          </SectionTitle>
           <div className="grid2">
             <div className="k">买入区间 (pivot+5%)</div>
             <div className="v">
@@ -132,7 +132,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
 
       {s.position && (
         <>
-          <div className="section-title">持仓视角</div>
+          <SectionTitle>持仓视角</SectionTitle>
           <div className="grid2">
             <div className="k">持仓</div>
             <div className="v">{s.position.shares} sh</div>

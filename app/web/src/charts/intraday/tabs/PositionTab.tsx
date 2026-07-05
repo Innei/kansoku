@@ -1,5 +1,6 @@
 import type { PositionView } from "../../../../../shared/types";
 import { fmt, signed, upDown } from "../../../format";
+import { SectionTitle } from "../../../ui";
 
 interface PositionTabProps {
   position: PositionView | null;
@@ -10,7 +11,7 @@ export function PositionTab({ position }: PositionTabProps) {
 
   return (
     <>
-      <div className="section-title">持仓视角</div>
+      <SectionTitle>持仓视角</SectionTitle>
       <div className="grid2">
         <div className="k">持仓</div>
         <div className="v">{position.shares} sh</div>

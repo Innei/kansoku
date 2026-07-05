@@ -2,8 +2,9 @@ import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer,
 import type { CapitalBucket, CockpitFlow } from "../../../../shared/types";
 import { fullTime, hhmm, tooltipContentStyle, tooltipItemStyle, tooltipLabelStyle } from "../../charts/simple/theme";
 import { signed, upDown } from "../../format";
-import { useIntervalFetch } from "./useIntervalFetch";
 import { theme } from "../../theme";
+import { SectionTitle } from "../../ui";
+import { useIntervalFetch } from "./useIntervalFetch";
 
 const BUCKET_LABEL: Record<string, string> = { large: "大单", medium: "中单", small: "小单" };
 
@@ -62,11 +63,11 @@ export function FlowTab({ symbol }: { symbol: string }) {
 
   return (
     <>
-      <div className="section-title">资金净流入（原始数值，单位未知）</div>
+      <SectionTitle>资金净流入（原始数值，单位未知）</SectionTitle>
       <FlowMiniChart flow={flow} />
       {flow.distribution ? (
         <>
-          <div className="section-title">大/中/小单净额</div>
+          <SectionTitle>大/中/小单净额</SectionTitle>
           <div className="grid2">
             <BucketRow label={BUCKET_LABEL.large} bucket={flow.distribution.large} />
             <BucketRow label={BUCKET_LABEL.medium} bucket={flow.distribution.medium} />

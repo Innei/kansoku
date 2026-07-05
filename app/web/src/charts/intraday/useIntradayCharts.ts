@@ -169,7 +169,7 @@ export function useIntradayCharts(
     const sessData = (d.offSession ?? []).map((s) => ({
       time: asTime(s.time),
       value: 1,
-      color: s.kind === "overnight" ? "rgba(255,176,0,0.16)" : "rgba(255,176,0,0.09)",
+      color: s.kind === "overnight" ? "rgba(10,10,10,0.5)" : "rgba(232,232,232,0.04)",
     }));
     h.session.setData(sessData);
     h.macdSession.setData(sessData);

@@ -7,6 +7,7 @@ import { DIRECTION_COLOR, DIRECTION_LABEL } from "../directionLabels";
 import { predictionAgeText } from "../predictionAge";
 import { AutoSignalItem, Pattern123Item, PriceZoneCard, TargetContextCard, TechRow } from "./predictionTabParts";
 import { theme } from "../../../theme";
+import { SectionTitle } from "../../../ui";
 
 const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: "⚡", macd_beichi: "🌀" };
 const TF_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
@@ -59,10 +60,10 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
 
       {p && scenarios.length > 0 && (
         <>
-          <div className="section-title">
+          <SectionTitle>
             情景推演
             {Math.abs(totalProb - 100) >= 1 && <span className="warn-red"> ⚠ 概率合计 {fmt(totalProb, 0)}%，未凑够100</span>}
-          </div>
+          </SectionTitle>
           {scenarios.map((sc, i) => (
             <div key={i} className="zone-item" style={{ "--zc": theme.accent } as CSSProperties}>
               <div className="zone-head">
@@ -80,7 +81,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
 
       {p && rbp && (
         <>
-          <div className="section-title">震荡应对</div>
+          <SectionTitle>震荡应对</SectionTitle>
           <div className="zone-meta md" style={{ marginBottom: 6 }}>
             {rbp.condition ?? ""}
           </div>
@@ -95,7 +96,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
 
       {p && ep && (
         <>
-          <div className="section-title">入场计划</div>
+          <SectionTitle>入场计划</SectionTitle>
           <div className="grid2">
             <div className="k">入场</div>
             <div className="v">${fmt(ep.entry)}</div>
@@ -148,7 +149,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
 
       {p && signals.length > 0 && (
         <>
-          <div className="section-title">关键标注</div>
+          <SectionTitle>关键标注</SectionTitle>
           {signals.map((sig, i) => (
             <div key={i} className="check-item signal">
               <div className="check-icon">{SIGNAL_ICON[sig.type ?? sig.kind ?? "other"] ?? "•"}</div>
@@ -174,7 +175,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
         if (!autoItems.length && !patterns123.length) return null;
         return (
           <>
-            <div className="section-title">自动信号 · {TF_LABELS[activeTf]}</div>
+            <SectionTitle>自动信号 · {TF_LABELS[activeTf]}</SectionTitle>
             {patterns123.map((pat, i) => (
               <Pattern123Item key={`p123-${i}`} pat={pat} />
             ))}
@@ -188,7 +189,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
 
       {!p && (
         <>
-          <div className="section-title">技术面摘要</div>
+          <SectionTitle>技术面摘要</SectionTitle>
           <div className="grid2">
             {TF_ORDER.map((k) => {
               const t = s.technicals[k];

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChartDoc } from "../../../../shared/types";
 import { usePollingQuery } from "../../apiHooks";
+import { Button, Spinner } from "../../ui";
 import { useReassessSymbol } from "./useReassessSymbol";
 
 const POLL_MS = 5_000;
@@ -53,10 +54,10 @@ export function GenerateAnalysis({ sym, onReady }: { sym: string; onReady: (id: 
 
   return (
     <div className="ai-reassess">
-      <button className="ai-btn" onClick={start} disabled={pending || running}>
-        {running && <span className="ai-spin" />}
+      <Button onClick={start} disabled={pending || running}>
+        {running && <Spinner />}
         {running ? "AI 分析中，完成后自动打开…" : "AI 生成分析"}
-      </button>
+      </Button>
       {hint && <span className="ai-hint">{hint}</span>}
     </div>
   );
