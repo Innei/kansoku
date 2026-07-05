@@ -3,6 +3,7 @@ import type { CapitalBucket, CockpitFlow } from "../../../../shared/types";
 import { fullTime, hhmm, tooltipContentStyle, tooltipItemStyle, tooltipLabelStyle } from "../../charts/simple/theme";
 import { signed, upDown } from "../../format";
 import { useIntervalFetch } from "./useIntervalFetch";
+import { theme } from "../../theme";
 
 const BUCKET_LABEL: Record<string, string> = { large: "大单", medium: "中单", small: "小单" };
 
@@ -23,16 +24,16 @@ function FlowMiniChart({ flow }: { flow: CockpitFlow }) {
     <div style={{ width: "100%", height: 180 }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
-          <CartesianGrid stroke="#21262d" vertical={false} />
+          <CartesianGrid stroke={theme.border} vertical={false} />
           <XAxis
             dataKey="t"
             tickFormatter={hhmm}
-            tick={{ fill: "#8b949e", fontSize: 10 }}
+            tick={{ fill: theme.textSecondary, fontSize: 10 }}
             tickLine={false}
-            axisLine={{ stroke: "#30363d" }}
+            axisLine={{ stroke: theme.borderStrong }}
             minTickGap={40}
           />
-          <YAxis tick={{ fill: "#8b949e", fontSize: 10 }} tickLine={false} axisLine={false} width={50} />
+          <YAxis tick={{ fill: theme.textSecondary, fontSize: 10 }} tickLine={false} axisLine={false} width={50} />
           <Tooltip
             cursor={{ fill: "rgba(255,255,255,0.04)" }}
             contentStyle={tooltipContentStyle}
@@ -41,10 +42,10 @@ function FlowMiniChart({ flow }: { flow: CockpitFlow }) {
             labelFormatter={(t) => fullTime(Number(t))}
             formatter={(value) => [Number(value).toLocaleString(), "净流入"]}
           />
-          <ReferenceLine y={0} stroke="#30363d" />
+          <ReferenceLine y={0} stroke={theme.borderStrong} />
           <Bar dataKey="v" isAnimationActive={false}>
             {data.map((d) => (
-              <Cell key={d.t} fill={d.v >= 0 ? "#26a69a" : "#ef5350"} />
+              <Cell key={d.t} fill={d.v >= 0 ? theme.up : theme.down} />
             ))}
           </Bar>
         </BarChart>

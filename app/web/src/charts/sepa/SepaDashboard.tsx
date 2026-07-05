@@ -4,6 +4,7 @@ import { fmt } from "../../format";
 import { LayerPanel } from "../LayerPanel";
 import { SepaSidebar } from "./SepaSidebar";
 import { useSepaCharts } from "./useSepaCharts";
+import { seriesPalette } from "../../theme";
 
 export function SepaDashboard({ built }: { built: SepaBuilt }) {
   const mainRef = useRef<HTMLDivElement>(null);
@@ -20,15 +21,15 @@ export function SepaDashboard({ built }: { built: SepaBuilt }) {
           <div className="chart-label">主图 · 日 K + 均线</div>
           <div className="chart-legend">
             <span>
-              <span className="swatch" style={{ background: "#ffb74d" }} />
+              <span className="swatch" style={{ background: seriesPalette[0] }} />
               MA50 ${fmt(kv.ma50)}
             </span>
             <span>
-              <span className="swatch" style={{ background: "#ba68c8" }} />
+              <span className="swatch" style={{ background: seriesPalette[3] }} />
               MA150 ${fmt(kv.ma150)}
             </span>
             <span>
-              <span className="swatch" style={{ background: "#4fc3f7" }} />
+              <span className="swatch" style={{ background: seriesPalette[1] }} />
               MA200 ${fmt(kv.ma200)}
             </span>
           </div>
@@ -40,15 +41,15 @@ export function SepaDashboard({ built }: { built: SepaBuilt }) {
           <div className="chart-label">RS vs SPY (跑赢百分点)</div>
           <div className="chart-legend">
             <span>
-              <span className="swatch" style={{ background: "#ffeb3b" }} />
+              <span className="swatch" style={{ background: seriesPalette[2] }} />
               21d
             </span>
             <span>
-              <span className="swatch" style={{ background: "#ff7043" }} />
+              <span className="swatch" style={{ background: seriesPalette[4] }} />
               63d
             </span>
             <span>
-              <span className="swatch" style={{ background: "#ab47bc" }} />
+              <span className="swatch" style={{ background: seriesPalette[3] }} />
               126d
             </span>
           </div>

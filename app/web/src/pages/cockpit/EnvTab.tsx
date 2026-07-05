@@ -2,8 +2,9 @@ import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContai
 import type { BenchmarkSeries, CockpitPosition, RelativeVolume } from "../../../../shared/types";
 import { fullTime, hhmm, tooltipContentStyle, tooltipLabelStyle } from "../../charts/simple/theme";
 import { fmt, signed, upDown } from "../../format";
+import { seriesPalette, theme } from "../../theme";
 
-const BENCHMARK_COLORS = ["#58a6ff", "#ffc107", "#ba68c8"];
+const BENCHMARK_COLORS = [seriesPalette[0], seriesPalette[2], seriesPalette[3]];
 
 function mergeBenchmark(series: BenchmarkSeries[]): Record<string, number>[] {
   const byTime = new Map<number, Record<string, number>>();
@@ -25,33 +26,33 @@ function BenchmarkChart({ series }: { series: BenchmarkSeries[] }) {
     <div style={{ width: "100%", height: 180 }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
-          <CartesianGrid stroke="#21262d" vertical={false} />
+          <CartesianGrid stroke={theme.border} vertical={false} />
           <XAxis
             dataKey="t"
             type="number"
             scale="time"
             domain={["dataMin", "dataMax"]}
             tickFormatter={hhmm}
-            tick={{ fill: "#8b949e", fontSize: 10 }}
+            tick={{ fill: theme.textSecondary, fontSize: 10 }}
             tickLine={false}
-            axisLine={{ stroke: "#30363d" }}
+            axisLine={{ stroke: theme.borderStrong }}
             minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#8b949e", fontSize: 10 }}
+            tick={{ fill: theme.textSecondary, fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             width={46}
             tickFormatter={(v: number) => `${v}%`}
           />
-          <Legend verticalAlign="top" height={20} wrapperStyle={{ fontSize: 11, color: "#8b949e" }} />
+          <Legend verticalAlign="top" height={20} wrapperStyle={{ fontSize: 11, color: theme.textSecondary }} />
           <Tooltip
             contentStyle={tooltipContentStyle}
             labelStyle={tooltipLabelStyle}
             labelFormatter={(t) => fullTime(Number(t))}
             formatter={(value) => `${Number(value).toFixed(2)}%`}
           />
-          <ReferenceLine y={0} stroke="#30363d" />
+          <ReferenceLine y={0} stroke={theme.borderStrong} />
           {series.map((s, i) => (
             <Line
               key={s.symbol}

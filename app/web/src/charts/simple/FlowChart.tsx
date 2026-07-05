@@ -13,6 +13,7 @@ import {
   tooltipItemStyle,
   tooltipLabelStyle,
 } from "./theme";
+import { theme } from "../../theme";
 
 export function FlowChart({ rows }: { rows: FlowRow[] }) {
   const data = rows
@@ -72,7 +73,7 @@ export function FlowChart({ rows }: { rows: FlowRow[] }) {
           activeDot={{ r: 3 }}
           isAnimationActive={false}
         />
-        <Brush dataKey="t" height={18} travellerWidth={8} stroke="#444" fill="#161b22" tickFormatter={hhmm} />
+        <Brush dataKey="t" height={18} travellerWidth={8} stroke={theme.borderStrong} fill={theme.bgElement} tickFormatter={hhmm} />
       </AreaChart>
     </ResponsiveContainer>
   );

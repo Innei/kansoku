@@ -3,6 +3,7 @@ import type { OutcomeStatus, SymbolAnalysisRow } from "../../../../shared/types"
 import { formatMarketDateTime } from "../../../../shared/time";
 import { fmt, signed } from "../../format";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../../charts/intraday/directionLabels";
+import { theme } from "../../theme";
 
 const OUTCOME_LABEL: Record<OutcomeStatus, string> = {
   hit_target: "✅ 到目标",
@@ -23,7 +24,7 @@ export function HistoryTab({ rows, currentId }: HistoryTabProps) {
         <a
           key={row.id}
           className="zone-item"
-          style={{ "--zc": DIRECTION_COLOR[row.direction ?? ""] ?? "#8b949e" } as CSSProperties}
+          style={{ "--zc": DIRECTION_COLOR[row.direction ?? ""] ?? theme.textSecondary } as CSSProperties}
           href={`#/charts/${encodeURIComponent(row.id)}`}
         >
           <div className="zone-head">
