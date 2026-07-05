@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { TriangleAlert } from "lucide-react";
 import type { IntradayBuilt, TimeframeKey } from "../../../../../shared/types";
 import { formatMarketDateTime } from "../../../../../shared/time";
 import { fmt, signed } from "../../../format";
@@ -37,7 +38,9 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
           <div className="verdict-label">
             短线方向判断
             {predictionStale ? (
-              <span className="stale-badge">⚠ 盘中已过期</span>
+              <span className="stale-badge">
+                <TriangleAlert className="icon" size={13} /> 盘中已过期
+              </span>
             ) : (
               predictionUpdatedAt && <span className="prediction-age">{predictionAgeText(predictionUpdatedAt)}</span>
             )}
@@ -62,7 +65,12 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
         <>
           <SectionTitle>
             情景推演
-            {Math.abs(totalProb - 100) >= 1 && <span className="warn-red"> ⚠ 概率合计 {fmt(totalProb, 0)}%，未凑够100</span>}
+            {Math.abs(totalProb - 100) >= 1 && (
+              <span className="warn-red">
+                {" "}
+                <TriangleAlert className="icon" size={13} /> 概率合计 {fmt(totalProb, 0)}%，未凑够100
+              </span>
+            )}
           </SectionTitle>
           {scenarios.map((sc, i) => (
             <div key={i} className="zone-item" style={{ "--zc": theme.accent } as CSSProperties}>
@@ -108,7 +116,13 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
             <div className="v up">${fmt(ep.target2)}</div>
             <div className="k">R/R</div>
             <div className={`v ${ep.rr_great ? "up" : ep.rr_ok ? "" : "down"}`}>
-              {fmt(ep.rr)} : 1{!ep.rr_ok && <span className="warn-red"> ⚠ &lt;2:1</span>}
+              {fmt(ep.rr)} : 1
+              {!ep.rr_ok && (
+                <span className="warn-red">
+                  {" "}
+                  <TriangleAlert className="icon" size={13} /> &lt;2:1
+                </span>
+              )}
             </div>
           </div>
           {(ep.rationale || ep.stop_note) && (

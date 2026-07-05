@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { navigate } from "../../router";
 import { listRecentCharts } from "../../recentCharts";
 import { Chip, Input } from "../../ui";
@@ -48,7 +49,7 @@ export function QuickBar({ shortcuts }: { shortcuts: string[] }) {
         </span>
       )}
       <a className="quickbar-all-link" href="#/charts">
-        全部图表 →
+        全部图表 <ArrowRight className="icon" size={13} />
       </a>
     </div>
   );

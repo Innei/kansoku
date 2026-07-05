@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TriangleAlert } from "lucide-react";
 import type { IntradayBuilt, TimeframeKey } from "../../../../shared/types";
 import { formatMarketDateTime } from "../../../../shared/time";
 import { fmt } from "../../format";
@@ -77,7 +78,7 @@ export function IntradaySidebar({
       <SidebarTabs active={active} onChange={setActive} tabs={tabs} />
 
       <div className="disclaimer">
-        ⚠️ 仅供学习参考，不构成投资建议。数据来源：长桥证券。
+        <TriangleAlert className="icon" size={12} /> 仅供学习参考，不构成投资建议。数据来源：长桥证券。
         <br />
         方向判断、情景推演、入场计划、Pin Bar/MACD 背离标注均为 AI 分析结论；MACD 数值本身由脚本计算。
       </div>

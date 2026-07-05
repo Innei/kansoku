@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { TriangleAlert } from "lucide-react";
 import type { IntradayContext } from "../../../../shared/types";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "./directionLabels";
 import { predictionAgeText } from "./predictionAge";
@@ -18,7 +19,9 @@ export function ConclusionCard({ context, predictionStale }: ConclusionCardProps
       <div className="verdict-label">
         综合结论
         {predictionStale ? (
-          <span className="stale-badge">⚠ 盘中已过期</span>
+          <span className="stale-badge">
+            <TriangleAlert className="icon" size={13} /> 盘中已过期
+          </span>
         ) : (
           <span className="prediction-age">{predictionAgeText(context.generated_at)}</span>
         )}

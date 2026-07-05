@@ -1,10 +1,15 @@
 import type { CSSProperties } from "react";
+import { Check, TriangleAlert, X } from "lucide-react";
 import type { SepaBuilt } from "../../../../shared/types";
 import { fmt, signed, upDown } from "../../format";
 import { NewsSection } from "../NewsSection";
 import { Badge, Num, SectionTitle } from "../../ui";
 
-const CHECK_ICON: Record<string, string> = { pass: "✅", fail: "❌", unknown: "⚠" };
+const CHECK_ICON: Record<string, { icon: typeof Check; tone: string }> = {
+  pass: { icon: Check, tone: "up" },
+  fail: { icon: X, tone: "down" },
+  unknown: { icon: TriangleAlert, tone: "" },
+};
 
 export function SepaSidebar({ built }: { built: SepaBuilt }) {
   const s = built.sidebar;
@@ -42,15 +47,21 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
       )}
 
       <SectionTitle>趋势模板 8 条</SectionTitle>
-      {s.checks.map((c) => (
-        <div key={c.label} className={`check-item ${c.status}`}>
-          <div className="check-icon">{CHECK_ICON[c.status] ?? "⚠"}</div>
-          <div>
-            <div className="check-label">{c.label}</div>
-            <div className="check-val">{c.val}</div>
+      {s.checks.map((c) => {
+        const status = CHECK_ICON[c.status] ?? CHECK_ICON.unknown;
+        const StatusIcon = status.icon;
+        return (
+          <div key={c.label} className={`check-item ${c.status}`}>
+            <div className={`check-icon ${status.tone}`}>
+              <StatusIcon className="icon" size={14} />
+            </div>
+            <div>
+              <div className="check-label">{c.label}</div>
+              <div className="check-val">{c.val}</div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <SectionTitle>关键数值</SectionTitle>
       <div className="grid2">
@@ -117,7 +128,13 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
             <div className="v up">${fmt(ep.target2)}</div>
             <div className="k">R/R 比例 (基于 T2)</div>
             <div className={`v ${ep.rr_great ? "up" : ep.rr_ok ? "" : "down"}`}>
-              {fmt(ep.rr)} : 1{!ep.rr_ok && <span className="warn-red"> ⚠ &lt;2:1 SEPA 不入场</span>}
+              {fmt(ep.rr)} : 1
+              {!ep.rr_ok && (
+                <span className="warn-red">
+                  {" "}
+                  <TriangleAlert className="icon" size={13} /> &lt;2:1 SEPA 不入场
+                </span>
+              )}
             </div>
           </div>
           {ep.note && <div className="note-block">{ep.note}</div>}
@@ -151,7 +168,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
       <NewsSection news={s.news ?? []} />
 
       <div className="disclaimer">
-        ⚠️ 仅供学习参考，不构成投资建议。数据来源：长桥证券。
+        <TriangleAlert className="icon" size={12} /> 仅供学习参考，不构成投资建议。数据来源：长桥证券。
         <br />
         SEPA 框架基于 Mark Minervini 方法。Verdict 自动检测 trend template + extended 警戒；形态（VCP / 杯柄 / 平台 / 旗形）需人工目视确认。
       </div>

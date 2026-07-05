@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { ArrowRight } from "lucide-react";
 import { AUTO_SIGNAL_META, type DivergencePair, type IntradayPriceZone, type IntradayTargetContext, type Pattern123 } from "../../../../../shared/types";
 import { formatMarketMonthDayTime } from "../../../../../shared/time";
 import { fmt } from "../../../format";
@@ -30,7 +31,8 @@ export function Pattern123Item({ pat }: { pat: Pattern123 }) {
           </Badge>
         </div>
         <div className="check-val">
-          ① {barTime(pat.p1.time)} ${fmt(pat.p1.price)} → ② ${fmt(pat.p2.price)} → ③ {barTime(pat.p3.time)} $
+          ① {barTime(pat.p1.time)} ${fmt(pat.p1.price)} <ArrowRight className="icon" size={12} /> ② $
+          {fmt(pat.p2.price)} <ArrowRight className="icon" size={12} /> ③ {barTime(pat.p3.time)} $
           {fmt(pat.p3.price)}
         </div>
         <div className="check-val">{pat.implication}</div>
@@ -53,7 +55,8 @@ export function AutoSignalItem({ kindKey, pair }: { kindKey: string; pair: Diver
       <div>
         <div className="check-label">{meta.title}</div>
         <div className="check-val">
-          {barTime(pair.a.time)} ${fmt(pair.a.price)} → {barTime(pair.b.time)} ${fmt(pair.b.price)}
+          {barTime(pair.a.time)} ${fmt(pair.a.price)} <ArrowRight className="icon" size={12} /> {barTime(pair.b.time)}{" "}
+          ${fmt(pair.b.price)}
         </div>
         <div className="check-val">{meta.impact}</div>
       </div>

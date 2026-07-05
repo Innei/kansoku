@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import type { OverviewRecap, PredictionStats, StatsBucket } from "../../../../shared/types";
 import { formatMarketClock } from "../../../../shared/time";
 import { signed } from "../../format";
@@ -95,7 +96,7 @@ export function RecapBoard({ defaultExpanded }: { defaultExpanded: boolean }) {
   return (
     <div className="recap-board">
       <SectionTitle className="recap-toggle" onClick={() => setExpanded(!expanded)}>
-        今日复盘 {expanded ? "▾" : "▸"}
+        今日复盘 {expanded ? <ChevronDown className="icon" size={13} /> : <ChevronRight className="icon" size={13} />}
       </SectionTitle>
       {expanded && (
         <>

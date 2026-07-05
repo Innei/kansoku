@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import type { BenchmarkSeries, ChartDoc, CockpitPosition, RelativeVolume, SymbolAnalysisRow } from "../../../shared/types";
 import { formatMarketClock } from "../../../shared/time";
 import { useQuery } from "../apiHooks";
@@ -87,7 +88,9 @@ export function SymbolCockpit({ sym }: { sym: string }) {
           </>
         )}
         <p>
-          <a href="#/">← 返回列表</a>
+          <a href="#/">
+            <ArrowLeft className="icon" size={13} /> 返回列表
+          </a>
         </p>
       </div>
     );
@@ -98,7 +101,9 @@ export function SymbolCockpit({ sym }: { sym: string }) {
       <div className="page">
         <ErrorBox>{error}</ErrorBox>
         <p>
-          <a href="#/">← 返回列表</a>
+          <a href="#/">
+            <ArrowLeft className="icon" size={13} /> 返回列表
+          </a>
         </p>
       </div>
     );
@@ -166,7 +171,9 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   return (
     <div className="fullpage">
       <div className="detail-topbar">
-        <a href="#/">← 列表</a>
+        <a href="#/">
+          <ArrowLeft className="icon" size={13} /> 列表
+        </a>
         <span className="title">{doc.title}</span>
         <span className="meta">{sym}</span>
         {degraded && <span className="degraded-dot" title="数据延迟：行情拉取失败，正在重试" />}
@@ -185,7 +192,11 @@ export function SymbolCockpit({ sym }: { sym: string }) {
             </button>
           )}
           <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />
-          {latestId && <a href={`#/charts/${encodeURIComponent(latestId)}`}>存档 ↗</a>}
+          {latestId && (
+            <a href={`#/charts/${encodeURIComponent(latestId)}`}>
+              存档 <ArrowUpRight className="icon" size={13} />
+            </a>
+          )}
           {doc.symbol && <TopbarQuote symbol={doc.symbol} />}
         </span>
       </div>

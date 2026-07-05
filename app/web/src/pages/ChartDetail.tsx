@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { SimpleChartView } from "../charts/simple/SimpleChartView";
 import { IntradayDashboard, IntradayTimeframeSwitch } from "../charts/intraday/IntradayDashboard";
 import { resolveIntradayTf, useIntradayDoc } from "../charts/intraday/useIntradayDoc";
@@ -19,7 +20,9 @@ export function ChartDetail({ id }: { id: string }) {
       <div className="page">
         <ErrorBox>{error}</ErrorBox>
         <p>
-          <a href="#/charts">← 返回列表</a>
+          <a href="#/charts">
+            <ArrowLeft className="icon" size={13} /> 返回列表
+          </a>
         </p>
       </div>
     );
@@ -36,7 +39,9 @@ export function ChartDetail({ id }: { id: string }) {
   return (
     <div className="fullpage">
       <div className="detail-topbar">
-        <a href="#/charts">← 列表</a>
+        <a href="#/charts">
+          <ArrowLeft className="icon" size={13} /> 列表
+        </a>
         <span className="title">{doc.title}</span>
         <span className="meta">
           {doc.id} · 更新 {doc.updated_at.slice(0, 16).replace("T", " ")}
@@ -45,7 +50,9 @@ export function ChartDetail({ id }: { id: string }) {
         <span className="topbar-actions">
           {activeIntradayTf && <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />}
           {doc.type === "intraday" && doc.symbol && (
-            <a href={`#/symbol/${encodeURIComponent(doc.symbol)}`}>驾驶舱 ↗</a>
+            <a href={`#/symbol/${encodeURIComponent(doc.symbol)}`}>
+              驾驶舱 <ArrowUpRight className="icon" size={13} />
+            </a>
           )}
           {doc.symbol && <TopbarQuote symbol={doc.symbol} />}
         </span>
