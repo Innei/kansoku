@@ -6,6 +6,7 @@ import { TF_LABELS } from "../IntradayDashboard";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../directionLabels";
 import { predictionAgeText } from "../predictionAge";
 import { AutoSignalItem, Pattern123Item, PriceZoneCard, TargetContextCard, TechRow } from "./predictionTabParts";
+import { theme } from "../../../theme";
 
 const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: "⚡", macd_beichi: "🌀" };
 const TF_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
@@ -31,7 +32,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
   return (
     <>
       {p ? (
-        <div className="verdict" style={{ "--vc": DIRECTION_COLOR[p.direction] ?? "#8b949e" } as CSSProperties}>
+        <div className="verdict" style={{ "--vc": DIRECTION_COLOR[p.direction] ?? theme.textSecondary } as CSSProperties}>
           <div className="verdict-label">
             短线方向判断
             {predictionStale ? (
@@ -49,7 +50,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
           )}
         </div>
       ) : (
-        <div className="verdict" style={{ "--vc": "#8b949e" } as CSSProperties}>
+        <div className="verdict" style={{ "--vc": theme.textSecondary } as CSSProperties}>
           <div className="verdict-label">模式</div>
           <div className="verdict-text">👀 预览模式</div>
           <div className="verdict-reason">仅技术面，暂无预测结论——供分析前读数用</div>
@@ -63,7 +64,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
             {Math.abs(totalProb - 100) >= 1 && <span className="warn-red"> ⚠ 概率合计 {fmt(totalProb, 0)}%，未凑够100</span>}
           </div>
           {scenarios.map((sc, i) => (
-            <div key={i} className="zone-item" style={{ "--zc": "#58a6ff" } as CSSProperties}>
+            <div key={i} className="zone-item" style={{ "--zc": theme.accent } as CSSProperties}>
               <div className="zone-head">
                 <span className="zone-label plain">{sc.label}</span>
                 <span className="zone-range accent">{fmt(Number(sc.probability || 0), 0)}%</span>

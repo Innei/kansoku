@@ -19,8 +19,9 @@ import {
   type MarkerTooltipHandle,
 } from "../lw";
 import type { IndicatorToggleKey } from "./useIndicatorToggles";
+import { seriesPalette, theme } from "../../theme";
 
-export const EMA_COLORS = ["#ffb74d", "#ba68c8", "#4fc3f7", "#ffee58"];
+export const EMA_COLORS = seriesPalette;
 
 interface Handle {
   main: IChartApi;
@@ -88,11 +89,11 @@ export function useIntradayCharts(
     const main = baseChart(mainEl, true, true);
     const session = sessionBackdrop(main, "session");
     const candle = main.addCandlestickSeries({
-      upColor: "#26a69a",
-      downColor: "#ef5350",
+      upColor: theme.up,
+      downColor: theme.down,
       borderVisible: false,
-      wickUpColor: "#26a69a",
-      wickDownColor: "#ef5350",
+      wickUpColor: theme.up,
+      wickDownColor: theme.down,
     });
     const vol = main.addHistogramSeries({
       priceFormat: { type: "volume" },
@@ -117,8 +118,8 @@ export function useIntradayCharts(
     const macd = baseChart(macdEl, true, true);
     const macdSession = sessionBackdrop(macd, "msession");
     const hist = macd.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
-    const dif = macd.addLineSeries({ color: "#42a5f5", lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
-    const dea = macd.addLineSeries({ color: "#ff9800", lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
+    const dif = macd.addLineSeries({ color: theme.accent, lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
+    const dea = macd.addLineSeries({ color: seriesPalette[4], lineWidth: 1, priceLineVisible: false, lastValueVisible: true });
 
     syncTimeScales([main, macd]);
     const observers = [observeSize(mainEl, main), observeSize(macdEl, macd)];
@@ -168,7 +169,7 @@ export function useIntradayCharts(
     const sessData = (d.offSession ?? []).map((s) => ({
       time: asTime(s.time),
       value: 1,
-      color: s.kind === "overnight" ? "rgba(88,166,255,0.16)" : "rgba(88,166,255,0.09)",
+      color: s.kind === "overnight" ? "rgba(255,176,0,0.16)" : "rgba(255,176,0,0.09)",
     }));
     h.session.setData(sessData);
     h.macdSession.setData(sessData);
@@ -208,14 +209,14 @@ export function useIntradayCharts(
     h.planLines = [];
     const ep = built.entryPlan;
     if (ep && toggles.levels) {
-      h.planLines.push(addPriceLine(h.candle, { price: ep.entry, color: "#58a6ff", lineWidth: 2, lineStyle: 0, title: `入场 $${ep.entry.toFixed(2)}` }));
-      h.planLines.push(addPriceLine(h.candle, { price: ep.stop, color: "#ef5350", lineWidth: 2, lineStyle: 2, title: `止损 $${ep.stop.toFixed(2)}` }));
-      h.planLines.push(addPriceLine(h.candle, { price: ep.target1, color: "#26a69a", lineWidth: 1, lineStyle: 2, title: `T1 $${ep.target1.toFixed(2)}` }));
-      h.planLines.push(addPriceLine(h.candle, { price: ep.target2, color: "#00897b", lineWidth: 1, lineStyle: 2, title: `T2 $${ep.target2.toFixed(2)}` }));
+      h.planLines.push(addPriceLine(h.candle, { price: ep.entry, color: theme.accent, lineWidth: 2, lineStyle: 0, title: `入场 $${ep.entry.toFixed(2)}` }));
+      h.planLines.push(addPriceLine(h.candle, { price: ep.stop, color: theme.down, lineWidth: 2, lineStyle: 2, title: `止损 $${ep.stop.toFixed(2)}` }));
+      h.planLines.push(addPriceLine(h.candle, { price: ep.target1, color: theme.up, lineWidth: 1, lineStyle: 2, title: `T1 $${ep.target1.toFixed(2)}` }));
+      h.planLines.push(addPriceLine(h.candle, { price: ep.target2, color: seriesPalette[1], lineWidth: 1, lineStyle: 2, title: `T2 $${ep.target2.toFixed(2)}` }));
       (ep.price_zones ?? [])
         .filter((z) => z.kind === "resistance")
         .forEach((z) => {
-          const color = z.color ?? "#8b949e";
+          const color = z.color ?? theme.textSecondary;
           if (Math.abs(z.high - z.low) < 0.0001) {
             h.planLines.push(addPriceLine(h.candle, { price: z.low, color, lineWidth: 1, lineStyle: 2, title: zoneTitle(z) }));
           } else {

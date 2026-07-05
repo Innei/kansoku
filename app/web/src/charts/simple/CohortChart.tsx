@@ -10,6 +10,7 @@ import {
   tooltipItemStyle,
   tooltipLabelStyle,
 } from "./theme";
+import { theme } from "../../theme";
 
 export function CohortChart({ rows }: { rows: CohortPoint[] }) {
   if (!rows.length) return <div className="error-box">没有可渲染的数据行</div>;
@@ -32,7 +33,7 @@ export function CohortChart({ rows }: { rows: CohortPoint[] }) {
           dataKey="label"
           width={92}
           stroke={AXIS_LINE_COLOR}
-          tick={{ fill: "#ddd", fontSize: 12 }}
+          tick={{ fill: theme.textPrimary, fontSize: 12 }}
           tickLine={false}
         />
         <Tooltip
@@ -50,7 +51,7 @@ export function CohortChart({ rows }: { rows: CohortPoint[] }) {
           <LabelList
             dataKey="value"
             position="right"
-            fill="#ddd"
+            fill={theme.textPrimary}
             fontSize={11}
             formatter={(v: unknown) => Number(v).toLocaleString()}
           />

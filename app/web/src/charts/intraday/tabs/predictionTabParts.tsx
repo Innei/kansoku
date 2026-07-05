@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { AUTO_SIGNAL_META, type DivergencePair, type IntradayPriceZone, type IntradayTargetContext, type Pattern123 } from "../../../../../shared/types";
 import { formatMarketMonthDayTime } from "../../../../../shared/time";
 import { fmt } from "../../../format";
+import { theme } from "../../../theme";
 
 const ZONE_KIND_LABEL: Record<string, string> = {
   entry: "入场区",
@@ -58,7 +59,7 @@ export function AutoSignalItem({ kindKey, pair }: { kindKey: string; pair: Diver
 }
 
 export function PriceZoneCard({ zone, compact = false }: { zone: IntradayPriceZone; compact?: boolean }) {
-  const color = zone.color ?? "#8b949e";
+  const color = zone.color ?? theme.textSecondary;
   const isBand = Math.abs(zone.high - zone.low) >= 0.0001;
   return (
     <div className={`zone-item ${compact ? "compact" : ""}`} style={{ "--zc": color } as CSSProperties}>

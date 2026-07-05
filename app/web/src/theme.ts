@@ -1,0 +1,16 @@
+export const theme = {
+  bgCanvas: "#0a0a0a",
+  bgSurface: "#141414",
+  bgElement: "#1e1e1e",
+  border: "#262626",
+  borderStrong: "#3a3a3a",
+  textPrimary: "#e8e8e8",
+  textSecondary: "#9a9a9a",
+  textMuted: "#5c5c5c",
+  accent: "#ffb000",
+  up: "#26a69a",
+  down: "#ef5350",
+  fontMono: "ui-monospace, 'SF Mono', Menlo, monospace",
+} as const;
+
+export const seriesPalette = ["#ffb000", "#4fc3f7", "#ffee58", "#66bb6a", "#ff8a65"] as const;

@@ -16,6 +16,7 @@ import {
   toMarkers,
   toVolumeData,
 } from "../lw";
+import { seriesPalette, theme } from "../../theme";
 
 const VP_WIDTH = 90;
 
@@ -37,27 +38,27 @@ export function useSepaCharts(
 
     const main = baseChart(mainEl, false);
     const candle = main.addCandlestickSeries({
-      upColor: "#26a69a",
-      downColor: "#ef5350",
+      upColor: theme.up,
+      downColor: theme.down,
       borderVisible: false,
-      wickUpColor: "#26a69a",
-      wickDownColor: "#ef5350",
+      wickUpColor: theme.up,
+      wickDownColor: theme.down,
     });
     candle.setData(toCandleData(chart.candles));
     candle.setMarkers(toMarkers(chart.markers));
 
     const lineOpts = { lineWidth: 2, priceLineVisible: false, lastValueVisible: false } as const;
-    const ma50 = main.addLineSeries({ color: "#ffb74d", ...lineOpts });
-    const ma150 = main.addLineSeries({ color: "#ba68c8", ...lineOpts });
-    const ma200 = main.addLineSeries({ color: "#4fc3f7", ...lineOpts });
+    const ma50 = main.addLineSeries({ color: seriesPalette[0], ...lineOpts });
+    const ma150 = main.addLineSeries({ color: seriesPalette[3], ...lineOpts });
+    const ma200 = main.addLineSeries({ color: seriesPalette[1], ...lineOpts });
     ma50.setData(toLineData(chart.ma50));
     ma150.setData(toLineData(chart.ma150));
     ma200.setData(toLineData(chart.ma200));
 
-    const lineH52w = makeTogglableLine(candle, { price: chart.high52w, color: "#9c27b0", lineWidth: 1, lineStyle: 2, title: "52w 高" });
-    const lineL52w = makeTogglableLine(candle, { price: chart.low52w, color: "#4caf50", lineWidth: 1, lineStyle: 2, title: "52w 低" });
+    const lineH52w = makeTogglableLine(candle, { price: chart.high52w, color: seriesPalette[4], lineWidth: 1, lineStyle: 2, title: "52w 高" });
+    const lineL52w = makeTogglableLine(candle, { price: chart.low52w, color: theme.up, lineWidth: 1, lineStyle: 2, title: "52w 低" });
     const lineExt = chart.extendedLine
-      ? makeTogglableLine(candle, { price: chart.extendedLine, color: "#ff5252", lineWidth: 1, lineStyle: 3, title: "MA50 +25% extended" })
+      ? makeTogglableLine(candle, { price: chart.extendedLine, color: theme.down, lineWidth: 1, lineStyle: 3, title: "MA50 +25% extended" })
       : null;
 
     const flat = (value: number) => chart.candles.map((c) => ({ time: asTime(c.time), value }));
@@ -96,11 +97,11 @@ export function useSepaCharts(
       red.setData(flat(ep.stop));
       epZones = { green, red };
       epLines = [
-        makeTogglableLine(candle, { price: ep.pivot, color: "#26a69a", lineWidth: 2, lineStyle: 0, title: `买入 pivot $${ep.pivot.toFixed(2)}` }),
-        makeTogglableLine(candle, { price: ep.buy_zone_high, color: "#26a69a", lineWidth: 1, lineStyle: 2, title: "买入区上限 +5%" }),
-        makeTogglableLine(candle, { price: ep.stop, color: "#ef5350", lineWidth: 2, lineStyle: 2, title: `止损 $${ep.stop.toFixed(2)}` }),
-        makeTogglableLine(candle, { price: ep.target1, color: "#42a5f5", lineWidth: 1, lineStyle: 2, title: `T1 +${ep.target1_pct.toFixed(0)}% $${ep.target1.toFixed(2)}` }),
-        makeTogglableLine(candle, { price: ep.target2, color: "#1976d2", lineWidth: 1, lineStyle: 2, title: `T2 +${ep.target2_pct.toFixed(0)}% $${ep.target2.toFixed(2)}` }),
+        makeTogglableLine(candle, { price: ep.pivot, color: theme.up, lineWidth: 2, lineStyle: 0, title: `买入 pivot $${ep.pivot.toFixed(2)}` }),
+        makeTogglableLine(candle, { price: ep.buy_zone_high, color: theme.up, lineWidth: 1, lineStyle: 2, title: "买入区上限 +5%" }),
+        makeTogglableLine(candle, { price: ep.stop, color: theme.down, lineWidth: 2, lineStyle: 2, title: `止损 $${ep.stop.toFixed(2)}` }),
+        makeTogglableLine(candle, { price: ep.target1, color: theme.accent, lineWidth: 1, lineStyle: 2, title: `T1 +${ep.target1_pct.toFixed(0)}% $${ep.target1.toFixed(2)}` }),
+        makeTogglableLine(candle, { price: ep.target2, color: seriesPalette[1], lineWidth: 1, lineStyle: 2, title: `T2 +${ep.target2_pct.toFixed(0)}% $${ep.target2.toFixed(2)}` }),
       ];
     }
 
@@ -153,7 +154,7 @@ export function useSepaCharts(
         const top = Math.min(yHi, yLo);
         const h = Math.max(1, Math.abs(yLo - yHi) - 0.5);
         const w = Math.max(1, b.pct * drawW);
-        vpCtx.fillStyle = "rgba(139, 148, 158, 0.55)";
+        vpCtx.fillStyle = "rgba(154, 154, 154, 0.55)";
         vpCtx.fillRect(VP_WIDTH - w - 2, top, w, h);
       });
       const poc = bins.reduce((a, b) => (b.weight > a.weight ? b : a), bins[0]);
@@ -163,9 +164,9 @@ export function useSepaCharts(
         if (yHi != null && yLo != null) {
           const top = Math.min(yHi, yLo);
           const h = Math.max(1, Math.abs(yLo - yHi));
-          vpCtx.fillStyle = "rgba(255, 152, 0, 0.85)";
+          vpCtx.fillStyle = "rgba(255, 176, 0, 0.85)";
           vpCtx.fillRect(VP_WIDTH - drawW - 2, top, drawW, h);
-          vpCtx.fillStyle = "#ff9800";
+          vpCtx.fillStyle = theme.accent;
           vpCtx.font = "10px -apple-system, sans-serif";
           vpCtx.textAlign = "right";
           vpCtx.fillText("POC", VP_WIDTH - 4, top + h / 2 + 3);
@@ -190,21 +191,21 @@ export function useSepaCharts(
     const timeline = chart.candles.map((c) => c.time);
     const rsChart = baseChart(rsEl, false);
     const rsOpts = { lineWidth: 2, priceLineVisible: false, lastValueVisible: true } as const;
-    const rs21 = rsChart.addLineSeries({ color: "#ffeb3b", ...rsOpts });
-    const rs63 = rsChart.addLineSeries({ color: "#ff7043", ...rsOpts });
-    const rs126 = rsChart.addLineSeries({ color: "#ab47bc", ...rsOpts });
+    const rs21 = rsChart.addLineSeries({ color: seriesPalette[2], ...rsOpts });
+    const rs63 = rsChart.addLineSeries({ color: seriesPalette[4], ...rsOpts });
+    const rs126 = rsChart.addLineSeries({ color: seriesPalette[3], ...rsOpts });
     rs21.setData(padLineData(chart.rs21, timeline));
     rs63.setData(padLineData(chart.rs63, timeline));
     rs126.setData(padLineData(chart.rs126, timeline));
     if (chart.rs21.length) {
-      rs21.createPriceLine({ price: 0, color: "#666", lineWidth: 1, lineStyle: 2, axisLabelVisible: false, title: "" });
+      rs21.createPriceLine({ price: 0, color: theme.borderStrong, lineWidth: 1, lineStyle: 2, axisLabelVisible: false, title: "" });
     }
 
     const vrChart = baseChart(vrEl, false);
     const vr = vrChart.addHistogramSeries({ priceLineVisible: false });
     vr.setData(padHistData(chart.volRatio, timeline));
-    vr.createPriceLine({ price: 1.5, color: "#ff5722", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "1.5×" });
-    vr.createPriceLine({ price: 1.0, color: "#666", lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: "" });
+    vr.createPriceLine({ price: 1.5, color: theme.down, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "1.5×" });
+    vr.createPriceLine({ price: 1.0, color: theme.borderStrong, lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: "" });
 
     syncTimeScales([main, rsChart, vrChart]);
     showLastBars(main, chart.candles);
@@ -215,17 +216,17 @@ export function useSepaCharts(
       {
         title: "均线",
         items: [
-          { key: "ma50", label: "MA50", color: "#ffb74d", toggle: (v) => ma50.applyOptions({ visible: v }) },
-          { key: "ma150", label: "MA150", color: "#ba68c8", toggle: (v) => ma150.applyOptions({ visible: v }) },
-          { key: "ma200", label: "MA200", color: "#4fc3f7", toggle: (v) => ma200.applyOptions({ visible: v }) },
+          { key: "ma50", label: "MA50", color: seriesPalette[0], toggle: (v) => ma50.applyOptions({ visible: v }) },
+          { key: "ma150", label: "MA150", color: seriesPalette[3], toggle: (v) => ma150.applyOptions({ visible: v }) },
+          { key: "ma200", label: "MA200", color: seriesPalette[1], toggle: (v) => ma200.applyOptions({ visible: v }) },
         ],
       },
       {
         title: "价位线",
         items: [
-          { key: "h52w", label: "52w 高", color: "#9c27b0", toggle: (v) => lineH52w.set(v) },
-          { key: "l52w", label: "52w 低", color: "#4caf50", toggle: (v) => lineL52w.set(v) },
-          ...(lineExt ? [{ key: "ext", label: "MA50 +25%", color: "#ff5252", toggle: (v: boolean) => lineExt.set(v) }] : []),
+          { key: "h52w", label: "52w 高", color: seriesPalette[4], toggle: (v) => lineH52w.set(v) },
+          { key: "l52w", label: "52w 低", color: theme.up, toggle: (v) => lineL52w.set(v) },
+          ...(lineExt ? [{ key: "ext", label: "MA50 +25%", color: theme.down, toggle: (v: boolean) => lineExt.set(v) }] : []),
         ],
       },
     ];
@@ -252,25 +253,25 @@ export function useSepaCharts(
           {
             key: "ep-zone",
             label: "盈亏区域",
-            color: "#26a69a",
+            color: theme.up,
             toggle: (v) => {
               zones.green.applyOptions({ visible: v });
               zones.red.applyOptions({ visible: v });
             },
           },
-          { key: "ep-line", label: "pivot / 止损 / T1 / T2", color: "#42a5f5", toggle: (v) => lines.forEach((l) => l.set(v)) },
+          { key: "ep-line", label: "pivot / 止损 / T1 / T2", color: theme.accent, toggle: (v) => lines.forEach((l) => l.set(v)) },
         ],
       });
     }
     nextGroups.push({
       title: "其他",
       items: [
-        { key: "vol", label: "成交量", color: "#26a69a", toggle: (v) => volSeries.applyOptions({ visible: v }) },
-        { key: "markers", label: "事件标记", color: "#d32f2f", toggle: (v) => candle.setMarkers(v ? toMarkers(chart.markers) : []) },
+        { key: "vol", label: "成交量", color: theme.up, toggle: (v) => volSeries.applyOptions({ visible: v }) },
+        { key: "markers", label: "事件标记", color: theme.down, toggle: (v) => candle.setMarkers(v ? toMarkers(chart.markers) : []) },
         {
           key: "vp",
           label: "成交分布 (VP)",
-          color: "#ff9800",
+          color: theme.accent,
           toggle: (v) => {
             vpEnabled = v;
             drawVolumeProfile();

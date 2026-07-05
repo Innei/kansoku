@@ -14,6 +14,7 @@ import {
 } from "lightweight-charts";
 import { formatMarketDateTime, formatMarketTick } from "../../../shared/time";
 import type { Candle, ColoredPoint, LinePoint, SeriesMarker } from "../../../shared/types";
+import { theme } from "../theme";
 
 export const asTime = (t: number) => t as UTCTimestamp;
 
@@ -101,17 +102,17 @@ export function baseChart(el: HTMLElement, timeVisible: boolean, marketTime = fa
   return createChart(el, {
     width: el.clientWidth,
     height: el.clientHeight,
-    layout: { background: { color: "#0d1117" }, textColor: "#8b949e" },
-    grid: { vertLines: { color: "#161b22" }, horzLines: { color: "#161b22" } },
+    layout: { background: { color: theme.bgSurface }, textColor: theme.textSecondary },
+    grid: { vertLines: { color: theme.border }, horzLines: { color: theme.border } },
     crosshair: { mode: 0 },
-    rightPriceScale: { borderColor: "#21262d" },
+    rightPriceScale: { borderColor: theme.border },
     localization: marketTime
       ? {
           timeFormatter: marketTimeFormatter,
         }
       : undefined,
     timeScale: {
-      borderColor: "#21262d",
+      borderColor: theme.border,
       timeVisible,
       secondsVisible: false,
       tickMarkFormatter: marketTime ? marketTickMarkFormatter : undefined,

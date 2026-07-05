@@ -1,23 +1,24 @@
 import type { CSSProperties } from "react";
+import { theme } from "../../theme";
 
-export const UP_COLOR = "#22c55e";
-export const DOWN_COLOR = "#ef4444";
-export const AXIS_COLOR = "#8b949e";
-export const AXIS_LINE_COLOR = "#666";
-export const GRID_COLOR = "#1f242c";
-export const ZERO_LINE_COLOR = "#888";
+export const UP_COLOR = theme.up;
+export const DOWN_COLOR = theme.down;
+export const AXIS_COLOR = theme.textSecondary;
+export const AXIS_LINE_COLOR = theme.borderStrong;
+export const GRID_COLOR = theme.border;
+export const ZERO_LINE_COLOR = theme.textMuted;
 
 export const tooltipContentStyle: CSSProperties = {
-  backgroundColor: "rgba(20,24,30,0.92)",
-  border: "1px solid #333",
+  backgroundColor: theme.bgSurface,
+  border: `1px solid ${theme.border}`,
   borderRadius: 4,
-  color: "#eee",
+  color: theme.textPrimary,
   fontSize: 12,
 };
 
-export const tooltipLabelStyle: CSSProperties = { color: "#8b949e", marginBottom: 4 };
+export const tooltipLabelStyle: CSSProperties = { color: theme.textSecondary, marginBottom: 4 };
 
-export const tooltipItemStyle: CSSProperties = { color: "#eee" };
+export const tooltipItemStyle: CSSProperties = { color: theme.textPrimary };
 
 export function hhmm(t: number): string {
   const d = new Date(t);

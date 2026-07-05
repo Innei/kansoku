@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { SepaBuilt } from "../../../../shared/types";
 import { fmt, signed, upDown } from "../../format";
 import { NewsSection } from "../NewsSection";
+import { theme } from "../../theme";
 
 const CHECK_ICON: Record<string, string> = { pass: "✅", fail: "❌", unknown: "⚠" };
 
@@ -88,7 +89,7 @@ export function SepaSidebar({ built }: { built: SepaBuilt }) {
               </div>
               <div className="zone-meta">
                 {z.note}
-                {z.sources.length > 0 && <span style={{ color: "#6e7681" }}> · {z.sources.join(" / ")}</span>}
+                {z.sources.length > 0 && <span style={{ color: theme.textMuted }}> · {z.sources.join(" / ")}</span>}
               </div>
             </div>
           ))}
