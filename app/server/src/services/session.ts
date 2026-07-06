@@ -1,4 +1,4 @@
-import type { OffSessionBar, SessionKind } from "../../../shared/types.js";
+import type { OffSessionSegment, SessionKind } from "../../../shared/types.js";
 
 const etFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/New_York",
@@ -53,11 +53,25 @@ export function classifySession(ts: number): SessionKind {
   return "overnight";
 }
 
-export function offSessionBars(timesTs: number[]): OffSessionBar[] {
-  const out: OffSessionBar[] = [];
+export function offSessionSegments(timesTs: number[]): OffSessionSegment[] {
+  const out: OffSessionSegment[] = [];
+  let cur: OffSessionSegment | null = null;
   for (const t of timesTs) {
     const kind = classifySession(t);
-    if (kind !== "regular") out.push({ time: t, kind });
+    if (kind === "regular") {
+      if (cur) {
+        out.push(cur);
+        cur = null;
+      }
+      continue;
+    }
+    if (cur && cur.kind === kind) {
+      cur.endTime = t;
+    } else {
+      if (cur) out.push(cur);
+      cur = { startTime: t, endTime: t, kind };
+    }
   }
+  if (cur) out.push(cur);
   return out;
 }

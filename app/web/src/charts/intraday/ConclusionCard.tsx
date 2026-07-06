@@ -2,8 +2,9 @@ import type { CSSProperties } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { IntradayContext } from "../../../../shared/types";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "./directionLabels";
-import { predictionAgeText } from "./predictionAge";
+import { predictionMinutesAgo } from "./predictionAge";
 import { theme } from "../../theme";
+import { MarketTime } from "../../ui";
 
 interface ConclusionCardProps {
   context: IntradayContext | null;
@@ -23,7 +24,9 @@ export function ConclusionCard({ context, predictionStale }: ConclusionCardProps
             <TriangleAlert className="icon" size={13} /> 盘中已过期
           </span>
         ) : (
-          <span className="prediction-age">{predictionAgeText(context.generated_at)}</span>
+          <span className="prediction-age">
+            更新于 <MarketTime value={context.generated_at} format="clock" includeZone />（{predictionMinutesAgo(context.generated_at)} 分钟前）
+          </span>
         )}
       </div>
       <div className="verdict-text">{DIRECTION_LABEL[stance] ?? "🤔 观望"}</div>

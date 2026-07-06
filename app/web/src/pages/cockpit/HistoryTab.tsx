@@ -1,11 +1,10 @@
 import type { CSSProperties } from "react";
 import { Check, CircleX, Clock } from "lucide-react";
 import type { OutcomeStatus, SymbolAnalysisRow } from "../../../../shared/types";
-import { formatMarketDateTime } from "../../../../shared/time";
 import { fmt, signed } from "../../format";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../../charts/intraday/directionLabels";
 import { theme } from "../../theme";
-import { Badge, SectionTitle } from "../../ui";
+import { Badge, MarketTime, SectionTitle } from "../../ui";
 
 const OUTCOME_LABEL: Record<OutcomeStatus, { icon: typeof Check; tone: string; label: string }> = {
   hit_target: { icon: Check, tone: "up", label: "到目标" },
@@ -40,7 +39,7 @@ export function HistoryTab({ rows, currentId }: HistoryTabProps) {
         >
           <div className="zone-head">
             <span className="zone-label plain">
-              {formatMarketDateTime(row.created_at)}
+              <MarketTime value={row.created_at} />
               {row.id === currentId && <Badge tone="up" className="p123-badge">当前</Badge>}
             </span>
             <span className="zone-range">{row.direction ? DIRECTION_LABEL[row.direction] : "—"}</span>

@@ -7,8 +7,8 @@ import {
   GRID_COLOR,
   ZERO_LINE_COLOR,
   UP_COLOR,
-  fullTime,
   hhmm,
+  tooltipTime,
   tooltipContentStyle,
   tooltipItemStyle,
   tooltipLabelStyle,
@@ -58,7 +58,7 @@ export function FlowChart({ rows }: { rows: FlowRow[] }) {
           contentStyle={tooltipContentStyle}
           labelStyle={tooltipLabelStyle}
           itemStyle={tooltipItemStyle}
-          labelFormatter={(t) => fullTime(Number(t))}
+          labelFormatter={(t) => tooltipTime(Number(t))}
           formatter={(value) => [Number(value).toLocaleString(), "净流入"]}
         />
         <ReferenceLine y={0} stroke={ZERO_LINE_COLOR} strokeDasharray="4 4" />

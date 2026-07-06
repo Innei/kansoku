@@ -1,6 +1,7 @@
 import type { OverviewBoard, PortfolioSummary } from "../../../shared/types";
 import { QuoteBar } from "../QuoteBar";
 import { Badge, ErrorBox, SectionTitle } from "../ui";
+import { useTitle } from "../useTitle";
 import { useIntervalFetch } from "./cockpit/useIntervalFetch";
 import { PositionsCard } from "./home/PositionsCard";
 import { QuickBar } from "./home/QuickBar";
@@ -11,6 +12,7 @@ import { WatchBoard } from "./home/WatchBoard";
 const SESSION_LABEL: Record<string, string> = { pre: "盘前", regular: "盘中", post: "盘后", overnight: "休市" };
 
 export function Home() {
+  useTitle(null);
   const { data: board, error: boardError } = useIntervalFetch<OverviewBoard>("/api/overview", 30_000);
   const { data: portfolio, error: portfolioError } = useIntervalFetch<PortfolioSummary>("/api/positions", 60_000);
 

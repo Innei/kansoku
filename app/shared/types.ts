@@ -201,8 +201,9 @@ export interface EmaLine {
 
 export type SessionKind = "regular" | "pre" | "post" | "overnight";
 
-export interface OffSessionBar {
-  time: number;
+export interface OffSessionSegment {
+  startTime: number;
+  endTime: number;
   kind: Exclude<SessionKind, "regular">;
 }
 
@@ -220,7 +221,7 @@ export interface IntradayTfData {
   autoDivergence: DivergencePair[];
   autoBeichi: DivergencePair[];
   pattern123?: Pattern123[];
-  offSession?: OffSessionBar[];
+  offSession?: OffSessionSegment[];
   fvgZones?: IntradayFvgZone[];
 }
 

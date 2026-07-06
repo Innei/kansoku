@@ -1,7 +1,5 @@
 import type { NewsItem } from "../../../shared/types";
-import { Badge, SectionTitle } from "../ui";
-
-const newsTime = (iso: string) => iso.slice(5, 16).replace("T", " ");
+import { Badge, MarketTime, SectionTitle } from "../ui";
 
 export function NewsSection({ news }: { news: NewsItem[] }) {
   if (!news.length) return null;
@@ -14,7 +12,7 @@ export function NewsSection({ news }: { news: NewsItem[] }) {
         return (
           <a key={n.id} className="news-item" href={n.url} target="_blank" rel="noreferrer">
             <span className="news-meta">
-              {newsTime(n.published_at)}
+              <MarketTime value={n.published_at} format="month-day-time" />
               <Badge>{community ? "社区" : "新闻"}</Badge>
             </span>
             <span className="news-title">{n.title}</span>

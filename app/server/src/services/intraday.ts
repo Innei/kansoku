@@ -30,7 +30,7 @@ import { detectFvgZones } from "./fvg.js";
 import { ema, findSwings, lineData, macd, pyRound, sma, toTs } from "./indicators.js";
 import { classifyMacdStructure, MACD_STRUCTURE_META, ZERO_TANGLE_NOTE, type MacdStructure } from "./macdStructure.js";
 import { detect123Patterns } from "./pattern123.js";
-import { offSessionBars } from "./session.js";
+import { offSessionSegments } from "./session.js";
 
 export const TIMEFRAME_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
 export const TIMEFRAME_LABELS: Record<TimeframeKey, string> = { m5: "5分钟", m15: "15分钟", h1: "1小时" };
@@ -630,13 +630,16 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
   const anchor = prediction?.anchor;
   const signalsByTf = buildIntradaySignals(prediction?.signals);
   if (anchor && anchor.timeframe in signalsByTf) {
+    const dirLabel = direction === "long" ? "做多" : direction === "short" ? "做空" : "观望";
+    const shape = direction === "long" ? "arrowUp" : direction === "short" ? "arrowDown" : "circle";
+    const position = direction === "long" ? "belowBar" : direction === "short" ? "aboveBar" : "inBar";
     signalsByTf[anchor.timeframe].markers.push({
       time: toTs(anchor.time),
-      position: "inBar",
+      position,
       color: "#58a6ff",
-      shape: "circle",
-      text: "🎯",
-      tooltip: `🎯 AI 预测锚点\n${TIMEFRAME_LABELS[anchor.timeframe]} · ${barTimeShort(toTs(anchor.time))} · $${Number(anchor.price).toFixed(2)}\n方向判断（${direction === "short" ? "做空" : direction === "long" ? "做多" : "观望"}）基于这根 K 线做出`,
+      shape,
+      text: `🎯 ${dirLabel}`,
+      tooltip: `🎯 AI 预测锚点\n${TIMEFRAME_LABELS[anchor.timeframe]} · ${barTimeShort(toTs(anchor.time))} · $${Number(anchor.price).toFixed(2)}\n方向判断（${dirLabel}）基于这根 K 线做出`,
       group: "ai",
     });
   }
@@ -701,7 +704,7 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
       autoBeichi: tf.autoBeichi,
       pattern123: tf.pattern123,
       fvgZones: tf.fvgZones,
-      offSession: offSessionBars(tf.candles.map((c) => c.time)),
+      offSession: offSessionSegments(tf.candles.map((c) => c.time)),
     };
   }
 

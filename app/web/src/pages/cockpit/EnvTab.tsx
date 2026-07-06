@@ -1,6 +1,6 @@
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { BenchmarkSeries, CockpitPosition, RelativeVolume } from "../../../../shared/types";
-import { fullTime, hhmm, tooltipContentStyle, tooltipLabelStyle } from "../../charts/simple/theme";
+import { hhmm, tooltipContentStyle, tooltipLabelStyle, tooltipTime } from "../../charts/simple/theme";
 import { fmt, signed, upDown } from "../../format";
 import { seriesPalette, theme } from "../../theme";
 import { Num, SectionTitle } from "../../ui";
@@ -50,7 +50,7 @@ function BenchmarkChart({ series }: { series: BenchmarkSeries[] }) {
           <Tooltip
             contentStyle={tooltipContentStyle}
             labelStyle={tooltipLabelStyle}
-            labelFormatter={(t) => fullTime(Number(t))}
+            labelFormatter={(t) => tooltipTime(Number(t))}
             formatter={(value) => `${Number(value).toFixed(2)}%`}
           />
           <ReferenceLine y={0} stroke={theme.borderStrong} />

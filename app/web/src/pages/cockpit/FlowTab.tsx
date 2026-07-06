@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { CapitalBucket, CockpitFlow } from "../../../../shared/types";
-import { fullTime, hhmm, tooltipContentStyle, tooltipItemStyle, tooltipLabelStyle } from "../../charts/simple/theme";
+import { hhmm, tooltipContentStyle, tooltipItemStyle, tooltipLabelStyle, tooltipTime } from "../../charts/simple/theme";
 import { signed, upDown } from "../../format";
 import { theme } from "../../theme";
 import { SectionTitle } from "../../ui";
@@ -40,7 +40,7 @@ function FlowMiniChart({ flow }: { flow: CockpitFlow }) {
             contentStyle={tooltipContentStyle}
             labelStyle={tooltipLabelStyle}
             itemStyle={tooltipItemStyle}
-            labelFormatter={(t) => fullTime(Number(t))}
+            labelFormatter={(t) => tooltipTime(Number(t))}
             formatter={(value) => [Number(value).toLocaleString(), "净流入"]}
           />
           <ReferenceLine y={0} stroke={theme.borderStrong} />

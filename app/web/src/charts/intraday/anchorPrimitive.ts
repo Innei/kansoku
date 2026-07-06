@@ -7,20 +7,17 @@ import type {
   SeriesPrimitivePaneViewZOrder,
   Time,
 } from "lightweight-charts";
-import type { OffSessionSegment } from "../../../../shared/types";
 
 type DrawTarget = Parameters<ISeriesPrimitivePaneRenderer["draw"]>[0];
 
-const colorFor = (kind: OffSessionSegment["kind"]): string =>
-  kind === "overnight" ? "rgba(70, 100, 180, 0.22)" : "rgba(232, 232, 232, 0.08)";
+const ANCHOR_BG = "rgba(88, 166, 255, 0.18)";
 
 interface BandPx {
   x: number;
   w: number;
-  color: string;
 }
 
-class SessionRenderer implements ISeriesPrimitivePaneRenderer {
+class AnchorRenderer implements ISeriesPrimitivePaneRenderer {
   constructor(private readonly bands: BandPx[]) {}
 
   draw(target: DrawTarget): void {
@@ -28,9 +25,9 @@ class SessionRenderer implements ISeriesPrimitivePaneRenderer {
       const ctx = scope.context;
       const h = scope.mediaSize.height;
       ctx.save();
+      ctx.fillStyle = ANCHOR_BG;
       for (const b of this.bands) {
         if (b.w <= 0) continue;
-        ctx.fillStyle = b.color;
         ctx.fillRect(b.x, 0, b.w, h);
       }
       ctx.restore();
@@ -38,29 +35,28 @@ class SessionRenderer implements ISeriesPrimitivePaneRenderer {
   }
 }
 
-class SessionPaneView implements ISeriesPrimitivePaneView {
+class AnchorPaneView implements ISeriesPrimitivePaneView {
   private bands: BandPx[] = [];
 
-  constructor(private readonly source: SessionBgPrimitive) {}
+  constructor(private readonly source: AnchorBgPrimitive) {}
 
   update(): void {
-    const { chart, segments } = this.source.state();
+    const { chart, times } = this.source.state();
     this.bands = [];
-    if (!chart || segments.length === 0) return;
+    if (!chart || times.length === 0) return;
     const ts = chart.timeScale();
     const half = ts.options().barSpacing / 2;
-    for (const seg of segments) {
-      const cxStart = ts.timeToCoordinate(seg.startTime as Time);
-      const cxEnd = ts.timeToCoordinate(seg.endTime as Time);
-      if (cxStart === null || cxEnd === null) continue;
-      const x = Math.round(cxStart - half);
-      const right = Math.round(cxEnd + half);
-      this.bands.push({ x, w: right - x, color: colorFor(seg.kind) });
+    for (const time of times) {
+      const cx = ts.timeToCoordinate(time as Time);
+      if (cx === null) continue;
+      const x = Math.round(cx - half);
+      const right = Math.round(cx + half);
+      this.bands.push({ x, w: right - x });
     }
   }
 
   renderer(): ISeriesPrimitivePaneRenderer {
-    return new SessionRenderer(this.bands);
+    return new AnchorRenderer(this.bands);
   }
 
   zOrder(): SeriesPrimitivePaneViewZOrder {
@@ -68,11 +64,11 @@ class SessionPaneView implements ISeriesPrimitivePaneView {
   }
 }
 
-export class SessionBgPrimitive implements ISeriesPrimitive<Time> {
+export class AnchorBgPrimitive implements ISeriesPrimitive<Time> {
   private chart: IChartApiBase<Time> | null = null;
   private requestUpdate?: () => void;
-  private segments: OffSessionSegment[] = [];
-  private readonly paneView = new SessionPaneView(this);
+  private times: number[] = [];
+  private readonly paneView = new AnchorPaneView(this);
 
   attached(param: SeriesAttachedParameter<Time>): void {
     this.chart = param.chart;
@@ -84,8 +80,8 @@ export class SessionBgPrimitive implements ISeriesPrimitive<Time> {
     this.requestUpdate = undefined;
   }
 
-  setData(segments: OffSessionSegment[]): void {
-    this.segments = segments;
+  setData(times: number[]): void {
+    this.times = times;
     this.requestUpdate?.();
   }
 
@@ -97,7 +93,7 @@ export class SessionBgPrimitive implements ISeriesPrimitive<Time> {
     return [this.paneView];
   }
 
-  state(): { chart: IChartApiBase<Time> | null; segments: OffSessionSegment[] } {
-    return { chart: this.chart, segments: this.segments };
+  state(): { chart: IChartApiBase<Time> | null; times: number[] } {
+    return { chart: this.chart, times: this.times };
   }
 }

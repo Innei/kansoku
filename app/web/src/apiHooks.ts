@@ -23,13 +23,18 @@ const failureFrom = (error: unknown): QueryFailure => ({
   status: error instanceof ApiError ? error.status : undefined,
 });
 
-const initialState = <T>(url: string | null): QueryInternalState<T> => ({
-  url,
-  data: null,
-  error: null,
-  failure: null,
-  loading: Boolean(url),
-});
+const queryCache = new Map<string, unknown>();
+
+const initialState = <T>(url: string | null): QueryInternalState<T> => {
+  const cached = url !== null && queryCache.has(url);
+  return {
+    url,
+    data: cached ? (queryCache.get(url!) as T) : null,
+    error: null,
+    failure: null,
+    loading: Boolean(url) && !cached,
+  };
+};
 
 export function useQuery<T>(url: string | null): QueryState<T> {
   const [state, setState] = useState<QueryInternalState<T>>(() => initialState<T>(url));
@@ -47,6 +52,7 @@ export function useQuery<T>(url: string | null): QueryState<T> {
 
     api<T>(url, { signal: controller.signal })
       .then((data) => {
+        queryCache.set(url, data);
         if (active) setState({ url, data, error: null, failure: null, loading: false });
       })
       .catch((error: unknown) => {
@@ -87,6 +93,7 @@ export function usePollingQuery<T>(url: string | null, ms: number): QueryState<T
       setState((prev) => (prev.data === null ? { ...prev, loading: true } : prev));
       api<T>(url, { signal: controller.signal })
         .then((data) => {
+          queryCache.set(url, data);
           if (active) setState({ url, data, error: null, failure: null, loading: false });
         })
         .catch((error: unknown) => {

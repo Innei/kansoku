@@ -12,7 +12,7 @@ const ctx = vi.hoisted(() => {
 
 vi.mock("../src/env.js", () => ({ CHART_DATA_DIR: ctx.dir }));
 
-const { listCharts, loadChart, saveChart, deleteChart } = await import("../src/services/store.js");
+const { allocateId, listCharts, loadChart, saveChart, deleteChart } = await import("../src/services/store.js");
 
 function doc(id: string, overrides: Partial<ChartDoc> = {}): ChartDoc {
   return {
@@ -68,5 +68,44 @@ describe("chart store", () => {
     expect(await loadChart("2026-07-02-a")).toBeNull();
     expect((await listCharts()).map((m) => m.id)).not.toContain("2026-07-02-a");
     expect(await deleteChart("2026-07-02-a")).toBe(false);
+  });
+
+  describe("allocateId", () => {
+    it("returns base id when nothing exists", async () => {
+      expect(await allocateId("2026-08-01", "mu-intraday")).toBe("2026-08-01-mu-intraday");
+    });
+
+    it("reuses base id when existing doc is a preview shell (no prediction/context)", async () => {
+      await saveChart(doc("2026-08-02-mu-intraday", { input: {} }));
+      expect(await allocateId("2026-08-02", "mu-intraday")).toBe("2026-08-02-mu-intraday");
+    });
+
+    it("suffixes when existing doc has a user prediction", async () => {
+      await saveChart(doc("2026-08-03-mu-intraday", { input: { prediction: { direction: "long" } } as ChartDoc["input"] }));
+      expect(await allocateId("2026-08-03", "mu-intraday")).toBe("2026-08-03-mu-intraday-2");
+    });
+
+    it("suffixes when existing doc has only context (no prediction)", async () => {
+      await saveChart(
+        doc("2026-08-04-mu-intraday", { input: { context: { conclusion: { stance: "neutral" } } } as ChartDoc["input"] }),
+      );
+      expect(await allocateId("2026-08-04", "mu-intraday")).toBe("2026-08-04-mu-intraday-2");
+    });
+
+    it("skips preview shells in the -N chain and returns the first non-existing slot", async () => {
+      await saveChart(doc("2026-08-05-mu-intraday", { input: { prediction: { direction: "short" } } as ChartDoc["input"] }));
+      await saveChart(doc("2026-08-05-mu-intraday-2", { input: {} }));
+      expect(await allocateId("2026-08-05", "mu-intraday")).toBe("2026-08-05-mu-intraday-2");
+    });
+  });
+
+  describe("deleteChart", () => {
+    it("purges an orphan index row when the doc file is missing", async () => {
+      await saveChart(doc("2026-08-06-orphan"));
+      await fs.rm(join(ctx.dir, "2026-08-06-orphan.json"));
+      expect(await deleteChart("2026-08-06-orphan")).toBe(true);
+      expect((await listCharts()).map((m) => m.id)).not.toContain("2026-08-06-orphan");
+      expect(await deleteChart("2026-08-06-orphan")).toBe(false);
+    });
   });
 });

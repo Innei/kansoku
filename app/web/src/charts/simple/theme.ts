@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMarketClock, formatMarketDateTime, localMarketTimeLabel } from "../../../../shared/time";
 import { theme } from "../../theme";
 
 export const UP_COLOR = theme.up;
@@ -16,18 +17,20 @@ export const tooltipContentStyle: CSSProperties = {
   fontSize: 12,
 };
 
-export const tooltipLabelStyle: CSSProperties = { color: theme.textSecondary, marginBottom: 4 };
+export const tooltipLabelStyle: CSSProperties = { color: theme.textSecondary, marginBottom: 4, whiteSpace: "pre-line" };
 
 export const tooltipItemStyle: CSSProperties = { color: theme.textPrimary };
 
 export function hhmm(t: number): string {
-  const d = new Date(t);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+  return formatMarketClock(new Date(t));
 }
 
 export function fullTime(t: number): string {
-  const d = new Date(t);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return formatMarketDateTime(new Date(t));
+}
+
+export function tooltipTime(t: number): string {
+  const date = new Date(t);
+  const local = localMarketTimeLabel(date);
+  return local ? `${formatMarketDateTime(date)}\n本地时间 ${local}` : formatMarketDateTime(date);
 }

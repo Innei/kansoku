@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { OverviewRecap, PredictionStats, StatsBucket } from "../../../../shared/types";
-import { formatMarketClock } from "../../../../shared/time";
 import { signed } from "../../format";
-import { Badge, Card, ErrorBox, Num, SectionTitle } from "../../ui";
+import { Badge, Card, ErrorBox, MarketTime, Num, SectionTitle } from "../../ui";
 import { useIntervalFetch } from "../cockpit/useIntervalFetch";
 
 const DIRECTION_LABEL: Record<string, string> = { long: "做多", short: "做空", neutral: "观望" };
@@ -71,7 +70,7 @@ function AiActivity({ recap }: { recap: OverviewRecap }) {
       {recap.alerts.length === 0 && <div className="note-block">今天没有 alert 级提醒。</div>}
       {recap.alerts.map((a, i) => (
         <div key={i} className="recap-alert">
-          <span className="ts">{formatMarketClock(a.ts)}</span>
+          <MarketTime className="ts" value={a.ts} format="clock" />
           <span className="sym">{a.symbol.replace(/\.US$/, "")}</span>
           <span className="text">{a.text}</span>
         </div>
