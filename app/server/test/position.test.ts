@@ -112,6 +112,29 @@ describe("subscribePosition", () => {
     unsub2();
   });
 
+  it("pushes data as soon as retain seeds the quote snapshot, without waiting for a further update", async () => {
+    stream.retain.mockImplementation((symbols: string[]) => {
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          stream.snapshots.set(symbols[0], cell(symbols[0], 150));
+          resolve();
+        }, 50);
+      });
+    });
+
+    const events: unknown[] = [];
+    const unsub = subscribePosition("MU.US", (env) => events.push(JSON.parse(env)));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(events.filter((e: any) => e.type === "data")).toHaveLength(0);
+
+    await vi.advanceTimersByTimeAsync(50);
+
+    const dataEvents = events.filter((e: any) => e.type === "data");
+    expect(dataEvents.some((e: any) => e.data.position?.last === 150)).toBe(true);
+    unsub();
+  });
+
   it("stops delivery after unsubscribe and releases the symbol", async () => {
     const events: unknown[] = [];
     const unsub = subscribePosition("MU.US", (env) => events.push(JSON.parse(env)));

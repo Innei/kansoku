@@ -61,6 +61,7 @@ describe("subscribeChart candlestick-push wiring", () => {
       built: { kind: "intraday", pushed: true },
       meta: {},
     });
+    build.buildChart.mockReset();
     longbridgeStream.subscribeCandlesticks.mockReset();
     longbridgeStream.subscribeCandlesticks.mockImplementation((_symbol: string, period: string, cb: CandleCb) => {
       callbacksByPeriod.set(period, cb);
@@ -130,5 +131,79 @@ describe("subscribeChart candlestick-push wiring", () => {
 
     await subscribeChart("2026-07-06-flow", () => {});
     expect(longbridgeStream.subscribeCandlesticks).not.toHaveBeenCalled();
+  });
+
+  it("writes the poller's freshly fetched bars into candle state so a later push has no hole", async () => {
+    store.loadChart.mockResolvedValue(makeDoc({ id: "2026-07-06-nvda-intraday-fresh" }));
+    build.buildChart.mockResolvedValue({
+      input: {
+        timeframes: {
+          m5: [{ time: new Date(5_000).toISOString(), open: 5, high: 5, low: 5, close: 5, volume: 5 }],
+          m15: [],
+          h1: [],
+        },
+      },
+      built: { kind: "intraday", polled: true },
+    });
+
+    const unsub = await subscribeChart("2026-07-06-nvda-intraday-fresh", () => {});
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(0);
+
+    const m5cb = callbacksByPeriod.get("5m")!;
+    m5cb({ symbol: "NVDA.US", period: "5m", ts: 6_000, open: 6, high: 6, low: 6, close: 6, volume: 1 });
+    await vi.advanceTimersByTimeAsync(1_500);
+
+    const [, input] = build.rebuild.mock.calls[0];
+    expect(input.timeframes.m5).toHaveLength(2);
+    expect(input.timeframes.m5[0].time).toBe(new Date(5_000).toISOString());
+    expect(input.timeframes.m5[1].time).toBe(new Date(6_000).toISOString());
+    unsub();
+  });
+
+  it("respects the requested view count instead of the persisted full-length series on rebuild", async () => {
+    store.loadChart.mockResolvedValue(
+      makeDoc({
+        id: "2026-07-06-nvda-intraday-count",
+        input: {
+          symbol: "NVDA.US",
+          timeframes: {
+            m5: [
+              { time: new Date(1_000).toISOString(), open: 1, high: 1, low: 1, close: 1, volume: 1 },
+              { time: new Date(2_000).toISOString(), open: 2, high: 2, low: 2, close: 2, volume: 1 },
+              { time: new Date(3_000).toISOString(), open: 3, high: 3, low: 3, close: 3, volume: 1 },
+            ],
+            m15: [],
+            h1: [],
+          },
+        },
+      }),
+    );
+    build.buildChart.mockResolvedValue({
+      input: {
+        timeframes: {
+          m5: [{ time: new Date(3_000).toISOString(), open: 3, high: 3, low: 3, close: 3, volume: 1 }],
+          m15: [],
+          h1: [],
+        },
+      },
+      built: { kind: "intraday", polled: true },
+    });
+
+    const unsub = await subscribeChart("2026-07-06-nvda-intraday-count", () => {}, 1);
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(build.buildChart).toHaveBeenCalledWith(expect.objectContaining({ count: 1 }));
+
+    const m5cb = callbacksByPeriod.get("5m")!;
+    m5cb({ symbol: "NVDA.US", period: "5m", ts: 4_000, open: 4, high: 4, low: 4, close: 4, volume: 1 });
+    await vi.advanceTimersByTimeAsync(1_500);
+
+    const [, input] = build.rebuild.mock.calls[0];
+    expect(input.timeframes.m5).toHaveLength(2);
+    expect(input.timeframes.m5[0].time).toBe(new Date(3_000).toISOString());
+    expect(input.timeframes.m5[1].time).toBe(new Date(4_000).toISOString());
+    unsub();
   });
 });

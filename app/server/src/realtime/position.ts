@@ -97,14 +97,17 @@ export function subscribePosition(symbol: string, push: (envelope: string) => vo
   state.emitter.listeners.add(push);
 
   if (fresh) {
-    void getLongbridgeStream()
+    const retainPromise = getLongbridgeStream()
       .retain([symbol])
       .catch((err) => console.warn("[ws-position] retain failed", err));
     state.quoteUnsub = getLongbridgeStream().onUpdate((cell) => {
       if (cell.symbol === symbol) schedulePush(state as State, symbol);
     });
     state.slowTimer = setInterval(() => void refresh(symbol, state as State), SLOW_REFRESH_MS);
-    void refresh(symbol, state);
+    const refreshPromise = refresh(symbol, state);
+    // retain() and the initial refresh() race independently; whichever seeds the quote
+    // snapshot last leaves `pushLatest` a no-op inside the other, so re-push once both settle.
+    void Promise.all([retainPromise, refreshPromise]).then(() => pushLatest(state as State, symbol));
   } else {
     replay(state.emitter, push);
   }
