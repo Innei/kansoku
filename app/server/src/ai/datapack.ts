@@ -186,6 +186,39 @@ export async function buildCommentPack(
   };
 }
 
+const UPDATE_FLOW_ROWS = 10;
+
+export interface CommentUpdate {
+  symbol: string;
+  as_of: string;
+  quote: QuoteCell;
+  m5: CommentPack["m5"];
+  flow: FlowRow[];
+  day_levels: Pick<DayLevels, "opening_range">;
+  rel_volume: RelativeVolume | null;
+}
+
+// Incremental follow-up message for a reused commentator session: only fields
+// that move intraday. prediction / prev_day / pre_market / recent_comments are
+// already in the session transcript (first message or the agent's own replies).
+export function buildCommentUpdate(pack: CommentPack, lastBarTime: string | null): CommentUpdate {
+  const { bars, macd } = pack.m5;
+  const lastMs = lastBarTime ? Date.parse(lastBarTime) : Number.NaN;
+  const startIdx = Number.isFinite(lastMs) ? bars.findIndex((b) => Date.parse(b.time) > lastMs) : 0;
+  const newBars = startIdx === -1 ? [] : bars.slice(startIdx);
+  const tail = <T>(arr: T[]): T[] => (newBars.length ? arr.slice(-newBars.length) : []);
+
+  return {
+    symbol: pack.symbol,
+    as_of: pack.as_of,
+    quote: pack.quote,
+    m5: { bars: newBars, macd: { dif: tail(macd.dif), dea: tail(macd.dea), hist: tail(macd.hist) } },
+    flow: pack.flow.slice(-UPDATE_FLOW_ROWS),
+    day_levels: { opening_range: pack.day_levels.opening_range },
+    rel_volume: pack.rel_volume,
+  };
+}
+
 export async function buildReassessPack(
   symbol: string,
   deps: DatapackDeps = defaultDatapackDeps,

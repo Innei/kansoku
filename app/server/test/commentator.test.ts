@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
-import type { CockpitComment } from "../../shared/types.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import type { CockpitComment, RawBar } from "../../shared/types.js";
 import {
   type AgentFactory,
   type CommentatorAgent,
+  type CommentatorDeps,
+  resetCommentatorSessions,
   runCommentator,
 } from "../src/ai/commentator.js";
 import type { CommentPack } from "../src/ai/datapack.js";
@@ -12,12 +14,20 @@ import type { Trigger } from "../src/ai/triggers.js";
 const fakeModel = { provider: "anthropic", id: "claude-haiku-4-5" } as unknown as AiModel;
 const trigger: Trigger = { kind: "macd_cross", detail: "hist 0.1 -> -0.1" };
 
-function makePack(symbol: string): CommentPack {
+beforeEach(() => {
+  resetCommentatorSessions();
+});
+
+function bar(time: string): RawBar {
+  return { time, open: 1, high: 2, low: 0.5, close: 1.5, volume: 100 };
+}
+
+function makePack(symbol: string, bars: RawBar[] = []): CommentPack {
   return {
     symbol,
     as_of: "2026-07-05T15:00:00.000Z",
     quote: {} as CommentPack["quote"],
-    m5: { bars: [], macd: { dif: [], dea: [], hist: [] } },
+    m5: { bars, macd: { dif: bars.map(() => 0), dea: bars.map(() => 0), hist: bars.map(() => 0) } },
     flow: [],
     prediction: null,
     recent_comments: [],
@@ -176,6 +186,174 @@ describe("runCommentator", () => {
     expect(late.terminate).toBe(true);
     expect(comments).toHaveLength(1);
     expect(comments[0].source).toBe("system");
+  });
+
+  it("reuses the session agent within a day and sends incremental updates", async () => {
+    const prompts: string[] = [];
+    const submittedTriggers: string[] = [];
+    let factoryCalls = 0;
+    const appendComment = async (c: CockpitComment) => {
+      if (c.source === "commentator") submittedTriggers.push(c.trigger ?? "");
+    };
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      let currentTools = tools;
+      return {
+        prompt: async (text: string) => {
+          prompts.push(text);
+          const submit = currentTools.find((t) => t.name === "submit_comment");
+          await submit?.execute("call", { level: "info", text: "点评", escalate: false });
+        },
+        abort: () => {},
+        setTools: (tools) => {
+          currentTools = tools;
+        },
+      };
+    };
+    const deps: CommentatorDeps = { model: fakeModel, agentFactory, appendComment };
+
+    const bars1 = [bar("2026-07-05T14:50:00.000Z"), bar("2026-07-05T14:55:00.000Z")];
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US", bars1), trigger, deps });
+
+    const bars2 = [...bars1, bar("2026-07-05T15:00:00.000Z")];
+    const trigger2: Trigger = { kind: "level_break", detail: "破位" };
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US", bars2), trigger: trigger2, deps });
+
+    expect(factoryCalls).toBe(1);
+    expect(prompts).toHaveLength(2);
+    const first = JSON.parse(prompts[0]);
+    expect(first).toHaveProperty("pack");
+    const second = JSON.parse(prompts[1]);
+    expect(second).not.toHaveProperty("pack");
+    expect(second.update.m5.bars.map((b: RawBar) => b.time)).toEqual(["2026-07-05T15:00:00.000Z"]);
+    // the swapped-in tool must carry the new trigger
+    expect(submittedTriggers).toEqual(["macd_cross: hist 0.1 -> -0.1", "level_break: 破位"]);
+  });
+
+  it("reseeds a fresh session when the trading day changes", async () => {
+    let factoryCalls = 0;
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      return {
+        prompt: async () => {
+          await tools.find((t) => t.name === "submit_comment")?.execute("c", { level: "info", text: "x", escalate: false });
+        },
+        abort: () => {},
+      };
+    };
+    const appendComment = async () => {};
+    const day1 = () => new Date("2026-07-05T15:00:00.000Z");
+    const day2 = () => new Date("2026-07-06T15:00:00.000Z");
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps: { model: fakeModel, agentFactory, appendComment, now: day1 } });
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps: { model: fakeModel, agentFactory, appendComment, now: day2 } });
+    expect(factoryCalls).toBe(2);
+  });
+
+  it("reseeds a fresh session when the model changes", async () => {
+    let factoryCalls = 0;
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      return {
+        prompt: async () => {
+          await tools.find((t) => t.name === "submit_comment")?.execute("c", { level: "info", text: "x", escalate: false });
+        },
+        abort: () => {},
+      };
+    };
+    const appendComment = async () => {};
+    const otherModel = { provider: "anthropic", id: "claude-sonnet-5" } as unknown as AiModel;
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps: { model: fakeModel, agentFactory, appendComment } });
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps: { model: otherModel, agentFactory, appendComment } });
+    expect(factoryCalls).toBe(2);
+  });
+
+  it("drops the session after a failed run and reseeds with a full pack", async () => {
+    const prompts: string[] = [];
+    let factoryCalls = 0;
+    let fail = false;
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      let currentTools = tools;
+      return {
+        prompt: async (text: string) => {
+          prompts.push(text);
+          if (fail) throw new Error("boom");
+          await currentTools.find((t) => t.name === "submit_comment")?.execute("c", { level: "info", text: "x", escalate: false });
+        },
+        abort: () => {},
+        setTools: (tools) => {
+          currentTools = tools;
+        },
+      };
+    };
+    const deps: CommentatorDeps = { model: fakeModel, agentFactory, appendComment: async () => {} };
+
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+    fail = true;
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+    fail = false;
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+
+    expect(factoryCalls).toBe(2);
+    expect(JSON.parse(prompts[2])).toHaveProperty("pack");
+  });
+
+  it("drops the session when the agent never calls submit_comment", async () => {
+    let factoryCalls = 0;
+    let silent = false;
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      let currentTools = tools;
+      return {
+        prompt: async () => {
+          if (silent) return;
+          await currentTools.find((t) => t.name === "submit_comment")?.execute("c", { level: "info", text: "x", escalate: false });
+        },
+        abort: () => {},
+        setTools: (tools) => {
+          currentTools = tools;
+        },
+      };
+    };
+    const deps: CommentatorDeps = { model: fakeModel, agentFactory, appendComment: async () => {} };
+
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+    silent = true;
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+    silent = false;
+    await runCommentator({ symbol: "MU.US", pack: makePack("MU.US"), trigger, deps });
+
+    expect(factoryCalls).toBe(2);
+  });
+
+  it("recycles the session once the sent-chars budget is exhausted", async () => {
+    let factoryCalls = 0;
+    const agentFactory: AgentFactory = ({ tools }) => {
+      factoryCalls += 1;
+      let currentTools = tools;
+      return {
+        prompt: async () => {
+          await currentTools.find((t) => t.name === "submit_comment")?.execute("c", { level: "info", text: "x", escalate: false });
+        },
+        abort: () => {},
+        setTools: (tools) => {
+          currentTools = tools;
+        },
+      };
+    };
+    const deps: CommentatorDeps = { model: fakeModel, agentFactory, appendComment: async () => {} };
+    const bigPack = makePack("MU.US");
+    // quote is part of both the seed and every incremental update; oversize it
+    // so each prompt hits the MAX_PROMPT_CHARS (24k) truncation cap
+    bigPack.quote = { note: "x".repeat(30_000) } as unknown as CommentPack["quote"];
+
+    // 5 runs × 24k chars ≥ 120k budget → session recycled, 6th run reseeds
+    for (let i = 0; i < 5; i += 1) {
+      await runCommentator({ symbol: "MU.US", pack: bigPack, trigger, deps });
+    }
+    expect(factoryCalls).toBe(1);
+    await runCommentator({ symbol: "MU.US", pack: bigPack, trigger, deps });
+    expect(factoryCalls).toBe(2);
   });
 
   it("skips and returns escalate:false when a run for the symbol is already in flight", async () => {

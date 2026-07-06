@@ -1,17 +1,24 @@
 import { Agent, type AgentTool } from "@earendil-works/pi-agent-core";
 import { type Static, Type } from "typebox";
 import type { CockpitComment } from "../../../shared/types.js";
+import { easternDate } from "../services/session.js";
 import { appendComment as defaultAppendComment } from "./comments.js";
-import type { CommentPack } from "./datapack.js";
+import { buildCommentUpdate, type CommentPack } from "./datapack.js";
 import type { AiModel } from "./models.js";
 import type { Trigger } from "./triggers.js";
 import { attachAiUsageLogger } from "./usage.js";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const MAX_PROMPT_CHARS = 24_000;
+// Session recycling guards: a per-symbol session lives at most one trading day;
+// recycle earlier once the transcript grows past either bound so the cached
+// prefix cost does not outgrow the cache savings.
+const SESSION_MAX_RUNS = 40;
+const SESSION_MAX_SENT_CHARS = 120_000;
 
 const SYSTEM_PROMPT = [
-  "你是盘中点评员。你会收到一份 JSON 快照，包含：实时报价、5 分钟 K 线与 MACD、资金流、已归档的日内预测摘要、最近几条点评，以及本次触发原因。",
+  "你是盘中点评员。会话开始时你会收到一份 JSON 快照，包含：实时报价、5 分钟 K 线与 MACD、资金流、已归档的日内预测摘要、最近几条点评，以及本次触发原因。",
+  "之后同一交易日内每次触发，你只会收到一份增量更新（最新报价、新增 K 线、资金流尾部等），此前的快照和你写过的点评都在本对话上文里，直接沿用。",
   "请据此判断当前盘中状态，并调用 submit_comment 恰好一次给出结论。",
   "纪律：",
   "- text 用中文白话，最多两句，说清楚现在发生了什么、意味着什么。",
@@ -23,6 +30,7 @@ const SYSTEM_PROMPT = [
 export interface CommentatorAgent {
   prompt(text: string): Promise<unknown>;
   abort(): void;
+  setTools?(tools: AgentTool[]): void;
 }
 
 export type AgentFactory = (config: {
@@ -36,6 +44,7 @@ export interface CommentatorDeps {
   agentFactory?: AgentFactory;
   appendComment?: (comment: CockpitComment) => Promise<void>;
   timeoutMs?: number;
+  now?: () => Date;
 }
 
 export interface RunCommentatorInput {
@@ -45,16 +54,45 @@ export interface RunCommentatorInput {
   deps: CommentatorDeps;
 }
 
-const runningCommentators = new Set<string>();
+interface CommentatorSession {
+  agent: CommentatorAgent;
+  easternDate: string;
+  modelKey: string;
+  runCount: number;
+  sentChars: number;
+  lastBarTime: string | null;
+}
 
-const defaultAgentFactory: AgentFactory = (config) =>
-  new Agent({
+const runningCommentators = new Set<string>();
+const sessions = new Map<string, CommentatorSession>();
+
+export function resetCommentatorSessions(): void {
+  sessions.clear();
+}
+
+const defaultAgentFactory: AgentFactory = (config) => {
+  const agent = new Agent({
     initialState: {
       systemPrompt: config.systemPrompt,
       model: config.model,
       tools: config.tools,
     },
   });
+  return {
+    prompt: (text: string) => agent.prompt(text),
+    abort: () => agent.abort(),
+    setTools: (tools) => {
+      agent.state.tools = tools;
+    },
+    // attachAiUsageLogger duck-types on subscribe
+    subscribe: (listener: Parameters<Agent["subscribe"]>[0]) => agent.subscribe(listener),
+  } as CommentatorAgent;
+};
+
+function modelKey(model: AiModel): string {
+  const ref = model as { provider?: string; id?: string };
+  return `${ref.provider ?? "unknown"}/${ref.id ?? "unknown"}`;
+}
 
 function triggerText(trigger: Trigger): string {
   return `${trigger.kind}: ${trigger.detail}`;
@@ -135,6 +173,21 @@ async function runWithTimeout(
   });
 }
 
+function getValidSession(symbol: string, today: string, key: string): CommentatorSession | null {
+  const session = sessions.get(symbol);
+  if (!session) return null;
+  if (session.easternDate !== today || session.modelKey !== key) {
+    sessions.delete(symbol);
+    return null;
+  }
+  return session;
+}
+
+function lastBarTimeOf(pack: CommentPack): string | null {
+  const bars = pack.m5.bars;
+  return bars.length ? bars[bars.length - 1].time : null;
+}
+
 export async function runCommentator({
   symbol,
   pack,
@@ -147,6 +200,7 @@ export async function runCommentator({
   const append = deps.appendComment ?? defaultAppendComment;
   const factory = deps.agentFactory ?? defaultAgentFactory;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const now = deps.now ?? (() => new Date());
   const reason = triggerText(trigger);
 
   const writeError = (text: string) =>
@@ -172,18 +226,42 @@ export async function runCommentator({
       },
       () => state.done,
     );
-    const agent = factory({ systemPrompt: SYSTEM_PROMPT, model: deps.model, tools: [tool] });
-    attachAiUsageLogger(agent, { layer: "commentator", symbol, model: deps.model });
-    const promptText = JSON.stringify({ pack, trigger }).slice(0, MAX_PROMPT_CHARS);
 
-    await runWithTimeout(agent, promptText, timeoutMs, state);
+    const today = easternDate(now());
+    const key = modelKey(deps.model);
+    let session = getValidSession(symbol, today, key);
+    let promptText: string;
+    if (session) {
+      session.agent.setTools?.([tool]);
+      const update = buildCommentUpdate(pack, session.lastBarTime);
+      promptText = JSON.stringify({ update, trigger }).slice(0, MAX_PROMPT_CHARS);
+    } else {
+      const agent = factory({ systemPrompt: SYSTEM_PROMPT, model: deps.model, tools: [tool] });
+      attachAiUsageLogger(agent, { layer: "commentator", symbol, model: deps.model });
+      session = { agent, easternDate: today, modelKey: key, runCount: 0, sentChars: 0, lastBarTime: null };
+      sessions.set(symbol, session);
+      promptText = JSON.stringify({ pack, trigger }).slice(0, MAX_PROMPT_CHARS);
+    }
+
+    await runWithTimeout(session.agent, promptText, timeoutMs, state);
 
     if (escalate === null) {
+      // The agent ignored the tool contract; drop the session rather than
+      // carry the non-compliant exchange into the cached prefix.
+      sessions.delete(symbol);
       await writeError("点评员未调用 submit_comment，本次无结论。");
       return { escalate: false };
     }
+
+    session.runCount += 1;
+    session.sentChars += promptText.length;
+    session.lastBarTime = lastBarTimeOf(pack) ?? session.lastBarTime;
+    if (session.runCount >= SESSION_MAX_RUNS || session.sentChars >= SESSION_MAX_SENT_CHARS) {
+      sessions.delete(symbol);
+    }
     return { escalate };
   } catch (err) {
+    sessions.delete(symbol);
     const text =
       err instanceof CommentatorTimeoutError
         ? `点评员超时未产出结论（${timeoutMs}ms）。`
