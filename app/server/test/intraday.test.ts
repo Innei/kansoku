@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { RawBar, TimeframeKey } from "../../shared/types.js";
-import { buildIntraday, coerceIntradayTimeframe, computeIntradayEntryPlan, type IntradayInput } from "../src/services/intraday.js";
+import {
+  buildIntraday,
+  capMarkersPerBar,
+  coerceIntradayTimeframe,
+  computeIntradayEntryPlan,
+  mergeAiAutoMarkers,
+  type IntradayInput,
+} from "../src/services/intraday.js";
 import { approxDiff, loadFixture } from "./helpers.js";
 
 type TfExpected = Record<
@@ -202,6 +209,15 @@ describe("intraday parity vs python golden fixture", () => {
     }
   });
 
+  it("caps visible markers per bar in built output", () => {
+    const { built } = buildIntraday(input);
+    for (const tf of Object.values(built.timeframes)) {
+      const perBar = new Map<number, number>();
+      for (const m of tf.markers) perBar.set(m.time, (perBar.get(m.time) ?? 0) + 1);
+      for (const count of perBar.values()) expect(count).toBeLessThanOrEqual(2);
+    }
+  });
+
   it("throws ClientError when sources_used is not an array", () => {
     const context = {
       generated_at: "2026-07-05T14:00:00.000Z",
@@ -210,5 +226,56 @@ describe("intraday parity vs python golden fixture", () => {
       sources_used: "nope" as unknown as [],
     };
     expect(() => buildIntraday({ ...input, context })).toThrow(/sources_used/);
+  });
+});
+
+describe("marker consolidation helpers", () => {
+  const barIndex = new Map<number, number>([...Array.from({ length: 10 }, (_, i) => [1000 + i * 60, i] as [number, number])]);
+  const marker = (time: number, group: string | undefined, text: string, tooltip: string) =>
+    ({ time, position: "aboveBar", color: "#fff", shape: "circle", text, tooltip, group }) as never;
+
+  it("merges an auto divergence marker into a nearby AI divergence marker of the same type", () => {
+    const ai = [marker(1060, "ai", "⚡", "⚡ AI 标注信号\n15m 顶背离")];
+    const auto = [marker(1120, "divergence", "📉", "📉 自动·顶背离（简化算法，仅供参考）\n详情")];
+    const out = mergeAiAutoMarkers(ai, auto, barIndex);
+    expect(out).toHaveLength(1);
+    expect(out[0].group).toBe("ai");
+    expect(out[0].tooltip).toContain("自动检测同步确认");
+    expect(out[0].tooltip).not.toContain("简化算法");
+  });
+
+  it("keeps auto markers of a different type or beyond the merge window", () => {
+    const ai = [marker(1000, "ai", "⚡", "⚡ AI 标注信号\n顶背离")];
+    const auto = [
+      marker(1000, "beichi", "🌀", "🌀 自动·顶背驰（简化算法，仅供参考）\n详情"),
+      marker(1240, "divergence", "📉", "📉 自动·顶背离（简化算法，仅供参考）\n详情"),
+    ];
+    const out = mergeAiAutoMarkers(ai, auto, barIndex);
+    expect(out).toHaveLength(3);
+  });
+
+  it("merges same-bar same-group duplicate markers into one with combined tooltip", () => {
+    const out = capMarkersPerBar([
+      marker(1000, "divergence", "", "📉 自动·顶背离\nA 段详情"),
+      marker(1000, "divergence", "", "📉 自动·顶背离\nB 段详情"),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].tooltip).toContain("A 段详情");
+    expect(out[0].tooltip).toContain("B 段详情");
+  });
+
+  it("caps same-bar markers at 2 by group priority and folds dropped ones into the tooltip", () => {
+    const stacked = [
+      marker(1000, "candle", "十字星", "🕯️ 自动·十字星\n详情"),
+      marker(1000, "ai", "🌀", "🌀 AI 标注信号\n背驰"),
+      marker(1000, "divergence", "📉", "📉 自动·顶背离\n详情"),
+      marker(1000, "pattern123", "③", "🔢 自动·顶部123\n详情"),
+    ];
+    const out = capMarkersPerBar(stacked);
+    expect(out).toHaveLength(2);
+    expect(out.map((m) => m.group)).toEqual(["ai", "divergence"]);
+    expect(out[1].tooltip).toContain("本根另有");
+    expect(out[1].tooltip).toContain("顶部123");
+    expect(out[1].tooltip).toContain("十字星");
   });
 });

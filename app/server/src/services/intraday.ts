@@ -350,6 +350,86 @@ function buildIntradaySignals(signals: IntradayPrediction["signals"]): Record<Ti
   return perTf;
 }
 
+const MARKER_GROUP_RANK: Record<string, number> = { ai: 0, divergence: 1, beichi: 2, pattern123: 3, candle: 4 };
+const MAX_MARKERS_PER_BAR = 2;
+const AI_AUTO_MERGE_BAR_WINDOW = 2;
+
+const AI_ICON_TO_AUTO_GROUP: Record<string, "divergence" | "beichi"> = {
+  [SIGNAL_ICON.macd_divergence]: "divergence",
+  [SIGNAL_ICON.macd_beichi]: "beichi",
+};
+
+export function mergeAiAutoMarkers(
+  aiMarkers: SeriesMarker[],
+  autoMarkers: SeriesMarker[],
+  barIndex: Map<number, number>,
+): SeriesMarker[] {
+  const merged = aiMarkers.map((m) => ({ ...m }));
+  const kept: SeriesMarker[] = [];
+  for (const auto of autoMarkers) {
+    const autoIdx = barIndex.get(auto.time);
+    const near =
+      autoIdx === undefined
+        ? undefined
+        : merged.find((ai) => {
+            if (!ai.text || AI_ICON_TO_AUTO_GROUP[ai.text] !== auto.group) return false;
+            const aiIdx = barIndex.get(ai.time);
+            return aiIdx !== undefined && Math.abs(aiIdx - autoIdx) <= AI_AUTO_MERGE_BAR_WINDOW;
+          });
+    if (!near) {
+      kept.push(auto);
+      continue;
+    }
+    const autoTitle = auto.tooltip?.split("\n")[0]?.replace(/（[^）]*）/g, "");
+    const note = autoTitle ? `✓ 自动检测同步确认（${autoTitle}）` : null;
+    if (note && !near.tooltip?.includes(note)) near.tooltip = `${near.tooltip}\n${note}`;
+  }
+  return [...merged, ...kept];
+}
+
+export function capMarkersPerBar(markers: SeriesMarker[], cap = MAX_MARKERS_PER_BAR): SeriesMarker[] {
+  const bySlot = new Map<string, SeriesMarker>();
+  const deduped: SeriesMarker[] = [];
+  for (const m of markers) {
+    const slot = `${m.time}|${m.group ?? ""}|${m.text ?? ""}`;
+    const prev = bySlot.get(slot);
+    if (!prev) {
+      const copy = { ...m };
+      bySlot.set(slot, copy);
+      deduped.push(copy);
+    } else if (m.tooltip && prev.tooltip !== m.tooltip && !prev.tooltip?.includes(m.tooltip)) {
+      prev.tooltip = `${prev.tooltip}\n———\n${m.tooltip}`;
+    }
+  }
+  const byTime = new Map<number, SeriesMarker[]>();
+  for (const m of deduped) {
+    const list = byTime.get(m.time);
+    if (list) list.push(m);
+    else byTime.set(m.time, [m]);
+  }
+  const out: SeriesMarker[] = [];
+  for (const group of byTime.values()) {
+    if (group.length <= cap) {
+      out.push(...group);
+      continue;
+    }
+    const ranked = [...group].sort(
+      (a, b) => (MARKER_GROUP_RANK[a.group ?? ""] ?? 9) - (MARKER_GROUP_RANK[b.group ?? ""] ?? 9),
+    );
+    const keep = ranked.slice(0, cap).map((m) => ({ ...m }));
+    const dropped = ranked
+      .slice(cap)
+      .map((m) => m.tooltip?.split("\n")[0])
+      .filter((t): t is string => Boolean(t));
+    if (dropped.length) {
+      const last = keep[keep.length - 1];
+      last.tooltip = `${last.tooltip}\n———\n本根另有：${dropped.join("；")}`;
+    }
+    out.push(...keep);
+  }
+  return out.sort((a, b) => a.time - b.time);
+}
+
 function autoPatternMarkers(items: DivergencePair[], group: "divergence" | "beichi", color: string): TfOverlay {
   const markers: SeriesMarker[] = [];
   const priceConnectors: Connector[] = [];
@@ -363,7 +443,7 @@ function autoPatternMarkers(items: DivergencePair[], group: "divergence" | "beic
       `${barTimeShort(a.time)} $${a.price} → ${barTimeShort(b.time)} $${b.price}\n` +
       meta.impact;
     for (const p of [a, b]) {
-      markers.push({ time: p.time, position, color, shape: "circle", text: meta.icon, tooltip, group });
+      markers.push({ time: p.time, position, color, shape: "circle", text: "", tooltip, group });
     }
     priceConnectors.push({
       color,
@@ -695,9 +775,11 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
       macdDea: tf.macdDea,
       macdHist: tf.macdHist,
       macdCrossMarkers: crossMarkers,
-      markers: [...sig.markers, ...autoDiv.markers, ...autoBei.markers, ...auto123.markers, ...patternMarkers]
-        .sort((a, b) => a.time - b.time)
-        .map((m, i) => ({ ...m, id: `m-${i}` })),
+      markers: capMarkersPerBar([
+        ...mergeAiAutoMarkers(sig.markers, [...autoDiv.markers, ...autoBei.markers], barIndex),
+        ...auto123.markers,
+        ...patternMarkers,
+      ]).map((m, i) => ({ ...m, id: `m-${i}` })),
       priceConnectors: [...sig.priceConnectors, ...autoDiv.priceConnectors, ...autoBei.priceConnectors, ...auto123.priceConnectors],
       macdConnectors: [...sig.macdConnectors, ...autoDiv.macdConnectors, ...autoBei.macdConnectors],
       autoDivergence: tf.autoDivergence,
