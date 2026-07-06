@@ -131,6 +131,9 @@ export function attachAiUsageLogger(agent: unknown, ctx: AiUsageLogContext): voi
     }
     console.log(`${prefix(ctx)} total calls=${total.calls} ${usageText(total)}`);
     persistTotal(total, ctx);
+    // Reused commentator sessions emit agent_end once per run on the same
+    // agent — reset so each run persists its own delta, not a running sum.
+    Object.assign(total, emptyUsage());
   });
 }
 

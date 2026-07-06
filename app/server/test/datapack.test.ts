@@ -3,7 +3,9 @@ import type { ChartDoc, ChartMeta, CockpitComment, RawBar } from "../../shared/t
 import type { RawPosition } from "../src/services/marketdata/types.js";
 import {
   buildCommentPack,
+  buildCommentUpdate,
   buildReassessPack,
+  type CommentPack,
   type DatapackDeps,
   findTodayLatestIntradayDoc,
   truncateForPrompt,
@@ -100,6 +102,60 @@ describe("findTodayLatestIntradayDoc", () => {
     const older = intradayDoc("2026-07-01-mu", "2026-07-01T15:00:00Z");
     const deps = makeDeps({ listCharts: async () => [older] as ChartMeta[] });
     expect(await findTodayLatestIntradayDoc("MU.US", deps)).toBeNull();
+  });
+});
+
+describe("buildCommentUpdate", () => {
+  function updatePack(bars: RawBar[]): CommentPack {
+    const idx = bars.map((_, i) => i);
+    return {
+      symbol: "MU.US",
+      as_of: NOW.toISOString(),
+      quote: { symbol: "MU.US", session: "日盘", last: 101, pct: 1, regularLast: 101, regularPct: 1 } as CommentPack["quote"],
+      m5: { bars, macd: { dif: idx, dea: idx.map((i) => i * 2), hist: idx.map((i) => i * 3) } },
+      flow: Array.from({ length: 25 }, (_, i) => ({ time: `t${i}`, inflow: String(i) })) as CommentPack["flow"],
+      prediction: { chartId: "x", direction: "long", anchor: null, entry: 1, stop: 0, target1: 2, target2: 3, zones: [] },
+      recent_comments: [comment("c0")],
+      day_levels: {
+        prev_day: { high: 2, low: 1, close: 1.5 } as never,
+        pre_market: { high: 2.2, low: 1.1 } as never,
+        opening_range: { high: 2.4, low: 1.2 } as never,
+      },
+      rel_volume: null,
+    };
+  }
+
+  it("keeps all bars when lastBarTime is null", () => {
+    const pack = updatePack(genBars(10));
+    const update = buildCommentUpdate(pack, null);
+    expect(update.m5.bars).toHaveLength(10);
+    expect(update.m5.macd.dif).toHaveLength(10);
+  });
+
+  it("keeps only bars newer than lastBarTime, with aligned macd tails", () => {
+    const bars = genBars(10);
+    const pack = updatePack(bars);
+    const update = buildCommentUpdate(pack, bars[6].time);
+    expect(update.m5.bars.map((b) => b.time)).toEqual(bars.slice(7).map((b) => b.time));
+    expect(update.m5.macd.dif).toEqual([7, 8, 9]);
+    expect(update.m5.macd.dea).toEqual([14, 16, 18]);
+    expect(update.m5.macd.hist).toEqual([21, 24, 27]);
+  });
+
+  it("returns empty bars and macd when nothing is newer than lastBarTime", () => {
+    const bars = genBars(10);
+    const update = buildCommentUpdate(updatePack(bars), bars[9].time);
+    expect(update.m5.bars).toEqual([]);
+    expect(update.m5.macd).toEqual({ dif: [], dea: [], hist: [] });
+  });
+
+  it("trims flow to the tail and drops fields already in the session transcript", () => {
+    const update = buildCommentUpdate(updatePack(genBars(5)), null);
+    expect(update.flow).toHaveLength(10);
+    expect(update.flow[0].inflow).toBe("15");
+    expect(update.day_levels).toEqual({ opening_range: { high: 2.4, low: 1.2 } });
+    expect(update).not.toHaveProperty("prediction");
+    expect(update).not.toHaveProperty("recent_comments");
   });
 });
 

@@ -8,6 +8,10 @@ import { BASE_URL, PORT, WEB_ROOT } from "./env.js";
 
 loadDotenv();
 
+// 1h prompt-cache TTL: commentator sessions re-run at 5-min heartbeats, the
+// default 5-min ephemeral TTL expires right at the boundary and misses.
+process.env.PI_CACHE_RETENTION ??= "long";
+
 const app = await createApp();
 await app.register(middie);
 
