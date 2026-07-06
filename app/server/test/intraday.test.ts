@@ -180,6 +180,28 @@ describe("intraday parity vs python golden fixture", () => {
     expect(groupsSeen).toEqual(new Set(["ai", "divergence", "beichi", "pattern123", "candle"]));
   });
 
+  it("renders neutral candle patterns as gray inBar circles and labels every pattern regardless of strength", () => {
+    const { built } = buildIntraday(input);
+    const candleMarkers = built.timeframes.m5.markers.filter((m) => m.group === "candle");
+    expect(candleMarkers.length).toBeGreaterThan(0);
+
+    const neutral = candleMarkers.find((m) => m.text === "十字星");
+    expect(neutral).toBeDefined();
+    expect(neutral?.position).toBe("inBar");
+    expect(neutral?.color).toBe("#9e9e9e");
+    expect(neutral?.shape).toBe("circle");
+
+    const weakBullish = candleMarkers.find((m) => m.text === "看涨孕线");
+    expect(weakBullish).toBeDefined();
+    expect(weakBullish?.text).not.toBe("");
+    expect(weakBullish?.position).toBe("belowBar");
+    expect(weakBullish?.shape).toBe("arrowUp");
+
+    for (const m of candleMarkers) {
+      expect(m.text).not.toBe("");
+    }
+  });
+
   it("throws ClientError when sources_used is not an array", () => {
     const context = {
       generated_at: "2026-07-05T14:00:00.000Z",

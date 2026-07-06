@@ -25,7 +25,7 @@ import {
 } from "../../../shared/types.js";
 import { formatMarketMonthDayTime } from "../../../shared/time.js";
 import { ClientError } from "../errors.js";
-import { CANDLE_PATTERN_META, detectCandlePatterns } from "./candlePatterns.js";
+import { detectCandlePatterns } from "./candlePatterns.js";
 import { detectFvgZones } from "./fvg.js";
 import { ema, findSwings, lineData, macd, pyRound, sma, toTs } from "./indicators.js";
 import { classifyMacdStructure, MACD_STRUCTURE_META, ZERO_TANGLE_NOTE, type MacdStructure } from "./macdStructure.js";
@@ -680,10 +680,10 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
     });
     const patternMarkers: SeriesMarker[] = dedupedPatterns.slice(-12).map((p) => ({
       time: p.time,
-      position: p.bias === "bullish" ? "belowBar" : "aboveBar",
-      color: p.bias === "bullish" ? "#26a69a" : "#ef5350",
-      shape: p.bias === "bullish" ? "arrowUp" : "arrowDown",
-      text: CANDLE_PATTERN_META[p.kind].strong ? p.label : "",
+      position: p.bias === "neutral" ? "inBar" : p.bias === "bullish" ? "belowBar" : "aboveBar",
+      color: p.bias === "neutral" ? "#9e9e9e" : p.bias === "bullish" ? "#26a69a" : "#ef5350",
+      shape: p.bias === "neutral" ? "circle" : p.bias === "bullish" ? "arrowUp" : "arrowDown",
+      text: p.label,
       tooltip: `🕯️ 自动·${p.label}（简化算法，仅供参考）\n${barTimeShort(p.time)} $${p.price}\n${p.implication}`,
       group: "candle",
     }));
