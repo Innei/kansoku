@@ -1,11 +1,31 @@
 import websocket from "@fastify/websocket";
 import type { FastifyPluginAsync } from "fastify";
 import type { WebSocket } from "ws";
+import type { CockpitComment } from "../../../shared/types.js";
+import { listComments, onComment } from "../ai/comments.js";
 import { subscribeChart } from "../realtime/charts.js";
 import { subscribeQuotes } from "../realtime/quotes.js";
 import { clampViewCount } from "../services/history.js";
-import { attachComments } from "./streams.js";
+import { easternDate } from "../services/session.js";
 import { normalizeSymbol } from "./symbols.js";
+
+async function attachComments(symbol: string, push: (envelope: string) => void): Promise<() => void> {
+  const buffered: CockpitComment[] = [];
+  let ready = false;
+  const unsub = onComment(symbol, (comment) => {
+    if (ready) push(JSON.stringify({ type: "comment", comment }));
+    else buffered.push(comment);
+  });
+  const comments = await listComments(symbol, easternDate());
+  push(JSON.stringify({ type: "init", comments }));
+  const seen = new Set(comments.map((c) => `${c.ts} ${c.text}`));
+  for (const comment of buffered) {
+    if (seen.has(`${comment.ts} ${comment.text}`)) continue;
+    push(JSON.stringify({ type: "comment", comment }));
+  }
+  ready = true;
+  return unsub;
+}
 
 const MAX_CHANNELS_PER_SOCKET = 16;
 const PING_MS = 15_000;

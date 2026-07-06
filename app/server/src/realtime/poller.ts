@@ -4,7 +4,7 @@ export interface PollerHandle {
 }
 
 export interface PollerOptions {
-  intervalMs: number;
+  intervalMs: number | (() => number);
   task: () => Promise<unknown>;
   failThreshold?: number;
   backoffMs?: number;
@@ -54,7 +54,8 @@ export function createPoller(opts: PollerOptions): PollerHandle {
     } finally {
       running = false;
       if (!stopped && listeners.size > 0) {
-        const interval = failStreak >= failThreshold ? backoffMs : opts.intervalMs;
+        const base = typeof opts.intervalMs === "function" ? opts.intervalMs() : opts.intervalMs;
+        const interval = failStreak >= failThreshold ? backoffMs : base;
         timer = setTimeout(tick, interval);
       }
     }

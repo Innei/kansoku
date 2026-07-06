@@ -1,12 +1,19 @@
 import type { ChartDoc } from "../../../shared/types.js";
 import { ClientError } from "../errors.js";
 import { buildChart, refreshBody } from "../services/build.js";
+import { classifySession } from "../services/session.js";
 import { predictionStale } from "../services/staleness.js";
 import { loadChart } from "../services/store.js";
 import { createPoller, type PollerHandle } from "./poller.js";
 
-const CHART_INTERVAL_MS = 60_000;
 const LIVE_TYPES = new Set(["flow", "intraday"]);
+
+function chartIntervalMs(): number {
+  const session = classifySession(Math.floor(Date.now() / 1000));
+  if (session === "regular") return 15_000;
+  if (session === "pre" || session === "post") return 30_000;
+  return 300_000;
+}
 
 const chartPollers = new Map<string, PollerHandle>();
 
@@ -29,7 +36,7 @@ export async function subscribeChart(id: string, push: (envelope: string) => voi
   let handle = chartPollers.get(key);
   if (!handle) {
     handle = createPoller({
-      intervalMs: CHART_INTERVAL_MS,
+      intervalMs: chartIntervalMs,
       task: async () => {
         const latest = await loadChart(id);
         if (!latest) throw new ClientError(`chart not found: ${id}`, undefined, 404);
