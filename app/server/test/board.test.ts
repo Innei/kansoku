@@ -129,4 +129,29 @@ describe("subscribeBoard", () => {
     await vi.advanceTimersByTimeAsync(3_000);
     expect(provider.getQuotes).not.toHaveBeenCalled();
   });
+
+  it("triggers a fresh refresh for the next subscriber even if the torn-down refresh resolves late", async () => {
+    const unsub = subscribeBoard(() => {});
+    unsub();
+    await vi.advanceTimersByTimeAsync(0);
+
+    provider.getQuotes.mockClear();
+    const events: unknown[] = [];
+    const unsub2 = subscribeBoard((env) => events.push(JSON.parse(env)));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(provider.getQuotes).toHaveBeenCalled();
+    expect(events.some((e: any) => e.type === "data")).toBe(true);
+    unsub2();
+  });
+
+  it("falls back to a slow periodic refresh so a board-only client isn't stuck between quote updates", async () => {
+    const unsub = subscribeBoard(() => {});
+    await vi.advanceTimersByTimeAsync(0);
+    provider.getQuotes.mockClear();
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(provider.getQuotes).toHaveBeenCalled();
+    unsub();
+  });
 });

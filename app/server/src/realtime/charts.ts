@@ -137,10 +137,13 @@ export async function subscribeChart(id: string, push: (envelope: string) => voi
         const latest = await loadChart(id);
         if (!latest) throw new ClientError(`chart not found: ${id}`, undefined, 404);
         const body = refreshBody(latest.type, latest.input);
-        const built = body
-          ? (await buildChart(viewCount === undefined ? body : { ...body, count: viewCount })).built
-          : latest.built;
-        return { built, ...predictionFields(latest) };
+        if (!body) return { built: latest.built, ...predictionFields(latest) };
+        const result = await buildChart(viewCount === undefined ? body : { ...body, count: viewCount });
+        if (latest.type === "intraday") {
+          const state = candleStates.get(key);
+          if (state) state.timeframes = { ...(result.input.timeframes as Partial<Record<TimeframeKey, RawBar[]>>) };
+        }
+        return { built: result.built, ...predictionFields(latest) };
       },
       onStop: () => {
         chartPollers.delete(key);

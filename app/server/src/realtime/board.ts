@@ -4,10 +4,12 @@ import { getLongbridgeStream } from "../services/marketdata/longbridgeStream.js"
 import { createEmitter, emitData, emitStatus, replay } from "./emitter.js";
 
 const THROTTLE_MS = 2_000;
+const SLOW_REFRESH_MS = 60_000;
 
 const emitter = createEmitter();
 let quoteUnsub: (() => void) | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
+let slowTimer: ReturnType<typeof setInterval> | null = null;
 let refreshing: Promise<void> | null = null;
 
 async function refresh(): Promise<void> {
@@ -15,9 +17,11 @@ async function refresh(): Promise<void> {
   refreshing = (async () => {
     try {
       const board = await buildOverviewBoard(chartUrl);
+      if (emitter.listeners.size === 0) return;
       emitStatus(emitter, false);
       emitData(emitter, board);
     } catch (err) {
+      if (emitter.listeners.size === 0) return;
       emitStatus(emitter, true, err instanceof Error ? err.message : String(err));
     }
   })().finally(() => {
@@ -37,6 +41,7 @@ function scheduleRefresh(): void {
 function ensureListener(): void {
   if (quoteUnsub) return;
   quoteUnsub = getLongbridgeStream().onUpdate(() => scheduleRefresh());
+  slowTimer = setInterval(() => void refresh(), SLOW_REFRESH_MS);
 }
 
 export function subscribeBoard(push: (envelope: string) => void): () => void {
@@ -52,6 +57,8 @@ export function subscribeBoard(push: (envelope: string) => void): () => void {
       quoteUnsub = null;
       if (timer) clearTimeout(timer);
       timer = null;
+      if (slowTimer) clearInterval(slowTimer);
+      slowTimer = null;
       emitter.lastEnvelope = null;
       emitter.degraded = false;
     }

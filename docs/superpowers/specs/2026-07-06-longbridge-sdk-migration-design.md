@@ -47,7 +47,7 @@
 | kind | 参数 | 数据 | 实时来源 |
 |---|---|---|---|
 | `position` | `{ symbol }` | 持仓数量、成本、实时盈亏、相对成交量 | stockPositions 快照(低频)× quote 推送(高频)服务端合成 |
-| `benchmark` | `{ symbol }` | SPY/QQQ 对照序列 | 已有 quote 推送,服务端聚合 |
+| `benchmark` | `{ symbol }` | SMH/QQQ 对照序列 | 已有 quote 推送,服务端聚合 |
 | `board` | 无 | 盘面看板行(watchlist ∪ positions) | quote 推送 + 定期快照合成 |
 
 - 前端四处 `useIntervalFetch` 改为现有 WS hook 订阅对应频道;`useIntervalFetch` 保留给未迁移的边角。
