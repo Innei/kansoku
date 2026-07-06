@@ -109,12 +109,11 @@ export async function allocateId(date: string, slug: string): Promise<string> {
   const base = `${date}-${slug}`;
   let id = base;
   for (let n = 2; ; n++) {
-    try {
-      await fs.access(docPath(id));
-      id = `${base}-${n}`;
-    } catch {
-      return id;
-    }
+    const existing = await loadChart(id);
+    if (!existing) return id;
+    const input = (existing.input ?? {}) as Record<string, unknown>;
+    if (input.prediction == null && input.context == null) return id;
+    id = `${base}-${n}`;
   }
 }
 
@@ -128,8 +127,9 @@ export async function saveChart(doc: ChartDoc, db: Db = getDb()): Promise<void> 
 
 export async function deleteChart(id: string, db: Db = getDb()): Promise<boolean> {
   const doc = await loadChart(id);
-  if (!doc) return false;
-  await fs.rm(docPath(id));
+  const indexed = await db.select({ id: chartMeta.id }).from(chartMeta).where(eq(chartMeta.id, id)).limit(1);
+  if (!doc && indexed.length === 0) return false;
+  if (doc) await fs.rm(docPath(id));
   await db.delete(chartMeta).where(eq(chartMeta.id, id));
   await db.delete(outcomes).where(eq(outcomes.chartId, id));
   return true;

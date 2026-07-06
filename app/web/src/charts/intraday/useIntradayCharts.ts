@@ -18,6 +18,7 @@ import {
   type MarkerTooltipHandle,
 } from "../lw";
 import type { IndicatorToggleKey } from "./useIndicatorToggles";
+import { AnchorBgPrimitive } from "./anchorPrimitive";
 import { FvgPrimitive } from "./fvgPrimitive";
 import { SessionBgPrimitive } from "./sessionPrimitive";
 import { seriesPalette, theme } from "../../theme";
@@ -40,6 +41,7 @@ interface Handle {
   dynamic: { chart: IChartApi; series: ISeriesApi<"Line"> }[];
   planLines: ReturnType<typeof addPriceLine>[];
   fvg: FvgPrimitive;
+  anchorBg: AnchorBgPrimitive;
 }
 
 const NEAR_LEFT_BARS = 10;
@@ -99,6 +101,8 @@ export function useIntradayCharts(
     candle.attachPrimitive(session);
     const fvg = new FvgPrimitive();
     candle.attachPrimitive(fvg);
+    const anchorBg = new AnchorBgPrimitive();
+    candle.attachPrimitive(anchorBg);
 
     const emaCount = builtRef.current.timeframes.m5?.emas?.length ?? 0;
     const emaSeries = Array.from({ length: emaCount }, (_, i) =>
@@ -128,7 +132,7 @@ export function useIntradayCharts(
     };
     main.timeScale().subscribeVisibleLogicalRangeChange(onRangeChange);
 
-    handleRef.current = { main, macd, candle, vol, session, macdSession, emaSeries, hist, dif, dea, mainTip, macdTip, dynamic: [], planLines: [], fvg };
+    handleRef.current = { main, macd, candle, vol, session, macdSession, emaSeries, hist, dif, dea, mainTip, macdTip, dynamic: [], planLines: [], fvg, anchorBg };
     lastTfRef.current = null;
     firstTimeRef.current = null;
 
@@ -170,6 +174,9 @@ export function useIntradayCharts(
       s.setData(toggles.ema && emaLine ? padLineData(emaLine.data, timeline) : []);
     });
     h.fvg.setData(toggles.fvg ? (d.fvgZones ?? []) : []);
+    const anchor = built.sidebar.prediction?.anchor;
+    const anchorHere = anchor && anchor.timeframe === activeTf ? anchor : null;
+    h.anchorBg.setData(toggles.ai && anchorHere ? [Math.floor(Date.parse(anchorHere.time) / 1000)] : []);
     const markers = filterByGroup(d.markers, toggles);
     h.candle.setMarkers(toMarkers(markers));
     h.mainTip.setMarkers(markers);
@@ -200,6 +207,9 @@ export function useIntradayCharts(
 
     h.planLines.forEach((line) => h.candle.removePriceLine(line));
     h.planLines = [];
+    if (toggles.levels && anchorHere) {
+      h.planLines.push(addPriceLine(h.candle, { price: anchorHere.price, color: theme.accent, lineWidth: 1, lineStyle: 2, title: `🎯 锚 $${anchorHere.price.toFixed(2)}` }));
+    }
     const ep = built.entryPlan;
     if (ep && toggles.levels) {
       h.planLines.push(addPriceLine(h.candle, { price: ep.entry, color: theme.accent, lineWidth: 2, lineStyle: 0, title: `入场 $${ep.entry.toFixed(2)}` }));

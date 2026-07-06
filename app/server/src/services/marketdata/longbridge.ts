@@ -5,9 +5,28 @@ import type { FlowRow } from "../simple.js";
 import type { MarketDataProvider, RawCapitalDistribution, RawPortfolio, RawPosition, RawQuote } from "./types.js";
 
 const FAILURE_COOLDOWN_MS = 120_000;
+const MAX_CONCURRENCY = 4;
 
-let queue: Promise<unknown> = Promise.resolve();
+let active = 0;
+const waiters: Array<() => void> = [];
 let lastFailureAt = 0;
+
+function acquire(): Promise<void> {
+  if (active < MAX_CONCURRENCY) {
+    active++;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => waiters.push(resolve));
+}
+
+function release(): void {
+  const next = waiters.shift();
+  if (next) {
+    next();
+  } else {
+    active--;
+  }
+}
 
 function cooldownLeft(now = Date.now()): number {
   return Math.max(0, FAILURE_COOLDOWN_MS - (now - lastFailureAt));
@@ -57,7 +76,8 @@ function execLongbridge(args: string[]): Promise<string> {
 async function longbridgeJson<T>(args: string[]): Promise<T> {
   if (cooldownLeft() > 0) throw blockedError(args);
 
-  const run = async (): Promise<T> => {
+  await acquire();
+  try {
     if (cooldownLeft() > 0) throw blockedError(args);
 
     let stdout: string;
@@ -83,11 +103,9 @@ async function longbridgeJson<T>(args: string[]): Promise<T> {
         502,
       );
     }
-  };
-
-  const result = queue.then(run, run);
-  queue = result.catch(() => undefined);
-  return result;
+  } finally {
+    release();
+  }
 }
 
 interface RawNewsItem {

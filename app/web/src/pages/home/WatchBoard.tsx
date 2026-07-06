@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import type { OverviewBoard, OverviewRow } from "../../../../shared/types";
-import { formatMarketClock } from "../../../../shared/time";
 import { api, errorMessage } from "../../api";
 import { fmt, signed } from "../../format";
-import { Badge, Button, Card, Dot, Empty, ErrorBox, Num } from "../../ui";
+import { Badge, Button, Card, Dot, Empty, ErrorBox, MarketTime, Num } from "../../ui";
 
 const DIRECTION_LABEL: Record<string, string> = { long: "做多", short: "做空", neutral: "观望" };
 
@@ -81,7 +80,7 @@ function SymbolCard({ row }: { row: OverviewRow }) {
       </div>
       {comment && (
         <div className={`symbol-card-comment ${comment.level}`}>
-          {formatMarketClock(comment.ts)} · {comment.text}
+          <MarketTime value={comment.ts} format="clock" /> · {comment.text}
         </div>
       )}
     </Card>

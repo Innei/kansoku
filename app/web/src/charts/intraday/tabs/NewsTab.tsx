@@ -1,6 +1,5 @@
 import type { ContextNewsItem, ContextNewsSource, ContextNewsTag, IntradayContext, NewsItem } from "../../../../../shared/types";
-import { formatMarketMonthDayTime } from "../../../../../shared/time";
-import { Badge, SectionTitle } from "../../../ui";
+import { Badge, MarketTime, SectionTitle } from "../../../ui";
 import { NewsSection } from "../../NewsSection";
 
 const TAG_LABEL: Record<ContextNewsTag, string> = {
@@ -22,7 +21,7 @@ function ContextNewsRow({ item }: { item: ContextNewsItem }) {
   const body = (
     <>
       <span className="news-meta">
-        {formatMarketMonthDayTime(item.time)}
+        <MarketTime value={item.time} format="month-day-time" />
         <Badge tone="accent">{TAG_LABEL[item.tag] ?? item.tag}</Badge>
         <Badge>{SOURCE_LABEL[item.source] ?? item.source}</Badge>
       </span>

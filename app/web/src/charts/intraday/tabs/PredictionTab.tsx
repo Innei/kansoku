@@ -1,14 +1,13 @@
 import type { CSSProperties } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { IntradayBuilt, TimeframeKey } from "../../../../../shared/types";
-import { formatMarketDateTime } from "../../../../../shared/time";
 import { fmt, signed } from "../../../format";
 import { TF_LABELS } from "../IntradayDashboard";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../directionLabels";
-import { predictionAgeText } from "../predictionAge";
+import { predictionMinutesAgo } from "../predictionAge";
 import { AutoSignalItem, Pattern123Item, PriceZoneCard, TargetContextCard, TechRow } from "./predictionTabParts";
 import { theme } from "../../../theme";
-import { SectionTitle } from "../../../ui";
+import { MarketTime, SectionTitle } from "../../../ui";
 
 const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: "⚡", macd_beichi: "🌀" };
 const TF_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
@@ -42,14 +41,18 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
                 <TriangleAlert className="icon" size={13} /> 盘中已过期
               </span>
             ) : (
-              predictionUpdatedAt && <span className="prediction-age">{predictionAgeText(predictionUpdatedAt)}</span>
+              predictionUpdatedAt && (
+                <span className="prediction-age">
+                  更新于 <MarketTime value={predictionUpdatedAt} format="clock" includeZone />（{predictionMinutesAgo(predictionUpdatedAt)} 分钟前）
+                </span>
+              )
             )}
           </div>
           <div className="verdict-text">{DIRECTION_LABEL[p.direction] ?? "🤔 观望"}</div>
           {p.anchor && (
             <div className="verdict-reason">
               预测点：{TF_LABELS[p.anchor.timeframe] ?? p.anchor.timeframe} ·{" "}
-              {formatMarketDateTime(p.anchor.time)} · ${fmt(Number(p.anchor.price))}
+              <MarketTime value={p.anchor.time} /> · ${fmt(Number(p.anchor.price))}
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CockpitComment } from "../../../../shared/types";
+import { marketDate } from "../../../../shared/time";
 import { useQuery } from "../../apiHooks";
 
 interface CommentEnvelope {
@@ -16,20 +17,26 @@ const mergeComments = (current: CockpitComment[], incoming: CockpitComment[]): C
   return [...byKey.values()].sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
 };
 
-export function useCockpitComments(symbol: string): {
+export function useCockpitComments(
+  symbol: string,
+  date?: string,
+): {
   comments: CockpitComment[];
   error: string | null;
   loaded: boolean;
 } {
+  const live = !date || date === marketDate();
   const [comments, setComments] = useState<CockpitComment[]>([]);
   const [streamLoaded, setStreamLoaded] = useState(false);
-  const commentsUrl = `/api/symbols/${encodeURIComponent(symbol)}/comments`;
+  const commentsUrl = date
+    ? `/api/symbols/${encodeURIComponent(symbol)}/comments?date=${date}`
+    : `/api/symbols/${encodeURIComponent(symbol)}/comments`;
   const { data: initialComments, error, loading } = useQuery<CockpitComment[]>(commentsUrl);
 
   useEffect(() => {
     setComments([]);
     setStreamLoaded(false);
-  }, [symbol]);
+  }, [symbol, date]);
 
   useEffect(() => {
     if (initialComments) setComments((prev) => mergeComments(prev, initialComments));
@@ -59,7 +66,7 @@ export function useCockpitComments(symbol: string): {
       cancelled = true;
       es.close();
     };
-  }, [symbol]);
+  }, [symbol, live]);
 
   return { comments, error, loaded: streamLoaded || !loading };
 }

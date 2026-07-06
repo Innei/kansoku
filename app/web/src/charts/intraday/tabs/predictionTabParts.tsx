@@ -1,10 +1,9 @@
 import type { CSSProperties } from "react";
 import { ArrowRight } from "lucide-react";
 import { AUTO_SIGNAL_META, type DivergencePair, type IntradayPriceZone, type IntradayTargetContext, type Pattern123 } from "../../../../../shared/types";
-import { formatMarketMonthDayTime } from "../../../../../shared/time";
 import { fmt } from "../../../format";
 import { theme } from "../../../theme";
-import { Badge } from "../../../ui";
+import { Badge, MarketTime } from "../../../ui";
 
 const ZONE_KIND_LABEL: Record<string, string> = {
   entry: "入场区",
@@ -16,7 +15,9 @@ const ZONE_KIND_LABEL: Record<string, string> = {
   watch: "观察区",
 };
 
-const barTime = (t: number) => formatMarketMonthDayTime(t, true);
+function BarTime({ value }: { value: number }) {
+  return <MarketTime value={value} format="month-day-time" includeZone />;
+}
 
 export function Pattern123Item({ pat }: { pat: Pattern123 }) {
   const confirmed = pat.status === "confirmed";
@@ -31,14 +32,14 @@ export function Pattern123Item({ pat }: { pat: Pattern123 }) {
           </Badge>
         </div>
         <div className="check-val">
-          ① {barTime(pat.p1.time)} ${fmt(pat.p1.price)} <ArrowRight className="icon" size={12} /> ② $
-          {fmt(pat.p2.price)} <ArrowRight className="icon" size={12} /> ③ {barTime(pat.p3.time)} $
+          ① <BarTime value={pat.p1.time} /> ${fmt(pat.p1.price)} <ArrowRight className="icon" size={12} /> ② $
+          {fmt(pat.p2.price)} <ArrowRight className="icon" size={12} /> ③ <BarTime value={pat.p3.time} /> $
           {fmt(pat.p3.price)}
         </div>
         <div className="check-val">{pat.implication}</div>
         {confirmed && pat.confirm && (
           <div className="check-val">
-            {barTime(pat.confirm.time)} 收盘 ${fmt(pat.confirm.price)} 突破触发线 ${fmt(pat.trigger)}
+            <BarTime value={pat.confirm.time} /> 收盘 ${fmt(pat.confirm.price)} 突破触发线 ${fmt(pat.trigger)}
           </div>
         )}
       </div>
@@ -55,7 +56,7 @@ export function AutoSignalItem({ kindKey, pair }: { kindKey: string; pair: Diver
       <div>
         <div className="check-label">{meta.title}</div>
         <div className="check-val">
-          {barTime(pair.a.time)} ${fmt(pair.a.price)} <ArrowRight className="icon" size={12} /> {barTime(pair.b.time)}{" "}
+          <BarTime value={pair.a.time} /> ${fmt(pair.a.price)} <ArrowRight className="icon" size={12} /> <BarTime value={pair.b.time} />{" "}
           ${fmt(pair.b.price)}
         </div>
         <div className="check-val">{meta.impact}</div>

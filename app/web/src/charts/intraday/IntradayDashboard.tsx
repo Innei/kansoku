@@ -25,6 +25,7 @@ interface IntradayDashboardProps {
   predictionStale?: boolean;
   onLoadHistory?: () => void;
   sidebarTabs?: SidebarTab[];
+  extraTabs?: SidebarTab[];
   activeTab?: string;
   onTabChange?: (key: string) => void;
 }
@@ -54,6 +55,7 @@ export function IntradayDashboard({
   predictionStale,
   onLoadHistory,
   sidebarTabs,
+  extraTabs,
   activeTab,
   onTabChange,
 }: IntradayDashboardProps) {
@@ -103,7 +105,11 @@ export function IntradayDashboard({
             ))}
             <span>
               <span className="swatch" style={{ background: "rgba(232,232,232,0.3)" }} />
-              盘前/盘后 · 深色为夜盘
+              盘前/盘后
+            </span>
+            <span>
+              <span className="swatch" style={{ background: "rgba(70,100,180,0.7)" }} />
+              夜盘
             </span>
           </div>
           <IndicatorToggles toggles={toggles} onToggle={toggle} />
@@ -125,6 +131,7 @@ export function IntradayDashboard({
         predictionUpdatedAt={predictionUpdatedAt}
         predictionStale={predictionStale}
         tabsOverride={sidebarTabs}
+        extraTabs={extraTabs}
         active={activeTab}
         onActiveChange={onTabChange}
       />

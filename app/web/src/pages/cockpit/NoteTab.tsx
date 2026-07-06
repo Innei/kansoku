@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { formatMarketDateTime } from "../../../../shared/time";
-import { Button, Empty, ErrorBox, Spinner } from "../../ui";
+import { Button, Empty, ErrorBox, MarketTime, Spinner } from "../../ui";
 import { bareSymbol, useDeepDive } from "./useDeepDive";
 import { useNote } from "./useNote";
 
@@ -66,7 +65,7 @@ export function NoteTab({ symbol }: { symbol: string }) {
       {note?.markdown ? (
         <>
           <div className="note-tab-header">
-            <span className="note-tab-mtime">更新于 {note.mtime ? formatMarketDateTime(note.mtime) : "—"}</span>
+            <span className="note-tab-mtime">更新于 {note.mtime ? <MarketTime value={note.mtime} /> : "—"}</span>
             {button}
           </div>
           {deepDive.inlineMessage && <span className="ai-hint">{deepDive.inlineMessage}</span>}

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { IntradayBuilt, TimeframeKey } from "../../../../shared/types";
-import { formatMarketDateTime } from "../../../../shared/time";
 import { fmt } from "../../format";
+import { MarketTime } from "../../ui";
 import type { SidebarTab } from "../SidebarTabs";
 import { SidebarTabs } from "../SidebarTabs";
 import { ConclusionCard } from "./ConclusionCard";
@@ -16,6 +16,7 @@ interface IntradaySidebarProps {
   predictionUpdatedAt?: string;
   predictionStale?: boolean;
   tabsOverride?: SidebarTab[];
+  extraTabs?: SidebarTab[];
   active?: string;
   onActiveChange?: (key: string) => void;
 }
@@ -26,6 +27,7 @@ export function IntradaySidebar({
   predictionUpdatedAt,
   predictionStale,
   tabsOverride,
+  extraTabs,
   active: activeProp,
   onActiveChange,
 }: IntradaySidebarProps) {
@@ -37,7 +39,7 @@ export function IntradaySidebar({
   const hasNews = Boolean(s.context?.news?.length) || Boolean(s.news?.length);
   const hasPosition = s.position !== null;
 
-  const tabs: SidebarTab[] = tabsOverride ?? [
+  const defaultTabs: SidebarTab[] = [
     {
       key: "prediction",
       label: "预测",
@@ -63,6 +65,7 @@ export function IntradaySidebar({
       content: <PositionTab position={s.position} />,
     },
   ];
+  const tabs = tabsOverride ?? [...defaultTabs, ...(extraTabs ?? [])];
 
   return (
     <div className="sidebar">
@@ -70,7 +73,7 @@ export function IntradaySidebar({
         <div className="symbol">{s.symbol}</div>
         <div className="name">{s.name}</div>
         <div className="price">${fmt(s.last)}</div>
-        <div className="price-date">{s.asOf ? formatMarketDateTime(s.asOf) : ""} · 长桥证券</div>
+        <div className="price-date">{s.asOf ? <MarketTime value={s.asOf} /> : ""} · 长桥证券</div>
       </div>
 
       <ConclusionCard context={s.context} predictionStale={predictionStale} />

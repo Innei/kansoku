@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import type { ChartMeta, LegacyChart } from "../../../shared/types";
-import { formatMarketClock } from "../../../shared/time";
 import { useQuery } from "../apiHooks";
 import { QuoteBar } from "../QuoteBar";
-import { Badge, Card, Chip, Dot, Empty, ErrorBox, Input, SectionTitle } from "../ui";
+import { Badge, Card, Chip, Dot, Empty, ErrorBox, Input, MarketTime, SectionTitle } from "../ui";
+import { useTitle } from "../useTitle";
 
 interface MetaWithUrl extends ChartMeta {
   url: string;
@@ -17,10 +17,6 @@ const WEEKDAY = ["日", "一", "二", "三", "四", "五", "六"];
 function dateLabel(date: string): string {
   const d = new Date(`${date}T12:00:00Z`);
   return Number.isNaN(d.getTime()) ? date : `${date} 周${WEEKDAY[d.getUTCDay()]}`;
-}
-
-function timeOf(meta: ChartMeta): string {
-  return formatMarketClock(meta.created_at, true);
 }
 
 function groupBy(charts: MetaWithUrl[], key: (m: MetaWithUrl) => string): [string, MetaWithUrl[]][] {
@@ -41,7 +37,7 @@ function ChartCard({ meta }: { meta: MetaWithUrl }) {
         <Badge>{meta.type}</Badge>
         {meta.symbol && <span className="sym">{meta.symbol.replace(/\.US$/, "")}</span>}
         {meta.prediction_stale && <Dot tone="accent" title="预测已过期" />}
-        <span className="time">{timeOf(meta)}</span>
+        <MarketTime className="time" value={meta.created_at} format="clock" includeZone />
       </div>
       <div className="charts-card-title">{meta.title}</div>
     </Card>
@@ -49,6 +45,7 @@ function ChartCard({ meta }: { meta: MetaWithUrl }) {
 }
 
 export function ChartList() {
+  useTitle("图表");
   const [type, setType] = useState("");
   const [symbol, setSymbol] = useState("");
   const [view, setView] = useState<"date" | "symbol">("date");

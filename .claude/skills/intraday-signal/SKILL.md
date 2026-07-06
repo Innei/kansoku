@@ -178,8 +178,10 @@ Present in this order (mirrors the user's original ask):
 3. 震荡应对（若为震荡情景：多、空两种打法）
 4. 入场计划（盈亏比 + 具体入场点/止损/目标）
 5. 支撑信号（MACD 背离 + 服务端自动检测的 K 线形态如 Pin Bar，指到具体 K 线）
-6. 图表链接：主链接是标的驾驶舱 `http://localhost:5199/#/symbol/<SYM>`（聚合活数据 +
-   最新分析），存档链接 `data.url`（本次分析的冻结快照）附后
+6. 图表链接：主链接是本次分析的冻结快照 `data.url`
+   （`http://localhost:5199/charts/<id>`——含本次预测/情景/入场/信号，
+   分析完立即打开就是看它），辅链接是标的驾驶舱
+   `http://localhost:5199/symbol/<SYM>`（聚合活数据 + 历史分析），附在后面
 7. 免责声明：仅供参考，不构成投资建议
 
 ### Step 7 — Journal
@@ -187,7 +189,7 @@ Present in this order (mirrors the user's original ask):
 Write `journal/YYYY-MM-DD-<symbol>-intraday.md` (US session date). Same-day
 re-run on the same symbol appends a new timestamped section — never overwrite.
 The cockpit's 历史 tab (`GET /api/symbols/:sym/analyses`, rendered on
-`/#/symbol/<SYM>`) now lists past analyses for this symbol with a mechanical
+`/symbol/<SYM>`) now lists past analyses for this symbol with a mechanical
 outcome judgment (`hit_target` / `hit_stop` / `open`, computed server-side from
 post-anchor bars) — that's a quick mechanical scoreboard, not a substitute for
 the journal's narrative record.

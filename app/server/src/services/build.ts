@@ -199,12 +199,24 @@ export function rebuild(type: ChartType, input: Record<string, unknown>, title?:
 }
 
 export function migrateLegacyDoc(doc: ChartDoc): ChartDoc {
-  if ((doc.built as { kind?: string } | undefined)?.kind !== "echarts") return doc;
+  const kind = (doc.built as { kind?: string } | undefined)?.kind;
+  const needsRebuild = kind === "echarts" || (kind === "intraday" && hasLegacyOffSession(doc.built));
+  if (!needsRebuild) return doc;
   try {
     return { ...doc, built: rebuild(doc.type, doc.input, doc.title).built };
   } catch {
     return doc;
   }
+}
+
+function hasLegacyOffSession(built: unknown): boolean {
+  const tfs = (built as { timeframes?: Record<string, { offSession?: unknown[] }> } | undefined)?.timeframes;
+  if (!tfs) return false;
+  for (const k of Object.keys(tfs)) {
+    const first = tfs[k]?.offSession?.[0] as { time?: unknown; startTime?: unknown } | undefined;
+    if (first && "time" in first && !("startTime" in first)) return true;
+  }
+  return false;
 }
 
 export async function buildChart(body: Body): Promise<BuildResult> {

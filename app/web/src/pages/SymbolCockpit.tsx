@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import type { BenchmarkSeries, ChartDoc, CockpitPosition, RelativeVolume, SymbolAnalysisRow } from "../../../shared/types";
-import { formatMarketClock } from "../../../shared/time";
 import { useQuery } from "../apiHooks";
 import { IntradayDashboard, IntradayTimeframeSwitch } from "../charts/intraday/IntradayDashboard";
 import { NewsTab } from "../charts/intraday/tabs/NewsTab";
@@ -9,7 +8,8 @@ import { PredictionTab } from "../charts/intraday/tabs/PredictionTab";
 import { resolveIntradayTf, useIntradayDoc } from "../charts/intraday/useIntradayDoc";
 import type { SidebarTab } from "../charts/SidebarTabs";
 import { TopbarQuote } from "../QuoteBar";
-import { Badge, Dot, Empty, ErrorBox } from "../ui";
+import { Badge, Dot, Empty, ErrorBox, MarketTime } from "../ui";
+import { useTitle } from "../useTitle";
 import { AiTab } from "./cockpit/AiTab";
 import { EnvTab } from "./cockpit/EnvTab";
 import { FlowTab } from "./cockpit/FlowTab";
@@ -23,6 +23,7 @@ type LatestDoc = ChartDoc & { url: string; prediction_stale?: boolean };
 
 export function SymbolCockpit({ sym }: { sym: string }) {
   const [generated, setGenerated] = useState<{ symbol: string; id: string } | null>(null);
+  const symLabel = sym.toUpperCase().replace(/\.US$/, "");
   const generatedId = generated?.symbol === sym ? generated.id : null;
   const latestUrl = `/api/symbols/${encodeURIComponent(sym)}/latest`;
   const { data: latestDoc, failure: latestFailure, loading: latestLoading } = useQuery<LatestDoc>(latestUrl);
@@ -36,6 +37,8 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   }, [sym]);
 
   const { doc, error, degraded, intradayTf, setIntradayTf, loadHistory } = useIntradayDoc(latestId);
+
+  useTitle(doc?.title ?? symLabel);
 
   const { data: position, error: positionError } = useIntervalFetch<CockpitPosition>(
     `/api/symbols/${encodeURIComponent(sym)}/position`,
@@ -188,11 +191,12 @@ export function SymbolCockpit({ sym }: { sym: string }) {
             <button
               className={`badge badge--${latestAlert.level === "alert" ? "down" : "accent"} alert-badge`}
               onClick={() => setActiveTab("ai")}
-              title={latestAlert.text}
+              aria-label={`AI ${latestAlert.level === "alert" ? "警报" : "提醒"}：${latestAlert.text}`}
             >
               <Dot tone={latestAlert.level === "alert" ? "down" : "accent"} pulse />
               <span className="alert-badge-text">
-                AI {latestAlert.level === "alert" ? "警报" : "提醒"} {formatMarketClock(latestAlert.ts)} ·{" "}
+                AI {latestAlert.level === "alert" ? "警报" : "提醒"}{" "}
+                <MarketTime value={latestAlert.ts} format="clock" /> ·{" "}
                 {latestAlert.trigger ?? latestAlert.text}
               </span>
             </button>

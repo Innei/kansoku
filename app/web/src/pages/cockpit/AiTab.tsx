@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CockpitComment } from "../../../../shared/types";
-import { formatMarketClock } from "../../../../shared/time";
-import { Badge, Button, Spinner } from "../../ui";
+import { Badge, Button, MarketTime, Spinner } from "../../ui";
 import { buildFeed } from "./aiFeed";
 import { useReassessSymbol } from "./useReassessSymbol";
 
@@ -30,7 +29,7 @@ function CommentItem({ comment }: { comment: CockpitComment }) {
 
   return (
     <div className={`ai-item${dim ? " dim" : ""}`}>
-      <span className="t">{formatMarketClock(comment.ts)}</span>
+      <MarketTime className="t" value={comment.ts} format="clock" />
       <div className="body">
         <p>
           <Badge tone={LEVEL_TONE[comment.level]} className="level-badge">
@@ -57,10 +56,12 @@ export function AiTab({
   symbol,
   comments,
   error,
+  readOnly = false,
 }: {
   symbol: string;
   comments: CockpitComment[];
   error: string | null;
+  readOnly?: boolean;
 }) {
   const [running, setRunning] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -111,13 +112,15 @@ export function AiTab({
 
   return (
     <div className="ai-tab">
-      <div className="ai-reassess">
-        <Button onClick={runReassess} disabled={pending || running}>
-          {running && <Spinner />}
-          {running ? "重估进行中…" : "重新分析"}
-        </Button>
-        {hint && <span className="ai-hint">{hint}</span>}
-      </div>
+      {!readOnly && (
+        <div className="ai-reassess">
+          <Button onClick={runReassess} disabled={pending || running}>
+            {running && <Spinner />}
+            {running ? "重估进行中…" : "重新分析"}
+          </Button>
+          {hint && <span className="ai-hint">{hint}</span>}
+        </div>
+      )}
 
       {error ? (
         <div className="note-block">点评获取失败：{error}</div>
@@ -131,7 +134,7 @@ export function AiTab({
             ) : expanded.has(row.id) ? (
               <div key={row.id}>
                 <div className="ai-fold open" onClick={() => toggleFold(row.id)}>
-                  {formatMarketClock(row.from)} – {formatMarketClock(row.to)} 无事 ×{row.count}（收起）
+                  <MarketTime value={row.from} format="clock" /> – <MarketTime value={row.to} format="clock" /> 无事 ×{row.count}（收起）
                 </div>
                 {[...row.comments].reverse().map((c) => (
                   <CommentItem key={`${c.ts}-${c.text}`} comment={c} />
@@ -139,7 +142,7 @@ export function AiTab({
               </div>
             ) : (
               <div key={row.id} className="ai-fold" onClick={() => toggleFold(row.id)}>
-                {formatMarketClock(row.from)} – {formatMarketClock(row.to)} 无事 ×{row.count}（点击展开）
+                <MarketTime value={row.from} format="clock" /> – <MarketTime value={row.to} format="clock" /> 无事 ×{row.count}（点击展开）
               </div>
             ),
           )}

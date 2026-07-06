@@ -6,10 +6,13 @@ import { resolveIntradayTf, useIntradayDoc } from "../charts/intraday/useIntrada
 import { SepaDashboard } from "../charts/sepa/SepaDashboard";
 import { TopbarQuote } from "../QuoteBar";
 import { recordRecentChart } from "../recentCharts";
-import { Dot, Empty, ErrorBox } from "../ui";
+import { Dot, Empty, ErrorBox, MarketTime } from "../ui";
+import { useTitle } from "../useTitle";
 
 export function ChartDetail({ id }: { id: string }) {
   const { doc, error, degraded, live, intradayTf, setIntradayTf, loadHistory } = useIntradayDoc(id);
+
+  useTitle(doc?.title ?? "图表");
 
   useEffect(() => {
     if (doc) recordRecentChart({ id: doc.id, title: doc.title, type: doc.type });
@@ -44,7 +47,7 @@ export function ChartDetail({ id }: { id: string }) {
         </a>
         <span className="title">{doc.title}</span>
         <span className="meta">
-          {doc.id} · 更新 {doc.updated_at.slice(0, 16).replace("T", " ")}
+          {doc.id} · 更新 <MarketTime value={doc.updated_at} />
         </span>
         {live && degraded && <Dot tone="accent" pulse title="数据延迟：行情拉取失败，正在重试" />}
         <span className="topbar-actions">
