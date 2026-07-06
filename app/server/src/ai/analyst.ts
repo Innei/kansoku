@@ -2,7 +2,7 @@ import { Agent, type AgentTool } from "@earendil-works/pi-agent-core";
 import { type Static, Type } from "typebox";
 import { Check } from "typebox/value";
 import { type CockpitComment, type CommentLevel, type NewsItem, type RawBar } from "../../../shared/types.js";
-import { BASE_URL } from "../env.js";
+import { chartUrl } from "../chartUrl.js";
 import { buildChart } from "../services/build.js";
 import { getProvider } from "../services/marketdata/registry.js";
 import { createChart } from "../services/store.js";
@@ -210,7 +210,7 @@ const defaultAgentFactory: AnalystAgentFactory = (config) =>
 async function defaultCreateChart(body: Record<string, unknown>): Promise<{ id: string; url: string }> {
   const result = await buildChart(body);
   const doc = await createChart(result);
-  return { id: doc.id, url: `${BASE_URL}/charts/${encodeURIComponent(doc.id)}` };
+  return { id: doc.id, url: chartUrl(doc) };
 }
 
 interface RunState {

@@ -2,7 +2,8 @@ import { promises as fs } from "node:fs";
 import { join } from "node:path";
 import type { FastifyPluginAsync } from "fastify";
 import type { ChartDoc, IntradayPrediction, RawBar, SymbolAnalysisRow } from "../../../shared/types.js";
-import { BASE_URL, JOURNAL_DIR, STOCKS_DIR } from "../env.js";
+import { chartUrl } from "../chartUrl.js";
+import { JOURNAL_DIR, STOCKS_DIR } from "../env.js";
 import { ClientError } from "../errors.js";
 import { toTs } from "../services/indicators.js";
 import { buildBenchmark } from "../services/cockpit/benchmark.js";
@@ -44,10 +45,6 @@ export function normalizeSymbol(raw: string): string {
     throw new ClientError(`invalid symbol: ${raw}`, "e.g. MU or MU.US");
   }
   return sym;
-}
-
-function chartUrl(id: string): string {
-  return `${BASE_URL}/charts/${encodeURIComponent(id)}`;
 }
 
 async function latestIntradayDoc(sym: string): Promise<ChartDoc | null> {
@@ -130,7 +127,7 @@ export const symbolsRoute: FastifyPluginAsync = async (app) => {
           void saveResolvedOutcome({ chartId: meta.id, symbol: sym, direction }, outcome).catch(() => {});
         }
       }
-      return { ...meta, url: chartUrl(meta.id), direction, anchor, outcome };
+      return { ...meta, url: chartUrl(meta), direction, anchor, outcome };
     });
     return { ok: true, data: rows };
   });
@@ -233,7 +230,7 @@ export const symbolsRoute: FastifyPluginAsync = async (app) => {
     }
     return {
       ok: true,
-      data: { ...doc, url: chartUrl(doc.id), prediction_stale: predictionStale(doc, new Date()) },
+      data: { ...doc, url: chartUrl(doc), prediction_stale: predictionStale(doc, new Date()) },
     };
   });
 };

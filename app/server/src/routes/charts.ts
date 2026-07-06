@@ -1,15 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { ChartDoc } from "../../../shared/types.js";
+import { chartUrl } from "../chartUrl.js";
 import { ClientError } from "../errors.js";
-import { BASE_URL } from "../env.js";
 import { ALL_TYPES, buildChart, mergeForPatch, rebuild, refreshBody } from "../services/build.js";
 import { clampViewCount } from "../services/history.js";
 import { predictionStale } from "../services/staleness.js";
 import { createChart, deleteChart, listCharts, loadChart, saveChart } from "../services/store.js";
-
-function chartUrl(id: string): string {
-  return `${BASE_URL}/charts/${encodeURIComponent(id)}`;
-}
 
 type Query = Record<string, string | undefined>;
 type Params = { id: string };
@@ -39,7 +35,7 @@ export const chartsRoute: FastifyPluginAsync = async (app) => {
       metas.map(async (m) => {
         const doc = m.type === "intraday" ? await loadChart(m.id) : null;
         const stale = doc ? predictionStale(doc, now) : false;
-        return { ...m, url: chartUrl(m.id), prediction_stale: stale };
+        return { ...m, url: chartUrl(m), prediction_stale: stale };
       }),
     );
     const data = req.query.stale === "true" ? withStale.filter((m) => m.prediction_stale) : withStale;
@@ -52,7 +48,7 @@ export const chartsRoute: FastifyPluginAsync = async (app) => {
     const doc = await createChart(result);
     return {
       ok: true,
-      data: { id: doc.id, url: chartUrl(doc.id), type: doc.type, title: doc.title, symbol: doc.symbol, ...result.meta },
+      data: { id: doc.id, url: chartUrl(doc), type: doc.type, title: doc.title, symbol: doc.symbol, ...result.meta },
       meta: { chart_type: doc.type },
     };
   });
@@ -105,7 +101,14 @@ export const chartsRoute: FastifyPluginAsync = async (app) => {
     await saveChart(updated);
     return {
       ok: true,
-      data: { id, url: chartUrl(id), type: doc.type, title: result.title, symbol: result.symbol, ...result.meta },
+      data: {
+        id,
+        url: chartUrl({ id, type: doc.type, symbol: result.symbol, created_at: doc.created_at }),
+        type: doc.type,
+        title: result.title,
+        symbol: result.symbol,
+        ...result.meta,
+      },
       meta: { chart_type: doc.type },
     };
   });

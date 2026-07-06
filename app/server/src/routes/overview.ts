@@ -10,7 +10,7 @@ import type {
   RawBar,
   RecapSettlementRow,
 } from "../../../shared/types.js";
-import { BASE_URL } from "../env.js";
+import { chartUrl } from "../chartUrl.js";
 import { ClientError } from "../errors.js";
 import { listComments } from "../ai/comments.js";
 import { listUsage, summarizeUsage } from "../ai/usageStore.js";
@@ -26,10 +26,6 @@ import { normalizeQuote } from "../realtime/quotes.js";
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const OUTCOME_BARS = 300;
 const RECAP_TTL_MS = 60_000;
-
-function chartUrl(id: string): string {
-  return `${BASE_URL}/charts/${encodeURIComponent(id)}`;
-}
 
 function latestPerSymbol(metas: ChartMeta[]): Map<string, ChartMeta> {
   const bySymbol = new Map<string, ChartMeta>();
@@ -57,7 +53,7 @@ function boardRow(
   return {
     symbol: meta.symbol!,
     chart_id: meta.id,
-    url: chartUrl(meta.id),
+    url: chartUrl(meta),
     title: meta.title,
     direction: prediction?.direction ?? null,
     last,
