@@ -23,7 +23,7 @@ export function Pattern123Item({ pat }: { pat: Pattern123 }) {
   const confirmed = pat.status === "confirmed";
   return (
     <div className="check-item signal">
-      <div className="check-icon">🔢</div>
+      <div className="check-icon auto-signal-icon">🔢</div>
       <div>
         <div className="check-label">
           {pat.label}
@@ -52,7 +52,7 @@ export function AutoSignalItem({ kindKey, pair }: { kindKey: string; pair: Diver
   if (!meta) return null;
   return (
     <div className="check-item signal">
-      <div className="check-icon">{meta.icon}</div>
+      <div className="check-icon auto-signal-icon">{meta.icon}</div>
       <div>
         <div className="check-label">{meta.title}</div>
         <div className="check-val">

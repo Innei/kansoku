@@ -345,6 +345,7 @@ a:hover { color: var(--accent); }
 .check-item.unknown { border-left-color: var(--text-muted); }
 .check-item.signal { border-left-color: var(--accent); }
 .check-icon { display: flex; align-items: center; font-size: var(--fs-md); }
+.check-icon.auto-signal-icon { align-self: flex-start; align-items: flex-start; padding-top: 1px; line-height: 1; }
 .check-label { font-size: var(--fs-base); color: var(--text-primary); font-weight: 500; }
 .check-val { font-size: var(--fs-sm); color: var(--text-secondary); margin-top: 2px; }
 .p123-badge { margin-left: 6px; }
