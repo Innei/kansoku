@@ -4,7 +4,7 @@ import type { RawCapitalDistribution, RawPosition } from "../src/services/market
 import type { FlowRow } from "../src/services/simple.js";
 import { buildBenchmark } from "../src/services/cockpit/benchmark.js";
 import { buildCockpitFlow } from "../src/services/cockpit/flow.js";
-import { judgeOutcome } from "../src/services/cockpit/outcome.js";
+import { judgeOutcome, zoneFromPrediction } from "../src/services/cockpit/outcome.js";
 import { buildCockpitPosition } from "../src/services/cockpit/position.js";
 
 function bar(time: string, o: number, h: number, l: number, c: number, v = 1000): RawBar {
@@ -216,8 +216,49 @@ describe("judgeOutcome", () => {
     expect(result?.status).toBe("open");
   });
 
-  it("returns null for neutral direction", () => {
+  it("returns null for neutral direction without a zone", () => {
     expect(judgeOutcome("neutral", anchor, { stop: 90, target1: 120 }, [])).toBeNull();
+  });
+
+  it("neutral broke_range when a close leaves the zone", () => {
+    const bars: RawBar[] = [
+      bar("2026-07-01T13:31:00Z", 100, 102, 98, 101),
+      bar("2026-07-01T13:32:00Z", 101, 106, 100, 105.5),
+    ];
+    const result = judgeOutcome("neutral", anchor, null, bars, { low: 95, high: 105 });
+    expect(result?.status).toBe("broke_range");
+    expect(result?.resolved_at).toBe(Math.floor(Date.parse("2026-07-01T13:32:00Z") / 1000));
+  });
+
+  it("neutral wick outside the zone does not break it", () => {
+    const bars: RawBar[] = [bar("2026-07-01T13:31:00Z", 100, 106, 94, 101)];
+    const result = judgeOutcome("neutral", anchor, null, bars, { low: 95, high: 105 });
+    expect(result?.status).toBe("open");
+  });
+
+  it("neutral held_range after a full session inside the zone", () => {
+    const bars: RawBar[] = [
+      bar("2026-07-01T13:31:00Z", 100, 102, 98, 101),
+      bar("2026-07-01T20:01:00Z", 101, 103, 99, 100),
+    ];
+    const result = judgeOutcome("neutral", anchor, null, bars, { low: 95, high: 105 });
+    expect(result?.status).toBe("held_range");
+    expect(result?.resolved_at).toBe(Math.floor(Date.parse("2026-07-01T20:01:00Z") / 1000));
+  });
+
+  it("neutral stays open inside the zone before the horizon", () => {
+    const bars: RawBar[] = [bar("2026-07-01T13:31:00Z", 100, 102, 98, 101)];
+    const result = judgeOutcome("neutral", anchor, null, bars, { low: 95, high: 105 });
+    expect(result?.status).toBe("open");
+    expect(result?.pct_since_anchor).toBeCloseTo(1);
+  });
+
+  it("neutral returns null when the bar window starts after the anchor", () => {
+    const bars: RawBar[] = [
+      bar("2026-07-01T14:00:00Z", 100, 101, 99, 100),
+      bar("2026-07-01T14:01:00Z", 100, 101, 99, 100),
+    ];
+    expect(judgeOutcome("neutral", anchor, null, bars, { low: 95, high: 105 })).toBeNull();
   });
 
   it("returns null when plan is null", () => {
@@ -251,5 +292,18 @@ describe("judgeOutcome", () => {
     const result = judgeOutcome("long", anchor, { stop: 90, target1: 120 }, []);
     expect(result?.status).toBe("open");
     expect(result?.pct_since_anchor).toBe(0);
+  });
+});
+
+describe("zoneFromPrediction", () => {
+  it("reads low/high from range_bound_plan or range_plan alias", () => {
+    expect(zoneFromPrediction({ range_bound_plan: { low: 95, high: 105 } })).toEqual({ low: 95, high: 105 });
+    expect(zoneFromPrediction({ range_plan: { low: 95, high: 105 } })).toEqual({ low: 95, high: 105 });
+  });
+
+  it("returns null when the zone is missing or inverted", () => {
+    expect(zoneFromPrediction(null)).toBeNull();
+    expect(zoneFromPrediction({ range_bound_plan: { long_tactic: "..." } })).toBeNull();
+    expect(zoneFromPrediction({ range_bound_plan: { low: 105, high: 95 } })).toBeNull();
   });
 });

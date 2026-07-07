@@ -18,6 +18,7 @@ function report(overrides: Partial<RecapSymbolReport> = {}): RecapSymbolReport {
     entry: 100,
     stop: 96,
     target1: 106,
+    zone: null,
     outcome: { status: "hit_target", pct_since_anchor: 4.2, resolved_at: 1 },
     comments: [],
     ...overrides,

@@ -10,7 +10,7 @@ import { getCodexApiKey } from "./codexAuth.js";
 import { appendComment as defaultAppendComment } from "./comments.js";
 import { buildReassessPack as defaultBuildReassessPack, type ReassessPack } from "./datapack.js";
 import type { AiModel } from "./models.js";
-import { notifyUser } from "./notify.js";
+import { emitNotice } from "./notices.js";
 import { attachAiUsageLogger } from "./usage.js";
 
 const DEFAULT_TIMEOUT_MS = 600_000;
@@ -34,11 +34,12 @@ const SYSTEM_PROMPT = [
   "- 事件风险：快照没有财报日历——新闻里若见财报/FOMC/CPI 在即，必须写进情景；若无法确认，在 comment 里注明事件风险未核实。",
   "结论纪律（写进 submit_prediction）：",
   "- direction：明确 long / short / neutral。",
-  "- anchor：给出判断锚点（哪个周期、时间、价格）。",
-  "- entry_plan：只在 long / short 时给出，入场 entry、止损 stop、目标 target1 / target2。止损必须依托具体结构（摆动点外沿、123 结构的①、区间边界），在 rationale 里写明是哪个结构；做多止损在入场下方、目标在上方，做空相反。T1 口径盈亏比不足 1:1 的计划不要提交——换结构重做或转 neutral。",
-  "- neutral（观望）不要提交 entry_plan——观望就是现在没有可执行的入场/止损/目标；两侧的条件应对写进 range_plan。",
-  "- scenarios：三个情景（如上破 / 震荡 / 下破），probability 用 0–100 的百分数，三者之和约为 100。",
+  "- anchor：必填，给出判断锚点（哪个周期、时间、价格）——没有锚点的预测事后无法对账。",
+  "- entry_plan：只在 long / short 时给出，入场 entry、止损 stop、目标 target1（必填，价格或百分比皆可）/ target2。止损必须依托具体结构（摆动点外沿、123 结构的①、区间边界），在 rationale 里写明是哪个结构；做多止损在入场下方、目标在上方，做空相反。T1 口径盈亏比不足 1:1 的计划不要提交——换结构重做或转 neutral；1:1 到 2:1 之间允许，但必须在 comment 里明说赔率偏薄。",
+  "- neutral（观望）不要提交 entry_plan——观望就是现在没有可执行的入场/止损/目标。但必须在 range_plan 里给出箱体下沿 low / 上沿 high（观望 = 预判价格守在这个区间内，事后按守住/破位对账），两侧的条件应对写进 long_tactic / short_tactic。",
+  "- scenarios：2 到 4 个情景（通常是上破 / 震荡 / 下破三个，按真实结构给，不要硬凑数量），probability 用 0–100 的百分数，合计约为 100。",
   "- comment：一句话中文白话结论，会作为点评写入。若快照里持仓不为空，comment 必须包含对现有持仓的处置（加 / 减 / 持 / 清）并对照成本价说明理由。",
+  "- 不要给仓位建议（股数/金额）——自动重估拿不到账户资金数据，仓位由人工流程决定。",
   "若快照里没有已归档预测，说明这是该标的的首次分析而非重估，照常完成全部流程并给出完整结论。",
   "全程中文白话，只做美股，不要臆造数据，拿不到就说明。",
 ].join("\n");
@@ -71,13 +72,15 @@ const rangePlanSchema = Type.Object({
   condition: Type.Optional(Type.String()),
   long_tactic: Type.Optional(Type.String()),
   short_tactic: Type.Optional(Type.String()),
+  low: Type.Optional(Type.Number({ description: "箱体下沿（neutral 时必填）" })),
+  high: Type.Optional(Type.Number({ description: "箱体上沿（neutral 时必填）" })),
 });
 
 const predictionSchema = Type.Object({
   direction: Type.Union([Type.Literal("long"), Type.Literal("short"), Type.Literal("neutral")]),
-  anchor: Type.Optional(anchorSchema),
+  anchor: anchorSchema,
   entry_plan: Type.Optional(entryPlanSchema),
-  scenarios: Type.Array(scenarioSchema, { minItems: 3 }),
+  scenarios: Type.Array(scenarioSchema, { minItems: 2, maxItems: 4 }),
   range_plan: Type.Optional(rangePlanSchema),
   comment: Type.String({ description: "一句话中文白话结论，写入点评" }),
 });
@@ -114,6 +117,12 @@ export function validatePrediction(params: PredictionParams): string[] {
     if (plan) {
       issues.push("neutral（观望）不应提交 entry_plan——去掉入场/止损/目标，两侧条件应对写进 range_plan");
     }
+    const rp = params.range_plan;
+    if (rp?.low == null || rp?.high == null || !(rp.low < rp.high)) {
+      issues.push("neutral 必须在 range_plan 里给出箱体下沿 low / 上沿 high（low < high）——否则观望判断事后无法对账");
+    } else if (params.anchor.price < rp.low || params.anchor.price > rp.high) {
+      issues.push("观望箱体应包住锚点价格——锚点价在区间外说明区间画错了或方向不该是 neutral");
+    }
     return issues;
   }
 
@@ -129,7 +138,9 @@ export function validatePrediction(params: PredictionParams): string[] {
     }
     const t1 = resolveTarget(entry, direction, plan.target1, plan.target1_pct);
     const t2 = resolveTarget(entry, direction, plan.target2, plan.target2_pct);
-    if (t1 != null) {
+    if (t1 == null) {
+      issues.push("long / short 必须给出 target1 或 target1_pct——没有目标价就无法核对盈亏比，也无法事后对账");
+    } else {
       const reward1 = direction === "long" ? t1 - entry : entry - t1;
       if (reward1 <= 0) {
         issues.push(direction === "long" ? "做多 target1 必须高于入场价" : "做空 target1 必须低于入场价");
@@ -405,7 +416,13 @@ export async function executeAnalystRun(symbol: string, deps: AnalystDeps): Prom
     if (!state.submitted) {
       await writeError("分析员未提交预测，本次无结论。");
     } else {
-      notifyUser(`${symbol} AI 分析完成`, "多周期重估已落图，打开 cockpit 查看结论。");
+      emitNotice({
+        symbol,
+        kind: "analysis_done",
+        title: `${symbol} AI 分析完成`,
+        body: "多周期重估已落图，打开 cockpit 查看结论。",
+        at: new Date().toISOString(),
+      });
     }
   } catch (err) {
     const text =

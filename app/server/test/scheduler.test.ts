@@ -1,9 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CockpitComment } from "../../shared/types.js";
-import { createAiScheduler, type SchedulerDeps } from "../src/ai/scheduler.js";
+import type { ChartMeta, CockpitComment } from "../../shared/types.js";
+
+const store = vi.hoisted(() => ({
+  listCharts: vi.fn(),
+  loadChart: vi.fn(),
+  allocateId: vi.fn(),
+  saveChart: vi.fn(),
+  createChart: vi.fn(),
+  deleteChart: vi.fn(),
+}));
+
+vi.mock("../src/services/store.js", () => store);
+
+const { createAiScheduler, discoverIntradayTargets } = await import("../src/ai/scheduler.js");
+import type { SchedulerDeps } from "../src/ai/scheduler.js";
 import type { CommentPack } from "../src/ai/datapack.js";
 import type { AiModel } from "../src/ai/models.js";
 import type { Trigger } from "../src/ai/triggers.js";
+import { acquireLease, releaseLease, resetLeases } from "../src/ai/leases.js";
 
 const fakeModel = { provider: "anthropic", id: "haiku" } as unknown as AiModel;
 
@@ -59,6 +73,11 @@ function harness(overrides: Partial<SchedulerDeps> = {}): { deps: SchedulerDeps;
   };
   return { deps, rec };
 }
+
+beforeEach(() => {
+  resetLeases();
+  store.listCharts.mockReset();
+});
 
 describe("aiScheduler tick", () => {
   it("does nothing overnight", async () => {
@@ -394,5 +413,96 @@ describe("aiScheduler loop", () => {
     scheduler.stop();
     await vi.advanceTimersByTimeAsync(180_000);
     expect(discoverTargets).toHaveBeenCalledTimes(1);
+  });
+});
+
+function chartMeta(symbol: string, createdAt: string): ChartMeta {
+  return {
+    id: `${symbol}-${createdAt}`,
+    schema_version: 1,
+    type: "intraday",
+    title: symbol,
+    symbol,
+    created_at: createdAt,
+    updated_at: createdAt,
+  };
+}
+
+describe("discoverIntradayTargets lease filtering", () => {
+  const NOW = new Date("2026-07-02T18:00:00Z").getTime();
+
+  it("monitors a symbol with today's chart and an active lease", async () => {
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "2026-07-02T15:00:00Z")]);
+    acquireLease("MU.US");
+    expect(await discoverIntradayTargets(() => NOW, 0)).toEqual(["MU.US"]);
+  });
+
+  it("excludes a symbol with today's chart but no lease", async () => {
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "2026-07-02T15:00:00Z")]);
+    expect(await discoverIntradayTargets(() => NOW, 0)).toEqual([]);
+  });
+
+  it("excludes a symbol with an active lease but no chart", async () => {
+    store.listCharts.mockResolvedValue([]);
+    acquireLease("MU.US");
+    expect(await discoverIntradayTargets(() => NOW, 0)).toEqual([]);
+  });
+
+  it("still monitors a symbol whose lease is within the 90s grace period", async () => {
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "2026-07-02T15:00:00Z")]);
+    acquireLease("MU.US");
+    releaseLease("MU.US", NOW - 1_000);
+    expect(await discoverIntradayTargets(() => NOW, 0)).toEqual(["MU.US"]);
+  });
+
+  it("excludes a symbol whose lease grace period has expired", async () => {
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "2026-07-02T15:00:00Z")]);
+    acquireLease("MU.US");
+    releaseLease("MU.US", NOW - 91_000);
+    expect(await discoverIntradayTargets(() => NOW, 0)).toEqual([]);
+  });
+
+  it("applies the same lease filter to the pre-market lookback window", async () => {
+    const staleChart = chartMeta("MU.US", "2026-06-30T15:00:00Z");
+    store.listCharts.mockResolvedValue([staleChart]);
+    expect(await discoverIntradayTargets(() => NOW, 3)).toEqual([]);
+
+    acquireLease("MU.US");
+    expect(await discoverIntradayTargets(() => NOW, 3)).toEqual(["MU.US"]);
+  });
+});
+
+describe("aiScheduler tick lease wiring", () => {
+  it("regular tick only invokes handleSymbol for leased symbols returned by discoverTargets", async () => {
+    const { deps, rec } = harness({
+      discoverTargets: () => discoverIntradayTargets(() => 1_000_000, 0),
+      detectTriggers: () => [{ kind: "macd_cross", detail: "x" }],
+    });
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "2026-07-02T15:00:00Z")]);
+    acquireLease("MU.US");
+    await createAiScheduler(deps).tick();
+    expect(rec.commentatorCalls.map((c) => c.symbol)).toEqual(["MU.US"]);
+  });
+
+  it("pre-market tick only invokes handlePreSymbol for leased symbols returned by discoverPreTargets", async () => {
+    const { deps, rec } = harness({
+      sessionKind: () => "pre",
+      now: () => 1_000_000,
+      discoverPreTargets: () => discoverIntradayTargets(() => 1_000_000, 3),
+      buildCommentPack: async (symbol) =>
+        makePack(symbol, {
+          quote: { last: 105 } as CommentPack["quote"],
+          day_levels: { prev_day: { high: 102, low: 98, close: 100 }, pre_market: null, opening_range: null },
+        }),
+    });
+    store.listCharts.mockResolvedValue([chartMeta("MU.US", "1970-01-01T00:00:00.000Z")]);
+    await createAiScheduler(deps).tick();
+    expect(rec.comments).toHaveLength(0);
+  });
+
+  it("post-market recap still runs with no leases held anywhere", async () => {
+    const { deps, rec } = harness({ sessionKind: () => "post", now: () => 1_000_000 });
+    await createAiScheduler(deps).tick();
+    expect(rec.recaps).toHaveLength(1);
   });
 });

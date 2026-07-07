@@ -3,6 +3,8 @@ import type { FastifyPluginAsync } from "fastify";
 import type { WebSocket } from "ws";
 import type { CockpitComment } from "../../../shared/types.js";
 import { listComments, onComment } from "../ai/comments.js";
+import { acquireLease, releaseLease } from "../ai/leases.js";
+import { onNotice } from "../ai/notices.js";
 import { subscribeAnalyses } from "../realtime/analyses.js";
 import { subscribeBenchmark } from "../realtime/benchmark.js";
 import { subscribeBoard } from "../realtime/board.js";
@@ -16,10 +18,11 @@ import { normalizeSymbol } from "./symbols.js";
 async function attachComments(symbol: string, push: (envelope: string) => void): Promise<() => void> {
   const buffered: CockpitComment[] = [];
   let ready = false;
-  const unsub = onComment(symbol, (comment) => {
+  const unsubComment = onComment(symbol, (comment) => {
     if (ready) push(JSON.stringify({ type: "comment", comment }));
     else buffered.push(comment);
   });
+  const unsubNotice = onNotice(symbol, (notice) => push(JSON.stringify({ type: "notice", notice })));
   const comments = await listComments(symbol, easternDate());
   push(JSON.stringify({ type: "init", comments }));
   const seen = new Set(comments.map((c) => `${c.ts} ${c.text}`));
@@ -28,7 +31,10 @@ async function attachComments(symbol: string, push: (envelope: string) => void):
     push(JSON.stringify({ type: "comment", comment }));
   }
   ready = true;
-  return unsub;
+  return () => {
+    unsubComment();
+    unsubNotice();
+  };
 }
 
 const MAX_CHANNELS_PER_SOCKET = 16;
@@ -94,14 +100,26 @@ async function attachChannel(msg: WsSub, push: (envelope: string) => void): Prom
     const count = clampViewCount(msg.count != null ? String(msg.count) : undefined) ?? undefined;
     return subscribeChart(msg.id as string, push, count);
   }
-  if (msg.kind === "comments") return attachComments(normalizeSymbol(msg.symbol as string), push);
+  if (msg.kind === "comments") {
+    const symbol = normalizeSymbol(msg.symbol as string);
+    const unsub = await attachComments(symbol, push);
+    acquireLease(symbol);
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+        releaseLease(symbol);
+      }
+      unsub();
+    };
+  }
   if (msg.kind === "analyses") return subscribeAnalyses(normalizeSymbol(msg.symbol as string), push);
   if (msg.kind === "position") return subscribePosition(normalizeSymbol(msg.symbol as string), push);
   if (msg.kind === "benchmark") return subscribeBenchmark(normalizeSymbol(msg.symbol as string), push);
   return subscribeBoard(push);
 }
 
-function handleSocket(socket: WebSocket): void {
+export function handleSocket(socket: WebSocket): void {
   const subs = new Map<string, () => void>();
   let closed = false;
 

@@ -157,24 +157,55 @@ describe("validatePrediction", () => {
     expect(issues.join("")).toContain("不足 1:1");
   });
 
-  it("passes a neutral call without an entry plan", () => {
+  it("passes a neutral call with a range zone and no entry plan", () => {
     const { entry_plan: _plan, ...rest } = validPrediction;
-    expect(validatePrediction({ ...rest, direction: "neutral" })).toEqual([]);
+    expect(
+      validatePrediction({
+        ...rest,
+        direction: "neutral",
+        range_plan: { low: 97, high: 104, long_tactic: "回踩 97 收稳做多", short_tactic: "反抽 104 受阻做空" },
+      }),
+    ).toEqual([]);
   });
 
   it("rejects a neutral call that carries an entry plan", () => {
     const issues = validatePrediction({
       ...validPrediction,
       direction: "neutral",
+      range_plan: { low: 97, high: 104 },
       entry_plan: { entry: 100, stop: 103, target1: 99 },
     });
     expect(issues.join("")).toContain("不应提交 entry_plan");
+  });
+
+  it("rejects a neutral call without a range zone", () => {
+    const { entry_plan: _plan, ...rest } = validPrediction;
+    const issues = validatePrediction({ ...rest, direction: "neutral" });
+    expect(issues.join("")).toContain("箱体下沿 low / 上沿 high");
+  });
+
+  it("rejects a neutral zone that does not contain the anchor price", () => {
+    const { entry_plan: _plan, ...rest } = validPrediction;
+    const issues = validatePrediction({
+      ...rest,
+      direction: "neutral",
+      range_plan: { low: 104, high: 110 },
+    });
+    expect(issues.join("")).toContain("包住锚点价格");
   });
 
   it("rejects a directional call without an entry plan", () => {
     const { entry_plan: _plan, ...rest } = validPrediction;
     const issues = validatePrediction({ ...rest, direction: "long" });
     expect(issues.join("")).toContain("必须给出 entry_plan");
+  });
+
+  it("rejects a directional plan without any target", () => {
+    const issues = validatePrediction({
+      ...validPrediction,
+      entry_plan: { entry: 100, stop: 97 },
+    });
+    expect(issues.join("")).toContain("必须给出 target1 或 target1_pct");
   });
 });
 

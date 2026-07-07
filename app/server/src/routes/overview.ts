@@ -5,7 +5,7 @@ import { ClientError } from "../errors.js";
 import { listAllCommentDates, listComments } from "../ai/comments.js";
 import { listUsage, listUsageDates, summarizeUsage } from "../ai/usageStore.js";
 import { buildOverviewBoard, latestPerSymbol } from "../services/cockpit/board.js";
-import { judgeOutcome } from "../services/cockpit/outcome.js";
+import { judgeOutcome, zoneFromPrediction } from "../services/cockpit/outcome.js";
 import { getResolvedOutcomes, saveResolvedOutcome } from "../services/cockpit/outcomeCache.js";
 import { aggregateStats, type StatsRow } from "../services/cockpit/stats.js";
 import { getProvider } from "../services/marketdata/registry.js";
@@ -93,7 +93,7 @@ export const overviewRoute: FastifyPluginAsync = async (app) => {
           const bars = await getProvider()
             .getKline(meta.symbol!, "15m", OUTCOME_BARS)
             .catch(() => null);
-          outcome = bars ? judgeOutcome(direction, anchor, plan, bars) : null;
+          outcome = bars ? judgeOutcome(direction, anchor, plan, bars, zoneFromPrediction(prediction)) : null;
           if (outcome && outcome.status !== "open") {
             void saveResolvedOutcome({ chartId: meta.id, symbol: meta.symbol!, direction }, outcome).catch(() => {});
           }
@@ -192,7 +192,7 @@ export const overviewRoute: FastifyPluginAsync = async (app) => {
       let outcome = cached.get(meta.id) ?? null;
       if (!outcome) {
         const bars = barsBySymbol.get(meta.symbol!) ?? null;
-        outcome = anchor && bars ? judgeOutcome(prediction.direction, anchor, plan, bars) : null;
+        outcome = anchor && bars ? judgeOutcome(prediction.direction, anchor, plan, bars, zoneFromPrediction(prediction)) : null;
         if (outcome && outcome.status !== "open") {
           void saveResolvedOutcome(
             { chartId: meta.id, symbol: meta.symbol!, direction: prediction.direction },

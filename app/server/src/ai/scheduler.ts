@@ -5,6 +5,7 @@ import { runAnalyst as defaultRunAnalyst, escalationOnCooldown as defaultEscalat
 import { appendComment as defaultAppendComment } from "./comments.js";
 import { runCommentator as defaultRunCommentator } from "./commentator.js";
 import { buildCommentPack as defaultBuildCommentPack, type CommentPack } from "./datapack.js";
+import { hasActiveLease } from "./leases.js";
 import { aiConfig as defaultAiConfig, type AiConfig } from "./models.js";
 import { runDailyRecap } from "./recap.js";
 import {
@@ -39,14 +40,15 @@ export interface SchedulerDeps {
   runRecap: (date: string) => Promise<unknown>;
 }
 
-async function discoverIntradayTargets(now: () => number, lookbackDays: number): Promise<string[]> {
-  const cutoff = easternDate(new Date(now() - lookbackDays * 86_400_000));
+export async function discoverIntradayTargets(now: () => number, lookbackDays: number): Promise<string[]> {
+  const nowMs = now();
+  const cutoff = easternDate(new Date(nowMs - lookbackDays * 86_400_000));
   const metas = await listCharts({ type: "intraday" });
   const symbols = new Set<string>();
   for (const meta of metas) {
     if (meta.symbol && easternDate(new Date(meta.created_at)) >= cutoff) symbols.add(meta.symbol);
   }
-  return [...symbols];
+  return [...symbols].filter((symbol) => hasActiveLease(symbol, nowMs));
 }
 
 export const defaultSchedulerDeps: SchedulerDeps = {

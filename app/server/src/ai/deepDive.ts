@@ -5,7 +5,7 @@ import { PROJECT_ROOT } from "../env.js";
 import { getCodexApiKey } from "./codexAuth.js";
 import { buildSystemPrompt, buildTools, type ExecFn, type ExecResult } from "./deepDiveTools.js";
 import { resolveModel, type AiModel } from "./models.js";
-import { notifyUser } from "./notify.js";
+import { emitNotice } from "./notices.js";
 import { attachAiUsageLogger } from "./usage.js";
 
 const DEFAULT_TIMEOUT_MS = 15 * 60_000;
@@ -37,7 +37,7 @@ export type { ExecFn, ExecResult };
 export interface DeepDiveDeps {
   model: AiModel | null;
   agentFactory?: DeepDiveAgentFactory;
-  notify?: (title: string, message: string) => void;
+  notify?: (title: string, message: string, kind: "deep_dive_done" | "deep_dive_failed") => void;
   repoRoot?: string;
   stocksDir?: string;
   exec?: ExecFn;
@@ -123,7 +123,10 @@ async function runWithTimeout(agent: DeepDiveAgent, prompt: string, timeoutMs: n
 
 async function executeDeepDiveRun(symbol: string, deps: DeepDiveDeps): Promise<void> {
   const repoRoot = deps.repoRoot ?? PROJECT_ROOT;
-  const notify = deps.notify ?? notifyUser;
+  const notify =
+    deps.notify ??
+    ((title: string, body: string, kind: "deep_dive_done" | "deep_dive_failed") =>
+      emitNotice({ symbol, kind, title, body, at: new Date().toISOString() }));
   const factory = deps.agentFactory ?? defaultAgentFactory;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const exec = deps.exec ?? defaultExec(repoRoot);
@@ -161,6 +164,7 @@ async function executeDeepDiveRun(symbol: string, deps: DeepDiveDeps): Promise<v
       dirtyWarning
         ? "⚠️ note updated, but unexpected changes outside the target note were detected."
         : "note updated.",
+      "deep_dive_done",
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -169,7 +173,7 @@ async function executeDeepDiveRun(symbol: string, deps: DeepDiveDeps): Promise<v
       running: false,
       lastResult: { symbol, ok: false, finishedAt: new Date(now()).toISOString(), error: message },
     };
-    notify(`${symbol} deep dive failed`, message);
+    notify(`${symbol} deep dive failed`, message, "deep_dive_failed");
   }
 }
 

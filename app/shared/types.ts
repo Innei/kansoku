@@ -420,12 +420,20 @@ export interface PredictionSignal {
   points?: { time: string; price: number; macd_value?: number }[];
 }
 
+export interface RangeBoundPlan {
+  condition?: string;
+  long_tactic?: string;
+  short_tactic?: string;
+  low?: number;
+  high?: number;
+}
+
 export interface IntradayPrediction {
   direction: "long" | "short" | "neutral";
   anchor?: { timeframe: TimeframeKey; time: string; price: number };
   scenarios?: PredictionScenario[];
-  range_bound_plan?: { condition?: string; long_tactic?: string; short_tactic?: string };
-  range_plan?: { condition?: string; long_tactic?: string; short_tactic?: string };
+  range_bound_plan?: RangeBoundPlan;
+  range_plan?: RangeBoundPlan;
   entry_plan?: {
     entry: number;
     stop: number;
@@ -597,7 +605,7 @@ export interface CockpitPosition {
   distances: { stop_pct: number | null; target1_pct: number | null; target2_pct: number | null } | null;
 }
 
-export type OutcomeStatus = "hit_target" | "hit_stop" | "open";
+export type OutcomeStatus = "hit_target" | "hit_stop" | "held_range" | "broke_range" | "open";
 
 export interface AnalysisOutcome {
   status: OutcomeStatus;
@@ -624,6 +632,8 @@ export interface StatsBucket {
   total: number;
   hit_target: number;
   hit_stop: number;
+  held_range: number;
+  broke_range: number;
   open: number;
   unjudged: number;
   win_rate: number | null;
@@ -633,7 +643,7 @@ export interface StatsBucket {
 export interface PredictionStats {
   total: number;
   overall: StatsBucket;
-  by_direction: { long: StatsBucket; short: StatsBucket };
+  by_direction: { long: StatsBucket; short: StatsBucket; neutral: StatsBucket };
   by_origin: { analyst: StatsBucket; manual: StatsBucket };
 }
 
@@ -725,4 +735,14 @@ export interface CockpitComment {
   source: CommentSource;
   escalated?: boolean;
   chartId?: string;
+}
+
+export type NoticeKind = "analysis_done" | "deep_dive_done" | "deep_dive_failed";
+
+export interface Notice {
+  symbol: string;
+  kind: NoticeKind;
+  title: string;
+  body: string;
+  at: string;
 }

@@ -9,7 +9,7 @@ import type {
   RawBar,
 } from "../../../shared/types.js";
 import { JOURNAL_DIR } from "../env.js";
-import { judgeOutcome } from "../services/cockpit/outcome.js";
+import { judgeOutcome, zoneFromPrediction } from "../services/cockpit/outcome.js";
 import { getResolvedOutcomes, saveResolvedOutcome, type OutcomeKey } from "../services/cockpit/outcomeCache.js";
 import { getProvider } from "../services/marketdata/registry.js";
 import { easternDate } from "../services/session.js";
@@ -25,6 +25,7 @@ export interface RecapSymbolReport {
   entry: number | null;
   stop: number | null;
   target1: number | null;
+  zone: { low: number; high: number } | null;
   outcome: AnalysisOutcome | null;
   comments: CockpitComment[];
 }
@@ -53,6 +54,9 @@ const DIRECTION_NAMES: Record<string, string> = { long: "做多", short: "做空
 function directionLine(report: RecapSymbolReport): string {
   if (!report.direction) return "- 当日没有落盘的预测";
   const name = DIRECTION_NAMES[report.direction] ?? report.direction;
+  if (report.direction === "neutral") {
+    return report.zone ? `- 预测方向：${name}（区间 ${report.zone.low}–${report.zone.high}）` : `- 预测方向：${name}`;
+  }
   if (report.entry == null || report.stop == null) return `- 预测方向：${name}`;
   const target = report.target1 != null ? ` / 目标 ${report.target1}` : "";
   return `- 预测方向：${name}（入场 ${report.entry} / 止损 ${report.stop}${target}）`;
@@ -63,6 +67,8 @@ function outcomeLine(outcome: AnalysisOutcome | null): string {
   const pct = pctText(outcome.pct_since_anchor);
   if (outcome.status === "hit_target") return `- 结局：盘中打到目标，锚点以来 ${pct}`;
   if (outcome.status === "hit_stop") return `- 结局：盘中打到止损，锚点以来 ${pct}`;
+  if (outcome.status === "held_range") return `- 结局：整段守住预判区间，锚点以来 ${pct}`;
+  if (outcome.status === "broke_range") return `- 结局：收盘价离开预判区间（观望判断失效），锚点以来 ${pct}`;
   return `- 结局：收盘未了结，锚点以来 ${pct}`;
 }
 
@@ -163,7 +169,13 @@ async function buildSymbolReport(
   if (!outcome && prediction?.direction && anchor) {
     const bars = await deps.fetchKline(symbol, "15m", OUTCOME_BARS).catch(() => null);
     outcome = bars
-      ? judgeOutcome(prediction.direction, anchor, plan ? { stop: plan.stop, target1: plan.target1 } : null, bars)
+      ? judgeOutcome(
+          prediction.direction,
+          anchor,
+          plan ? { stop: plan.stop, target1: plan.target1 } : null,
+          bars,
+          zoneFromPrediction(prediction),
+        )
       : null;
     if (outcome && outcome.status !== "open") {
       await deps
@@ -177,6 +189,7 @@ async function buildSymbolReport(
     entry: plan?.entry ?? null,
     stop: plan?.stop ?? null,
     target1: plan?.target1 ?? null,
+    zone: zoneFromPrediction(prediction),
     outcome,
     comments,
   };

@@ -3,7 +3,6 @@ import type { CockpitComment, CommentLevel, CommentSource } from "../../../share
 import { getDb, type Db } from "../db/index.js";
 import { comments } from "../db/schema.js";
 import { easternDate } from "../services/session.js";
-import { notifyUser } from "./notify.js";
 
 type Listener = (comment: CockpitComment) => void;
 
@@ -90,5 +89,4 @@ export async function appendComment(comment: CockpitComment, db: Db = getDb()): 
     chartId: comment.chartId ?? null,
   });
   broadcast(comment);
-  if (comment.level === "alert") notifyUser(`${comment.symbol} 盘中警报`, comment.text);
 }

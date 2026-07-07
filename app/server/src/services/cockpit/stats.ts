@@ -18,6 +18,8 @@ function emptyBucket(): MutableBucket {
     total: 0,
     hit_target: 0,
     hit_stop: 0,
+    held_range: 0,
+    broke_range: 0,
     open: 0,
     unjudged: 0,
     win_rate: null,
@@ -35,6 +37,8 @@ function addRow(bucket: MutableBucket, outcome: AnalysisOutcome | null): void {
   }
   if (outcome.status === "hit_target") bucket.hit_target += 1;
   else if (outcome.status === "hit_stop") bucket.hit_stop += 1;
+  else if (outcome.status === "held_range") bucket.held_range += 1;
+  else if (outcome.status === "broke_range") bucket.broke_range += 1;
   else bucket.open += 1;
   if (outcome.status !== "open") {
     bucket.resolved_pct_sum += outcome.pct_since_anchor;
@@ -43,14 +47,16 @@ function addRow(bucket: MutableBucket, outcome: AnalysisOutcome | null): void {
 }
 
 function finalize(bucket: MutableBucket): StatsBucket {
-  const resolved = bucket.hit_target + bucket.hit_stop;
+  const resolved = bucket.hit_target + bucket.hit_stop + bucket.held_range + bucket.broke_range;
   return {
     total: bucket.total,
     hit_target: bucket.hit_target,
     hit_stop: bucket.hit_stop,
+    held_range: bucket.held_range,
+    broke_range: bucket.broke_range,
     open: bucket.open,
     unjudged: bucket.unjudged,
-    win_rate: resolved > 0 ? bucket.hit_target / resolved : null,
+    win_rate: resolved > 0 ? (bucket.hit_target + bucket.held_range) / resolved : null,
     avg_pct: bucket.resolved_count > 0 ? bucket.resolved_pct_sum / bucket.resolved_count : null,
   };
 }
@@ -59,6 +65,7 @@ export function aggregateStats(rows: StatsRow[]): PredictionStats {
   const overall = emptyBucket();
   const long = emptyBucket();
   const short = emptyBucket();
+  const neutral = emptyBucket();
   const analyst = emptyBucket();
   const manual = emptyBucket();
 
@@ -66,13 +73,14 @@ export function aggregateStats(rows: StatsRow[]): PredictionStats {
     addRow(overall, row.outcome);
     if (row.direction === "long") addRow(long, row.outcome);
     else if (row.direction === "short") addRow(short, row.outcome);
+    else if (row.direction === "neutral") addRow(neutral, row.outcome);
     addRow(row.origin === "analyst" ? analyst : manual, row.outcome);
   }
 
   return {
     total: rows.length,
     overall: finalize(overall),
-    by_direction: { long: finalize(long), short: finalize(short) },
+    by_direction: { long: finalize(long), short: finalize(short), neutral: finalize(neutral) },
     by_origin: { analyst: finalize(analyst), manual: finalize(manual) },
   };
 }

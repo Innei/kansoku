@@ -8,7 +8,7 @@ import { ClientError } from "../errors.js";
 import { toTs } from "../services/indicators.js";
 import { buildBenchmark } from "../services/cockpit/benchmark.js";
 import { buildCockpitFlow } from "../services/cockpit/flow.js";
-import { judgeOutcome } from "../services/cockpit/outcome.js";
+import { judgeOutcome, zoneFromPrediction } from "../services/cockpit/outcome.js";
 import { getResolvedOutcomes, saveResolvedOutcome } from "../services/cockpit/outcomeCache.js";
 import { buildCockpitPosition } from "../services/cockpit/position.js";
 import { entryPlanFromDoc, latestIntradayDoc } from "../services/cockpit/entryPlan.js";
@@ -113,7 +113,7 @@ export const symbolsRoute: FastifyPluginAsync = async (app) => {
           : null;
       let outcome = cached.get(meta.id) ?? null;
       if (!outcome && direction && anchor && bars) {
-        outcome = judgeOutcome(direction, anchor, plan, bars);
+        outcome = judgeOutcome(direction, anchor, plan, bars, zoneFromPrediction(prediction));
         if (outcome && outcome.status !== "open") {
           void saveResolvedOutcome({ chartId: meta.id, symbol: sym, direction }, outcome).catch(() => {});
         }

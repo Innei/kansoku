@@ -209,7 +209,8 @@ climax top (volume ≥ 2.5×20MA + red close + local high), MA50/MA200 breakdown
   "scenarios": [                                      // ≥ 2, probabilities ≈ 100
     { "label": "继续探底", "probability": 45, "path": "...", "trigger": "..." }
   ],
-  "range_bound_plan": { "condition": "...", "long_tactic": "...", "short_tactic": "..." },
+  "range_bound_plan": { "condition": "...", "long_tactic": "...", "short_tactic": "...", "low": 1020.00, "high": 1060.00 },
+                                                      // low/high = 箱体下沿/上沿；neutral 必填（观望按守住/破位对账入记分板），方向单可选
   "entry_plan": { "entry": 1049.81, "stop": 1030.00, "target1_pct": 3, "target2_pct": 6, "note": "..." }, // 仅 long/short；neutral（观望）省略整个 entry_plan，条件应对写进 range_bound_plan
   "price_zones": [                                      // only real resistance/pressure zones drawn on chart
     { "kind": "resistance", "label": "反弹压力带", "low": 60.90, "high": 61.35,

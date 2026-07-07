@@ -31,7 +31,7 @@ function broadcast(connected: boolean): void {
 }
 
 function connect(): void {
-  if (ws || subs.size === 0 || document.hidden) return;
+  if (ws || subs.size === 0) return;
   const sock = new WebSocket(wsUrl());
   ws = sock;
   sock.onopen = () => {
@@ -50,7 +50,7 @@ function connect(): void {
   sock.onclose = () => {
     if (ws === sock) ws = null;
     broadcast(false);
-    if (!manualClose && subs.size > 0 && !document.hidden) scheduleReconnect();
+    if (!manualClose && subs.size > 0) scheduleReconnect();
     manualClose = false;
   };
   sock.onerror = () => sock.close();
@@ -87,19 +87,3 @@ export function subscribeChannel(
     }
   };
 }
-
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    if (reconnectTimer !== null) {
-      window.clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
-    if (ws) {
-      manualClose = true;
-      ws.close();
-      ws = null;
-    }
-  } else {
-    connect();
-  }
-});

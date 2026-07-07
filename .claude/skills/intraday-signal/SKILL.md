@@ -3,10 +3,13 @@ name: intraday-signal
 description: >
   Short-term multi-timeframe (5m/15m/1h) technical read for a single symbol —
   pulls K-line across three timeframes, reads MACD + swing structure, writes a
-  direction call (long/short/neutral) with an explicit anchor price, 3-scenario
-  forward read, a range-bound playbook (long tactic + short tactic), an
-  entry/stop/target plan with dual-basis R/R (T1 + T2), position sizing from
-  the live broker account, an event-risk gate (earnings / FOMC / CPI), and
+  direction call (long/short/neutral) with an explicit anchor price, a 2–4
+  scenario forward read, a range-bound playbook (long tactic + short tactic;
+  a neutral call carries a numeric low/high zone instead of an entry plan and
+  is scored on whether the zone held), an entry/stop/target plan with
+  dual-basis R/R (T1 + T2) for directional calls only, position sizing with a
+  nominal cap from the live broker account, an event-risk gate (earnings /
+  FOMC / CPI), and
   market/sector alignment + relvol volume checks — MACD divergence/背驰,
   candle patterns like Pin Bar, and 123 structures are auto-detected and drawn
   server-side —
@@ -59,7 +62,10 @@ the day's tape:
   is exactly the window that matters. Search the symbol, read the last few hours.
   X sentiment is an *input*, not a conclusion — form the price-structure read in
   Step 3 independently, then reconcile; don't go hunting the chart for evidence
-  of whatever narrative X planted.
+  of whatever narrative X planted. **If the `twitter-reader` skill is not
+  available in the current session, don't silently skip it: write "X 未查"
+  into the report/`context.sources_used`, and treat the 催化日/平静日 call as
+  provisional（longbridge-news 有延迟，"还没看到新闻"不等于"没有新闻"）.**
 - **Always: event risk（财报 + 宏观时刻表）**. Find the next earnings date
   (longbridge news / X / IR; if unconfirmable, say so explicitly in the report)
   and today's scheduled macro releases in ET (CPI/非农 8:30, 多数数据 10:00,
@@ -98,8 +104,12 @@ down: `cd app && pnpm start` in the background), then POST a preview (no
 ```bash
 curl -s -X POST http://localhost:5199/api/charts \
   -H 'Content-Type: application/json' \
-  -d '{"type":"intraday","symbol":"<SYM>.US","name":"...","position":{"shares":1,"cost":100.00}}'
+  -d '{"type":"intraday","symbol":"<SYM>.US","name":"..."}'
 ```
+
+Only add a `"position": {"shares": N, "cost": X}` field when `longbridge
+positions` shows a **real** holding in this symbol — never a placeholder; a
+fabricated position renders a bogus 持仓视角 card on the dashboard.
 
 The response's `data.technicals` gives, per timeframe: the latest DIF/DEA/HIST,
 the last ~6 swing highs/lows, the most recent 金叉/死叉 (`last_cross`), any
@@ -142,12 +152,18 @@ timeframe data + Step 3's numbers, decide:
    the dashboard's default tab. Anchor on m5 only for a pure scalp call, on h1
    only for a swing-level statement. Align `anchor.time` to a bar boundary of its
    timeframe (m15 → :00/:15/:30/:45).
-2. **Scenarios** — at least 2, probabilities summing to ~100%, each with a `path`
+2. **Scenarios** — 2 to 4, by real structure（通常是上破/震荡/下破三个，不要为
+   凑数硬编一个 5% 的情景）, probabilities summing to ~100%, each with a `path`
    (what the K-line likely does) and a `trigger` (what confirms it). Reuse the
    3-scenario discipline from `market-session-tracker` (Bull/Base/Bear-style).
 3. **Range-bound playbook** — if one scenario is "震荡/oscillating", fill
    `range_bound_plan` with an explicit tactic for **both** directions (`long_tactic`
    and `short_tactic`) — never describe only one side of a two-sided range.
+   **For a `neutral` call the playbook additionally MUST carry numeric `low` /
+   `high`（箱体下沿/上沿，low < high，须包住锚点价）** — 观望 = 预判价格守在
+   这个区间内。这两个数是观望判断的事后对账依据：服务端会按"收盘价离开区间 =
+   破位（判错）/ 守满一个交易时段 = 守住（判对）"记入记分板，没有它们观望就
+   是一个说错零成本的空话。
 4. **Entry plan** — `entry`, `stop`, `target1_pct`, `target2_pct` — **only for
    `long` / `short` calls. A `neutral` call submits NO `entry_plan`**: 观望就是
    现在没有可执行的入场/止损/目标，两侧的条件应对全部写进 `range_bound_plan`
@@ -158,9 +174,12 @@ timeframe data + Step 3's numbers, decide:
      arbitrary %. Name the structure in `stop_note`.
    - **R/R in both口径.** Compute direction-aware R/R twice: T1-based and
      T2-based (`long`: risk = entry−stop, reward = target−entry; `short`
-     mirrored). Report both. **If T1-based R/R < 1:1, the plan is rejected —
-     rework the entry or pass.** If only the T2 口径 reaches 2:1, say so
-     explicitly（远目标是有条件的，不许拿它化妆头条盈亏比）.
+     mirrored). Report both. **One unified rule（全仓库同一口径）: T1-based
+     R/R < 1:1 → the plan is rejected, rework the entry or pass; 1:1–2:1 →
+     allowed, but the report must explicitly say 赔率偏薄（the chart sidebar
+     flags < 2:1 in red for the same reason — that's a warning, not the
+     rejection line）.** If only the T2 口径 reaches 2:1, say so explicitly
+     （远目标是有条件的，不许拿它化妆头条盈亏比）.
    - **Event gate.** Default: no holding through earnings or a scheduled
      FOMC/CPI-class release within the horizon. An exception must state the gap
      risk in one line（跳空可越过止损，最大亏损≠1R）.
@@ -170,14 +189,23 @@ timeframe data + Step 3's numbers, decide:
      relvol confirmation.
 5. **Position size（仓位）** — from the `longbridge portfolio` pull: risk
    budget = 1% of account value by default (0.5% on a 催化日 or counter-tape
-   trade); `shares = floor(budget / |entry − stop|)`. Report 股数、名义金额、
-   占账户 %。**A plan without a size is not a plan** — this is what separates
-   an opinion from a trade.
+   trade); `shares = floor(budget / |entry − stop|)`. **Nominal cap（名义上限）:
+   the position's nominal value（shares × entry）must not exceed 30% of account
+   value** — a tight stop makes the risk formula spit out huge share counts
+   （止损贴得越近算出的股数越多，极端时名义金额会超过账户本身，等于隐性加杠杆）;
+   when the risk-based size breaks the cap, cut shares to the cap and say so.
+   Report 股数、名义金额、占账户 %。**A plan without a size is not a plan** —
+   this is what separates an opinion from a trade. (Sizing applies to this
+   skill's manual runs only — the in-app auto-reassess analyst has no account
+   data and deliberately gives no size; its output is direction + levels, and
+   sizing stays a human-run step.)
 6. **Trade management（入场后）** — write the management leg into
    `entry_plan.note` / the report: at T1 take half off and move the stop to
-   breakeven（推保本）; time stop — if the trade hasn't moved in ~6 根 m15 bars
-   (≈1.5h), the thesis is stale, exit flat; stopped out = stay out, no
-   revenge re-entry unless a *new* structure signal forms.
+   breakeven（推保本）; time stop — **~6 bars of the anchor timeframe**
+   (m5 锚点 ≈30min、m15 锚点 ≈1.5h、h1 锚点 ≈6h——波段级判断不该被日内级的
+   时间止损误杀), if the trade hasn't moved by then the thesis is stale, exit
+   flat; stopped out = stay out, no revenge re-entry unless a *new* structure
+   signal forms.
 7. **Existing position（若用户已持仓）** — the read must end with an explicit
    加 / 减 / 持 / 清 call on the live position, reconciled against cost basis —
    not just a fresh-entry plan alongside an ignored holding.
@@ -246,19 +274,24 @@ outcome judgment (`hit_target` / `hit_stop` / `open`, computed server-side from
 post-anchor bars) — that's a quick mechanical scoreboard, not a substitute for
 the journal's narrative record.
 
-**Calibration loop（概率对账）**: roughly every 10 analyses on any symbol, pull
-the 历史 tab and compare stated scenario probabilities against realized
-outcomes（标了 60% 的情景实际兑现了几成？）. Write one line of calibration
-verdict into that day's journal entry — systematically over-confident
-probabilities are a finding, not a footnote. Probabilities that never get
-audited degrade into rhetoric.
+**Calibration loop（对账）**: **every run**, before writing the journal entry,
+pull `GET /api/overview/stats`（或该标的的 `GET /api/symbols/:sym/analyses`）
+and copy the mechanical scoreboard into the entry — one line: 总次数、命中率、
+目标/止损/守区间/破区间的分布（观望判断按守住/破位计入，说错不再是零成本）.
+The scoreboard is machine-judged, so this step is a copy, not an audit — no
+counting discipline required. Scenario-probability calibration（标了 60% 的
+情景实际兑现了几成）stays qualitative: when the scoreboard shows a losing
+streak or the stated probabilities feel systematically over-confident, say so
+in that day's entry — probabilities that never get compared against outcomes
+degrade into rhetoric.
 
 ## Anti-patterns
 
 - ❌ A directional call with no anchor price/time
 - ❌ Scenarios that don't sum to ~100%, or only one scenario
 - ❌ A range-bound call that only covers one direction (must give both long and short tactics)
-- ❌ Omitting or silently glossing over an R/R below 2:1
+- ❌ A `neutral` call without numeric `low`/`high` in `range_bound_plan`（没有区间的观望事后无法对账，等于零成本喊话）
+- ❌ Submitting a plan whose T1-based R/R is below 1:1, or a 1:1–2:1 plan without explicitly calling the odds thin（赔率偏薄要写出来）
 - ❌ Reporting only the T2-based R/R（拿有条件的远目标化妆盈亏比）
 - ❌ An entry plan with no position size, or a size invented without pulling `longbridge portfolio`
 - ❌ A stop parked on a round number / bare % with no structure behind it

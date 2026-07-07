@@ -11,6 +11,8 @@ import { Badge, MarketTime, SectionTitle } from "../../ui";
 const OUTCOME_LABEL: Record<OutcomeStatus, { icon: typeof Check; tone: string; label: string }> = {
   hit_target: { icon: Check, tone: "up", label: "到目标" },
   hit_stop: { icon: CircleX, tone: "down", label: "到止损" },
+  held_range: { icon: Check, tone: "up", label: "守住区间" },
+  broke_range: { icon: CircleX, tone: "down", label: "破区间" },
   open: { icon: Clock, tone: "", label: "进行中" },
 };
 

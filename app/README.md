@@ -110,7 +110,7 @@ pnpm start          # http://localhost:5199
 - 盘前（04:00–09:30 ET）：5 分钟一跳，纯机械不花钱——跳空 ≥2% 时往点评流写一条系统提示（≥3% 用 warn 级），并附上盘前高点方便开盘对照。监控对象是近 3 天有过 intraday 分析的标的。
 - 收盘后：自动生成当日小结写进 `journal/YYYY-MM-DD-intraday-recap.md`（每个标的的预测结局、点评统计、警报清单、触发分布、当日 AI 花费），当天已存在就跳过不覆盖。
 
-**推送**：alert 级点评和分析员完成重估时发 macOS 系统通知（osascript），不用盯着页面。只在 macOS 生效，`AI_NOTIFY=off` 关闭。
+**推送**：alert 级点评通过点评流（comments 频道）实时推到浏览器；分析员完成重估、深度复盘（deep dive）成功或失败，则通过 WS 的 notice 频道（跟点评同一个订阅通道）推给浏览器，由前端负责展示，不再依赖 macOS 系统通知（osascript）。
 
 ### 使用方式：server 内置 AI vs agent CLI 调 skill
 

@@ -10,6 +10,8 @@ import {
   startDeepDive,
 } from "../src/ai/deepDive.js";
 import type { AiModel } from "../src/ai/models.js";
+import type { Notice } from "../../shared/types.js";
+import { onNotice } from "../src/ai/notices.js";
 
 const fakeModel = { provider: "anthropic", id: "claude-haiku-4-5" } as unknown as AiModel;
 
@@ -109,6 +111,24 @@ describe("startDeepDive success/failure paths", () => {
 
     const written = await fs.readFile(join(repoRoot, "stocks", "MU.md"), "utf8");
     expect(written).toBe("# MU notes");
+  });
+
+  it("emits a .US-suffixed notice via the default notify path", async () => {
+    const { deps } = harness(async (tools) => {
+      await tool(tools, "write_note").execute("c1", { content: "# MU notes" });
+    });
+    delete deps.notify;
+
+    const received: Notice[] = [];
+    const unsub = onNotice("MU.US", (n) => received.push(n));
+
+    startDeepDive("MU", deps);
+    await vi.waitFor(() => expect(deepDiveState().running).toBe(false));
+
+    unsub();
+    expect(received).toHaveLength(1);
+    expect(received[0].symbol).toBe("MU.US");
+    expect(received[0].kind).toBe("deep_dive_done");
   });
 
   it("records a failure when the agent rejects", async () => {

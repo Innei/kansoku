@@ -8,17 +8,30 @@ import { Badge, Card, ErrorBox, MarketTime, Num, SectionTitle } from "../../ui";
 import { useIntervalFetch } from "../cockpit/useIntervalFetch";
 
 const DIRECTION_LABEL: Record<string, string> = { long: "做多", short: "做空", neutral: "观望" };
-const OUTCOME_LABEL: Record<string, string> = { hit_target: "命中目标", hit_stop: "打到止损", open: "未了结" };
-const OUTCOME_TONE: Record<string, "up" | "down"> = { hit_target: "up", hit_stop: "down" };
+const OUTCOME_LABEL: Record<string, string> = {
+  hit_target: "命中目标",
+  hit_stop: "打到止损",
+  held_range: "守住区间",
+  broke_range: "破区间",
+  open: "未了结",
+};
+const OUTCOME_TONE: Record<string, "up" | "down"> = {
+  hit_target: "up",
+  hit_stop: "down",
+  held_range: "up",
+  broke_range: "down",
+};
 
 function BucketLine({ label, bucket }: { label: string; bucket: StatsBucket }) {
-  const resolved = bucket.hit_target + bucket.hit_stop;
+  const ranged = (bucket.held_range ?? 0) + (bucket.broke_range ?? 0);
+  const resolved = bucket.hit_target + bucket.hit_stop + ranged;
   return (
     <div className="stats-line">
       <span className="k">{label}</span>
       <span className="v">
         {bucket.total} 次 · 命中率 {bucket.win_rate == null ? "—" : `${(bucket.win_rate * 100).toFixed(0)}%`}
-        {resolved > 0 && `（目标 ${bucket.hit_target} / 止损 ${bucket.hit_stop}）`}
+        {resolved > 0 &&
+          `（目标 ${bucket.hit_target} / 止损 ${bucket.hit_stop}${ranged > 0 ? ` / 守区间 ${bucket.held_range} / 破区间 ${bucket.broke_range}` : ""}）`}
         {bucket.open > 0 && ` · 未了结 ${bucket.open}`}
         {bucket.avg_pct != null && ` · 了结均值 ${signed(bucket.avg_pct)}%`}
       </span>
@@ -34,6 +47,7 @@ function StatsBlock({ stats }: { stats: PredictionStats | null }) {
       <BucketLine label="全部预测" bucket={stats.overall} />
       <BucketLine label="做多" bucket={stats.by_direction.long} />
       <BucketLine label="做空" bucket={stats.by_direction.short} />
+      <BucketLine label="观望" bucket={stats.by_direction.neutral} />
       <BucketLine label="AI 生成" bucket={stats.by_origin.analyst} />
       <BucketLine label="手动分析" bucket={stats.by_origin.manual} />
     </div>

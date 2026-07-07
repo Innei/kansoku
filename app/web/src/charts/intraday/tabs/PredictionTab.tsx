@@ -116,6 +116,12 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
         <>
           <SectionTitle>震荡应对</SectionTitle>
           <div className="zone-meta md" style={{ marginBottom: 6 }}>
+            {rbp.low != null && rbp.high != null && (
+              <>
+                预判区间 ${fmt(Number(rbp.low))} – ${fmt(Number(rbp.high))}
+                {rbp.condition ? " · " : ""}
+              </>
+            )}
             {rbp.condition ?? ""}
           </div>
           <div className="grid2">
