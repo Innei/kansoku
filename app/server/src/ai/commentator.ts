@@ -1,13 +1,13 @@
-import { Agent, type AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { type Static, Type } from "typebox";
 import type { CockpitComment } from "../../../shared/types.js";
 import { easternDate } from "../services/session.js";
+import { AgentTimeoutError, type AiAgentFactory, createAgentSession } from "./agentSession.js";
 import { appendComment as defaultAppendComment } from "./comments.js";
-import { getCodexApiKey } from "./codexAuth.js";
 import { buildCommentUpdate, type CommentPack } from "./datapack.js";
 import type { AiModel } from "./models.js";
+import { createRunLock } from "./runLock.js";
 import type { Trigger } from "./triggers.js";
-import { attachAiUsageLogger } from "./usage.js";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const MAX_PROMPT_CHARS = 24_000;
@@ -28,21 +28,9 @@ const SYSTEM_PROMPT = [
   "- 必须调用 submit_comment，不要只用文字回复。",
 ].join("\n");
 
-export interface CommentatorAgent {
-  prompt(text: string): Promise<unknown>;
-  abort(): void;
-  setTools?(tools: AgentTool[]): void;
-}
-
-export type AgentFactory = (config: {
-  systemPrompt: string;
-  model: AiModel;
-  tools: AgentTool[];
-}) => CommentatorAgent;
-
 export interface CommentatorDeps {
   model: AiModel;
-  agentFactory?: AgentFactory;
+  agentFactory?: AiAgentFactory;
   appendComment?: (comment: CockpitComment) => Promise<void>;
   timeoutMs?: number;
   now?: () => Date;
@@ -56,7 +44,7 @@ export interface RunCommentatorInput {
 }
 
 interface CommentatorSession {
-  agent: CommentatorAgent;
+  agentSession: ReturnType<typeof createAgentSession>;
   easternDate: string;
   modelKey: string;
   runCount: number;
@@ -64,33 +52,12 @@ interface CommentatorSession {
   lastBarTime: string | null;
 }
 
-const runningCommentators = new Set<string>();
+const commentatorRunLock = createRunLock();
 const sessions = new Map<string, CommentatorSession>();
 
 export function resetCommentatorSessions(): void {
   sessions.clear();
 }
-
-const defaultAgentFactory: AgentFactory = (config) => {
-  const agent = new Agent({
-    getApiKey: getCodexApiKey,
-    initialState: {
-      systemPrompt: config.systemPrompt,
-      model: config.model,
-      tools: config.tools,
-      ...(config.model.thinkingLevel ? { thinkingLevel: config.model.thinkingLevel } : {}),
-    },
-  });
-  return {
-    prompt: (text: string) => agent.prompt(text),
-    abort: () => agent.abort(),
-    setTools: (tools) => {
-      agent.state.tools = tools;
-    },
-    // attachAiUsageLogger duck-types on subscribe
-    subscribe: (listener: Parameters<Agent["subscribe"]>[0]) => agent.subscribe(listener),
-  } as CommentatorAgent;
-};
 
 function modelKey(model: AiModel): string {
   const ref = model as { provider?: string; id?: string };
@@ -140,42 +107,6 @@ function buildSubmitTool(
   };
 }
 
-interface RunState {
-  done: boolean;
-}
-
-class CommentatorTimeoutError extends Error {}
-
-async function runWithTimeout(
-  agent: CommentatorAgent,
-  prompt: string,
-  timeoutMs: number,
-  state: RunState,
-): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      if (state.done) return;
-      state.done = true;
-      agent.abort();
-      reject(new CommentatorTimeoutError(`timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-    agent.prompt(prompt).then(
-      () => {
-        if (state.done) return;
-        state.done = true;
-        clearTimeout(timer);
-        resolve();
-      },
-      (err) => {
-        if (state.done) return;
-        state.done = true;
-        clearTimeout(timer);
-        reject(err instanceof Error ? err : new Error(String(err)));
-      },
-    );
-  });
-}
-
 function getValidSession(symbol: string, today: string, key: string): CommentatorSession | null {
   const session = sessions.get(symbol);
   if (!session) return null;
@@ -197,11 +128,9 @@ export async function runCommentator({
   trigger,
   deps,
 }: RunCommentatorInput): Promise<{ escalate: boolean }> {
-  if (runningCommentators.has(symbol)) return { escalate: false };
-  runningCommentators.add(symbol);
+  if (!commentatorRunLock.tryAcquire(symbol)) return { escalate: false };
 
   const append = deps.appendComment ?? defaultAppendComment;
-  const factory = deps.agentFactory ?? defaultAgentFactory;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const now = deps.now ?? (() => new Date());
   const reason = triggerText(trigger);
@@ -216,7 +145,7 @@ export async function runCommentator({
       source: "system",
     });
 
-  const state: RunState = { done: false };
+  let session: CommentatorSession | null = null;
 
   try {
     let escalate: boolean | null = null;
@@ -227,26 +156,32 @@ export async function runCommentator({
       (value) => {
         escalate = value;
       },
-      () => state.done,
+      () => session?.agentSession.isDone() ?? false,
     );
 
     const today = easternDate(now());
     const key = modelKey(deps.model);
-    let session = getValidSession(symbol, today, key);
+    session = getValidSession(symbol, today, key);
     let promptText: string;
     if (session) {
-      session.agent.setTools?.([tool]);
+      session.agentSession.agent.setTools?.([tool]);
       const update = buildCommentUpdate(pack, session.lastBarTime);
       promptText = JSON.stringify({ update, trigger }).slice(0, MAX_PROMPT_CHARS);
     } else {
-      const agent = factory({ systemPrompt: SYSTEM_PROMPT, model: deps.model, tools: [tool] });
-      attachAiUsageLogger(agent, { layer: "commentator", symbol, model: deps.model });
-      session = { agent, easternDate: today, modelKey: key, runCount: 0, sentChars: 0, lastBarTime: null };
+      const agentSession = createAgentSession({
+        layer: "commentator",
+        symbol,
+        model: deps.model,
+        systemPrompt: SYSTEM_PROMPT,
+        tools: [tool],
+        agentFactory: deps.agentFactory,
+      });
+      session = { agentSession, easternDate: today, modelKey: key, runCount: 0, sentChars: 0, lastBarTime: null };
       sessions.set(symbol, session);
       promptText = JSON.stringify({ pack, trigger }).slice(0, MAX_PROMPT_CHARS);
     }
 
-    await runWithTimeout(session.agent, promptText, timeoutMs, state);
+    await session.agentSession.runTurn(promptText, timeoutMs);
 
     if (escalate === null) {
       // The agent ignored the tool contract; drop the session rather than
@@ -266,12 +201,12 @@ export async function runCommentator({
   } catch (err) {
     sessions.delete(symbol);
     const text =
-      err instanceof CommentatorTimeoutError
+      err instanceof AgentTimeoutError
         ? `点评员超时未产出结论（${timeoutMs}ms）。`
         : `点评员运行失败：${err instanceof Error ? err.message : String(err)}`;
     await writeError(text);
     return { escalate: false };
   } finally {
-    runningCommentators.delete(symbol);
+    commentatorRunLock.release(symbol);
   }
 }

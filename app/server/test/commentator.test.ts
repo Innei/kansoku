@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { CockpitComment, RawBar } from "../../shared/types.js";
+import type { AiAgentFactory, AiAgentHandle } from "../src/ai/agentSession.js";
 import {
-  type AgentFactory,
-  type CommentatorAgent,
   type CommentatorDeps,
   resetCommentatorSessions,
   runCommentator,
@@ -39,7 +38,7 @@ function makePack(symbol: string, bars: RawBar[] = []): CommentPack {
 interface Harness {
   deps: {
     model: AiModel;
-    agentFactory: AgentFactory;
+    agentFactory: AiAgentFactory;
     appendComment: (c: CockpitComment) => Promise<void>;
     timeoutMs?: number;
   };
@@ -48,16 +47,16 @@ interface Harness {
 
 function harness(
   build: (
-    tools: Parameters<AgentFactory>[0]["tools"],
+    tools: Parameters<AiAgentFactory>[0]["tools"],
     record: (escalate: boolean) => Promise<void>,
-  ) => CommentatorAgent,
+  ) => AiAgentHandle,
   timeoutMs?: number,
 ): Harness {
   const comments: CockpitComment[] = [];
   const appendComment = async (c: CockpitComment) => {
     comments.push(c);
   };
-  const agentFactory: AgentFactory = ({ tools }) => {
+  const agentFactory: AiAgentFactory = ({ tools }) => {
     const submit = tools.find((t) => t.name === "submit_comment");
     const record = async (escalate: boolean) => {
       await submit?.execute("call-1", { level: "warn", text: "两句话点评", escalate });
@@ -164,7 +163,7 @@ describe("runCommentator", () => {
   });
 
   it("does not append a second comment when a late submit runs after the timeout", async () => {
-    let capturedSubmit: Parameters<AgentFactory>[0]["tools"][number] | undefined;
+    let capturedSubmit: Parameters<AiAgentFactory>[0]["tools"][number] | undefined;
     const { deps, comments } = harness((tools) => {
       capturedSubmit = tools.find((t) => t.name === "submit_comment");
       return {
@@ -195,7 +194,7 @@ describe("runCommentator", () => {
     const appendComment = async (c: CockpitComment) => {
       if (c.source === "commentator") submittedTriggers.push(c.trigger ?? "");
     };
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       let currentTools = tools;
       return {
@@ -232,7 +231,7 @@ describe("runCommentator", () => {
 
   it("reseeds a fresh session when the trading day changes", async () => {
     let factoryCalls = 0;
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       return {
         prompt: async () => {
@@ -251,7 +250,7 @@ describe("runCommentator", () => {
 
   it("reseeds a fresh session when the model changes", async () => {
     let factoryCalls = 0;
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       return {
         prompt: async () => {
@@ -271,7 +270,7 @@ describe("runCommentator", () => {
     const prompts: string[] = [];
     let factoryCalls = 0;
     let fail = false;
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       let currentTools = tools;
       return {
@@ -301,7 +300,7 @@ describe("runCommentator", () => {
   it("drops the session when the agent never calls submit_comment", async () => {
     let factoryCalls = 0;
     let silent = false;
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       let currentTools = tools;
       return {
@@ -328,7 +327,7 @@ describe("runCommentator", () => {
 
   it("recycles the session once the sent-chars budget is exhausted", async () => {
     let factoryCalls = 0;
-    const agentFactory: AgentFactory = ({ tools }) => {
+    const agentFactory: AiAgentFactory = ({ tools }) => {
       factoryCalls += 1;
       let currentTools = tools;
       return {
