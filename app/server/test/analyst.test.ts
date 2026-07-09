@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CockpitComment } from "../../shared/types.js";
+import type { AiAgentFactory, AiAgentHandle } from "../src/ai/agentSession.js";
 import {
-  type AnalystAgent,
-  type AnalystAgentFactory,
   type AnalystDeps,
   escalationOnCooldown,
   executeAnalystRun,
@@ -35,7 +34,7 @@ function makePack(overrides: Partial<ReassessPack> = {}): ReassessPack {
   };
 }
 
-type Tools = Parameters<AnalystAgentFactory>[0]["tools"];
+type Tools = Parameters<AiAgentFactory>[0]["tools"];
 
 interface Harness {
   deps: AnalystDeps;
@@ -65,8 +64,8 @@ function harness(
       return { id: "chart-new", url: "http://localhost/#/charts/chart-new" };
     });
 
-  const agentFactory: AnalystAgentFactory = ({ tools }) => {
-    const agent: AnalystAgent = {
+  const agentFactory: AiAgentFactory = ({ tools }) => {
+    const agent: AiAgentHandle = {
       prompt: opts.hang ? () => new Promise<void>(() => {}) : () => script(tools),
       abort: () => opts.onAbort?.(),
     };
