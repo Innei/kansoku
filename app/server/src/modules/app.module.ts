@@ -1,7 +1,10 @@
 import { Module } from "@tsuki-hono/common";
+import { AnnotationsModule } from "./annotations/annotations.module.js";
 import { HealthModule } from "./health/health.module.js";
+import { PositionsModule } from "./positions/positions.module.js";
+import { SymbolsModule } from "./symbols/symbols.module.js";
 
 @Module({
-  imports: [HealthModule],
+  imports: [HealthModule, SymbolsModule, AnnotationsModule, PositionsModule],
 })
 export class AppModule {}
