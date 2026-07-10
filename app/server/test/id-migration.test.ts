@@ -23,11 +23,15 @@ function execMigration(db: Database.Database, tag: string): void {
   db.exec(sql);
 }
 
+const SNOWFLAKE_MIGRATION_TAG = "0001_deep_sheva_callister";
+
 function seedPriorSchema(): { db: Database.Database; migrationTag: string } {
   const entries = journalEntries();
+  const target = entries.findIndex((entry) => entry.tag === SNOWFLAKE_MIGRATION_TAG);
+  if (target === -1) throw new Error(`migration ${SNOWFLAKE_MIGRATION_TAG} missing from journal`);
   const db = new Database(":memory:");
-  for (const entry of entries.slice(0, -1)) execMigration(db, entry.tag);
-  return { db, migrationTag: entries[entries.length - 1].tag };
+  for (const entry of entries.slice(0, target)) execMigration(db, entry.tag);
+  return { db, migrationTag: SNOWFLAKE_MIGRATION_TAG };
 }
 
 function eachSecond(id: string, ts: string): void {
