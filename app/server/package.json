@@ -14,8 +14,7 @@
     "@types/ws": "^8.18.1",
     "typescript": "^6.0.3",
     "vite-node": "^6.0.0",
-    "vitest": "^4.1.9",
-    "ws": "^8.21.0"
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "^0.80.3",
@@ -29,6 +28,7 @@
     "longbridge": "^4.3.3",
     "reflect-metadata": "0.2.2",
     "tsyringe": "4.10.0",
-    "typebox": "1.1.38"
+    "typebox": "1.1.38",
+    "ws": "^8.21.0"
   }
 }
