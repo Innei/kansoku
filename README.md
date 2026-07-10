@@ -184,12 +184,9 @@ pnpm skills:update
 ```bash
 FRED_API_KEY=...                               # FRED 免费申请
 SEC_USER_AGENT="Your Name <you@example.com>"   # SEC EDGAR 要求带身份
-AI_COMMENT_MODEL=provider/model                # 盘中轻量点评，可选
-AI_ANALYST_MODEL=provider/model                # 升级重估，可选
-AI_DEEPDIVE_MODEL=provider/model               # 个股研究笔记刷新，可选
 ```
 
-AI 模型变量缺失时，对应功能会停用；图表服务本身仍可启动。
+AI 模型与 API key 不再走环境变量，改到网页端 `/settings` 页面配置（盘中点评、升级重估、个股研究笔记刷新等角色分别选模型，key 加密存进 SQLite）。未配置对应角色时，该功能会停用；图表服务本身仍可启动。
 
 ## 仓库布局
 

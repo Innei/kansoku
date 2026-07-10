@@ -62,18 +62,20 @@ export function runEnvImport(db: Db, secretBox: SecretBox, env: NodeJS.ProcessEn
         const thinkingLevel = clampThinkingLevel(model, ref.thinkingLevel ?? "off");
         tx.insert(aiRoleSettings)
           .values({ role, mode: "custom", provider: ref.provider, modelId: ref.id, thinkingLevel, updatedAt })
+          .onConflictDoUpdate({
+            target: aiRoleSettings.role,
+            set: { mode: "custom", provider: ref.provider, modelId: ref.id, thinkingLevel, updatedAt },
+          })
           .run();
         importedProviders.add(ref.provider);
       } else {
         if (raw) console.warn(`initAiSettings: skipping unusable ${ROLE_ENV_VARS[role]}="${raw}"`);
+        const mode = role === "chat" ? "inherit" : "disabled";
         tx.insert(aiRoleSettings)
-          .values({
-            role,
-            mode: role === "chat" ? "inherit" : "disabled",
-            provider: null,
-            modelId: null,
-            thinkingLevel: null,
-            updatedAt,
+          .values({ role, mode, provider: null, modelId: null, thinkingLevel: null, updatedAt })
+          .onConflictDoUpdate({
+            target: aiRoleSettings.role,
+            set: { mode, provider: null, modelId: null, thinkingLevel: null, updatedAt },
           })
           .run();
       }
@@ -84,10 +86,16 @@ export function runEnvImport(db: Db, secretBox: SecretBox, env: NodeJS.ProcessEn
       const key = getEnvApiKey(provider, env as Record<string, string>);
       if (!key || key === "<authenticated>") continue;
       const secret = secretBox.encrypt(provider, JSON.stringify({ type: "api_key", key }));
-      tx.insert(providerCredentials).values({ provider, secret, updatedAt }).run();
+      tx.insert(providerCredentials)
+        .values({ provider, secret, updatedAt })
+        .onConflictDoUpdate({ target: providerCredentials.provider, set: { secret, updatedAt } })
+        .run();
     }
 
-    tx.insert(appMeta).values({ key: ENV_IMPORT_MARKER_KEY, value: ENV_IMPORT_MARKER_VALUE }).run();
+    tx.insert(appMeta)
+      .values({ key: ENV_IMPORT_MARKER_KEY, value: ENV_IMPORT_MARKER_VALUE })
+      .onConflictDoUpdate({ target: appMeta.key, set: { value: ENV_IMPORT_MARKER_VALUE } })
+      .run();
   });
 }
 
