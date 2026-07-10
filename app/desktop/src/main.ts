@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { app, BrowserWindow, dialog, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { createExternalApiController, type ExternalApiController } from "./externalApi.js";
 import { isAllowedNavigationUrl, isExternalHttpUrl } from "./navigationGuard.js";
 import { registerAppProtocolHandler, registerAppScheme } from "./protocolHost.js";
 import { resolveDataRoot, resolveRepoRoot, scaffoldDataRoot } from "./repoRoot.js";
@@ -34,6 +35,8 @@ const PROD_APP_URL = "app://-/index.html";
 const WEB_DIST_ROOT = app.isPackaged
   ? join(process.resourcesPath, "web-dist")
   : join(resolveRepoRoot(), "app", "web", "dist");
+
+let externalApiController: ExternalApiController | undefined;
 
 async function bootKernel() {
   const { initServerRuntime } = await import("../../server/src/runtimeInit.js");
@@ -94,6 +97,15 @@ function createWindow() {
   win.loadURL(url);
 }
 
+// The preload only exposes desktop.externalApi to app:// pages (mirrors the
+// __DESKTOP_RT__ gate), so these handlers don't re-check the sender origin.
+function registerExternalApiIpc(controller: ExternalApiController): void {
+  ipcMain.handle("desktop:external-api:get-state", () => controller.getState());
+  ipcMain.handle("desktop:external-api:enable", () => controller.enable());
+  ipcMain.handle("desktop:external-api:disable", () => controller.disable());
+  ipcMain.handle("desktop:external-api:reset-token", () => controller.resetToken());
+}
+
 function showFatalErrorWindow(error: unknown) {
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
   console.error("[desktop] fatal startup error", error);
@@ -120,6 +132,10 @@ app.whenReady().then(async () => {
       distRootExists: () => existsSync(WEB_DIST_ROOT),
     });
 
+    externalApiController = createExternalApiController(async (request) => apiApp.fetch(request));
+    registerExternalApiIpc(externalApiController);
+    await externalApiController.boot();
+
     createWindow();
     initUpdater();
 
@@ -133,4 +149,8 @@ app.whenReady().then(async () => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.on("before-quit", () => {
+  void externalApiController?.shutdown();
 });
