@@ -110,6 +110,29 @@ describe("runEnvImport", () => {
     expect(row).toMatchObject({ mode: "custom", provider: "anthropic", modelId: "claude-sonnet-4-5" });
   });
 
+  it("imports over pre-existing rows when tables are non-empty but the marker is missing", () => {
+    db.insert(aiRoleSettings)
+      .values({ role: "analyst", mode: "disabled", provider: null, modelId: null, thinkingLevel: null, updatedAt: "stale" })
+      .run();
+    db.insert(appMeta).values({ key: "env_import_v1", value: "in-progress" }).run();
+
+    runEnvImport(db, secretBox, { AI_ANALYST_MODEL: "anthropic/claude-sonnet-4-5", ANTHROPIC_API_KEY: "sk-test" });
+
+    const row = db.select().from(aiRoleSettings).where(eq(aiRoleSettings.role, "analyst")).get();
+    expect(row).toMatchObject({
+      mode: "custom",
+      provider: "anthropic",
+      modelId: "claude-sonnet-4-5",
+      thinkingLevel: "off",
+    });
+
+    const credRow = db.select().from(providerCredentials).where(eq(providerCredentials.provider, "anthropic")).get();
+    expect(credRow).toBeDefined();
+
+    const marker = db.select().from(appMeta).where(eq(appMeta.key, "env_import_v1")).get();
+    expect(marker?.value).toBe("completed");
+  });
+
   it("rolls back the whole transaction when secretBox.encrypt throws", () => {
     const brokenSecretBox = {
       status: () => "ready",

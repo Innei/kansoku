@@ -92,7 +92,7 @@ specific chart doc (this is what `data.url` returns for `sepa`/`intraday` charts
 instead of following the latest one live; a banner offers to jump back to latest
 if a newer analysis has since landed. Old `/charts/<id>` links still work — they
 resolve the chart's type client-side and redirect to this page (or to the home
-page for `flow`/`cohort` charts). During regular session the cockpit also carries a live AI comment stream and auto-reassessment (commentator + escalated analyst, gated on `AI_COMMENT_MODEL` / `AI_ANALYST_MODEL`) whose output shares the manual `intraday-signal` format. These `/api/symbols/*`
+page for `flow`/`cohort` charts). During regular session the cockpit also carries a live AI comment stream and auto-reassessment (commentator + escalated analyst, gated on the comment/analyst model settings configured at `/settings`) whose output shares the manual `intraday-signal` format. These `/api/symbols/*`
 routes are server plumbing for that page — direct callers rarely need them,
 listed here only for completeness:
 

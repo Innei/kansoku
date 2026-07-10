@@ -41,6 +41,7 @@ export function ProviderCredentialsCard({
   );
 
   const codexAuth = catalog.providers.find((p) => p.id === CODEX_PROVIDER)?.auth;
+  const effectiveAddProvider = addProvider || availableToAdd[0]?.id || "";
 
   const saveCredential = async (provider: string, key: string) => {
     await api(`/api/settings/ai/credentials/${encodeURIComponent(provider)}`, {
@@ -72,11 +73,11 @@ export function ProviderCredentialsCard({
   };
 
   const handleAdd = async () => {
-    if (!addProvider || !addKey) return;
+    if (!effectiveAddProvider || !addKey) return;
     setAddBusy(true);
     setAddError(null);
     try {
-      await saveCredential(addProvider, addKey);
+      await saveCredential(effectiveAddProvider, addKey);
       setAddProvider("");
       setAddKey("");
     } catch (err) {
@@ -173,7 +174,7 @@ export function ProviderCredentialsCard({
       {availableToAdd.length > 0 && (
         <div className="settings-cred-add">
           <Select
-            value={addProvider || availableToAdd[0].id}
+            value={effectiveAddProvider}
             options={availableToAdd.map((p) => ({ value: p.id, label: p.name }))}
             onChange={setAddProvider}
           />

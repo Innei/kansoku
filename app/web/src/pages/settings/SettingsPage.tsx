@@ -8,7 +8,12 @@ import type { AiSettings, Catalog } from "./types";
 export function SettingsPage() {
   useTitle("设置");
   const { data: settings, error: settingsError, reload: reloadSettings } = useQuery<AiSettings>("/api/settings/ai");
-  const { data: catalog, error: catalogError } = useQuery<Catalog>("/api/settings/ai/catalog");
+  const { data: catalog, error: catalogError, reload: reloadCatalog } = useQuery<Catalog>("/api/settings/ai/catalog");
+
+  const reloadAll = () => {
+    reloadSettings();
+    reloadCatalog();
+  };
 
   if (settingsError || catalogError) {
     return (
@@ -31,7 +36,7 @@ export function SettingsPage() {
   return (
     <div className="page settings-page">
       <h1>设置</h1>
-      <ProviderCredentialsCard settings={settings} catalog={catalog} onChanged={reloadSettings} />
+      <ProviderCredentialsCard settings={settings} catalog={catalog} onChanged={reloadAll} />
       <RoleModelsCard settings={settings} catalog={catalog} />
       <div className="settings-footer-note">改动即存即生效；正在进行中的一轮分析仍用旧配置，下一轮起使用新配置。</div>
     </div>
