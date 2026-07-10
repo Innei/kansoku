@@ -1,0 +1,62 @@
+import type { CredentialProvider, LongbridgeCredentials } from "../../server/src/services/credentials/types.js";
+import type { CredentialStore, SetCredentialsResult } from "./credentialStore.js";
+
+export interface DesktopCredentialProvider extends CredentialProvider {
+  setCredentials(creds: LongbridgeCredentials): SetCredentialsResult;
+  clearCredentials(): void;
+  isConfigured(): boolean;
+  lastError(): string | null;
+}
+
+export function createDesktopCredentialProvider(store: CredentialStore): DesktopCredentialProvider {
+  const listeners = new Set<() => void>();
+
+  function notify(): void {
+    for (const cb of listeners) cb();
+  }
+
+  return {
+    async getLongbridgeCredentials(): Promise<LongbridgeCredentials | null> {
+      return store.get();
+    },
+
+    onChange(cb: () => void): () => void {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+
+    setCredentials(creds: LongbridgeCredentials): SetCredentialsResult {
+      const result = store.set(creds);
+      if (result.ok) notify();
+      return result;
+    },
+
+    clearCredentials(): void {
+      store.clear();
+      notify();
+    },
+
+    isConfigured(): boolean {
+      return store.get() !== null;
+    },
+
+    lastError(): string | null {
+      return store.lastError();
+    },
+  };
+}
+
+export interface SelectCredentialProviderOptions {
+  isDev: boolean;
+  desktopProvider: CredentialProvider;
+  envProvider: CredentialProvider;
+}
+
+// Packaged builds always defer to the desktop provider — even on a dev
+// machine that also has .env Longbridge creds — so the safeStorage flow is
+// the single source of truth once shipped. ELECTRON_DEV keeps the pre-P3
+// env-backed workflow untouched, since dev runs the web client against its
+// own standalone kernel (see preload.ts) and never exercises this IPC path.
+export function selectCredentialProvider(opts: SelectCredentialProviderOptions): CredentialProvider {
+  return opts.isDev ? opts.envProvider : opts.desktopProvider;
+}

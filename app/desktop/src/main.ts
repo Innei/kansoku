@@ -1,6 +1,11 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { app, BrowserWindow, dialog, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from "electron";
+import { createCredentialsBridgeHandlers, registerCredentialsIpc } from "./credentialsBridge.js";
+import { testLongbridgeCredentials } from "./credentialsTest.js";
+import { createCredentialStore } from "./credentialStore.js";
+import { createDesktopCredentialProvider, selectCredentialProvider } from "./desktopCredentialProvider.js";
+import { createDesktopSecretBox } from "./desktopSecretBox.js";
 import { isAllowedNavigationUrl, isExternalHttpUrl } from "./navigationGuard.js";
 import { registerAppProtocolHandler, registerAppScheme } from "./protocolHost.js";
 import { resolveDataRoot, resolveRepoRoot, scaffoldDataRoot } from "./repoRoot.js";
@@ -34,16 +39,47 @@ const PROD_APP_URL = "app://-/index.html";
 const WEB_DIST_ROOT = app.isPackaged
   ? join(process.resourcesPath, "web-dist")
   : join(resolveRepoRoot(), "app", "web", "dist");
+const IS_DEV = process.env.ELECTRON_DEV === "1";
 
 async function bootKernel() {
   const { initServerRuntime } = await import("../../server/src/runtimeInit.js");
   const { createKernel } = await import("../../server/src/bootstrap.js");
   const { attachRealtimeBridge } = await import("./realtimeBridge.js");
+  const { envCredentialProvider } = await import("../../server/src/services/credentials/envCredentialProvider.js");
+  const { CHART_DATA_DIR } = await import("../../server/src/env.js");
 
-  initServerRuntime();
+  const credentialStore = createCredentialStore({
+    safeStorage,
+    filePath: join(app.getPath("userData"), "credentials.json"),
+  });
+  // One long-lived provider instance, created once and never replaced — see
+  // the invariant documented on LongbridgeStream's constructor. set()/clear()
+  // notify runtime consumers through this same instance's onChange.
+  const desktopProvider = createDesktopCredentialProvider(credentialStore);
+  const credentialProvider = selectCredentialProvider({
+    isDev: IS_DEV,
+    desktopProvider,
+    envProvider: envCredentialProvider,
+  });
+
+  // Dev keeps the pre-P3 plaintext keyfile so ELECTRON_DEV workflows are
+  // unaffected; packaged builds move the AI master key into safeStorage.
+  const secretBox = IS_DEV
+    ? undefined
+    : createDesktopSecretBox({
+        safeStorage,
+        wrappedKeyPath: join(app.getPath("userData"), "ai-master-key.json"),
+        legacyKeyPath: join(CHART_DATA_DIR, "ai-secret.key"),
+      });
+
+  initServerRuntime({ credentialProvider, secretBox });
   const kernel = await createKernel();
   const apiApp = kernel.app.getInstance();
   attachRealtimeBridge();
+  registerCredentialsIpc(
+    ipcMain,
+    createCredentialsBridgeHandlers({ provider: desktopProvider, testCredentials: testLongbridgeCredentials }),
+  );
 
   const health = await apiApp.fetch(new Request("http://localhost/api/health"));
   console.log(`[desktop] kernel self-test /api/health -> ${health.status}`, await health.text());
@@ -73,8 +109,7 @@ function createWindow() {
     );
   });
 
-  const isDev = process.env.ELECTRON_DEV === "1";
-  const devUrl = isDev ? DEV_WEB_URL : undefined;
+  const devUrl = IS_DEV ? DEV_WEB_URL : undefined;
 
   // A page loaded via app:// carries the preload's MessagePort kernel access.
   // Without this guard, following an in-app link (e.g. a markdown link in
@@ -90,7 +125,7 @@ function createWindow() {
     return { action: "deny" };
   });
 
-  const url = isDev ? DEV_WEB_URL : PROD_APP_URL;
+  const url = IS_DEV ? DEV_WEB_URL : PROD_APP_URL;
   win.loadURL(url);
 }
 
