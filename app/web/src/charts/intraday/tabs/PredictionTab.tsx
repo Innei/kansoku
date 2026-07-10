@@ -4,10 +4,9 @@ import type { IntradayBuilt, TimeframeKey } from "../../../../../shared/types";
 import { fmt, signed } from "../../../format";
 import { TF_LABELS } from "../IntradayDashboard";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "../directionLabels";
-import { useMinutesAgo } from "../predictionAge";
 import { AutoSignalItem, Pattern123Item, PriceZoneCard, TargetContextCard, TechRow } from "./predictionTabParts";
 import { theme } from "../../../theme";
-import { MarketTime, SectionTitle } from "../../../ui";
+import { MarketTime, SectionTitle, TimeAgo } from "../../../ui";
 
 const SIGNAL_ICON: Record<string, string> = { pin_bar: "📌", macd_divergence: "⚡", macd_beichi: "🌀" };
 const TF_ORDER: TimeframeKey[] = ["m5", "m15", "h1"];
@@ -25,7 +24,6 @@ interface PredictionTabProps {
 }
 
 export function PredictionTab({ built, activeTf, predictionUpdatedAt, predictionStale }: PredictionTabProps) {
-  const minutesAgo = useMinutesAgo(predictionUpdatedAt);
   const s = built.sidebar;
   const p = s.prediction;
   const ep = s.entryPlan;
@@ -65,7 +63,7 @@ export function PredictionTab({ built, activeTf, predictionUpdatedAt, prediction
             ) : (
               predictionUpdatedAt && (
                 <span className="prediction-age">
-                  更新于 <MarketTime value={predictionUpdatedAt} format="clock" includeZone />（{minutesAgo} 分钟前）
+                  更新于 <MarketTime value={predictionUpdatedAt} format="clock" includeZone />（<TimeAgo since={predictionUpdatedAt} />）
                 </span>
               )
             )}

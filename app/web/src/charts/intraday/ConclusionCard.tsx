@@ -2,9 +2,8 @@ import type { CSSProperties } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { IntradayContext } from "../../../../shared/types";
 import { DIRECTION_COLOR, DIRECTION_LABEL } from "./directionLabels";
-import { useMinutesAgo } from "./predictionAge";
 import { theme } from "../../theme";
-import { MarketTime } from "../../ui";
+import { MarketTime, TimeAgo } from "../../ui";
 
 interface ConclusionCardProps {
   context: IntradayContext | null;
@@ -12,7 +11,6 @@ interface ConclusionCardProps {
 }
 
 export function ConclusionCard({ context, predictionStale }: ConclusionCardProps) {
-  const minutesAgo = useMinutesAgo(context?.generated_at);
   if (!context) return null;
   const { stance, summary, action } = context.conclusion;
 
@@ -26,7 +24,7 @@ export function ConclusionCard({ context, predictionStale }: ConclusionCardProps
           </span>
         ) : (
           <span className="prediction-age">
-            更新于 <MarketTime value={context.generated_at} format="clock" includeZone />（{minutesAgo} 分钟前）
+            更新于 <MarketTime value={context.generated_at} format="clock" includeZone />（<TimeAgo since={context.generated_at} />）
           </span>
         )}
       </div>

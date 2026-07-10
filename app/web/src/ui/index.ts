@@ -13,6 +13,7 @@ export { Empty } from "./Empty";
 export { ErrorBox } from "./ErrorBox";
 export { Tooltip } from "./Tooltip";
 export { MarketTime } from "./MarketTime";
+export { TimeAgo } from "./TimeAgo";
 export { Modal } from "./Modal";
 export { ModalHost } from "./ModalHost";
 export { openModal, closeModal } from "./modalStore";
