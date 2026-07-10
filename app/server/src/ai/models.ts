@@ -1,6 +1,6 @@
 import type { Api, Model, ModelThinkingLevel, ThinkingLevel } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import { getActiveSettingsStore, type RoleSetting } from "./settingsStore.js";
+import { type AiTaskRole, getActiveSettingsStore, type RoleSetting } from "./settingsStore.js";
 
 export type ModelRef = { provider: string; id: string; thinkingLevel?: ThinkingLevel };
 
@@ -70,13 +70,15 @@ function resolveRole(setting: RoleSetting): AiModel | null {
 
 export function aiConfig(): AiConfig {
   const store = getActiveSettingsStore();
-  const analystModel = resolveRole(store.getRole("analyst"));
-  const chatSetting = store.getRole("chat");
-  const chatModel = chatSetting.mode === "inherit" ? analystModel : resolveRole(chatSetting);
+  const primaryModel = resolveRole(store.getRole("primary"));
+  const resolve = (role: AiTaskRole): AiModel | null => {
+    const setting = store.getRole(role);
+    return setting.mode === "inherit" ? primaryModel : resolveRole(setting);
+  };
   return {
-    commentModel: resolveRole(store.getRole("comment")),
-    analystModel,
-    deepDiveModel: resolveRole(store.getRole("deepDive")),
-    chatModel,
+    commentModel: resolve("comment"),
+    analystModel: resolve("analyst"),
+    deepDiveModel: resolve("deepDive"),
+    chatModel: resolve("chat"),
   };
 }

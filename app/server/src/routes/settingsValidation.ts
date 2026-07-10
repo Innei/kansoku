@@ -5,7 +5,7 @@ import { SINGLE_KEY_PROVIDERS } from "../ai/modelsRuntime.js";
 import type { AiRole, RoleMode, RoleSetting } from "../ai/settingsStore.js";
 
 export const CODEX_PROVIDER = "openai-codex";
-export const ROLES: AiRole[] = ["comment", "analyst", "deepDive", "chat"];
+export const ROLES: AiRole[] = ["primary", "comment", "analyst", "deepDive", "chat"];
 const MODES: RoleMode[] = ["custom", "disabled", "inherit"];
 
 export function allowedProviders(): string[] {
@@ -73,10 +73,10 @@ export function validateRoleSetting(role: AiRole, body: RoleSettingBody, models:
   if (typeof mode !== "string" || !MODES.includes(mode as RoleMode)) {
     throw new ClientError(`unknown mode: ${String(mode)}`, `expected one of ${MODES.join(", ")}`);
   }
-  if (mode === "inherit" && role !== "chat") {
+  if (mode === "inherit" && role === "primary") {
     throw new ClientError(
-      'mode "inherit" is only allowed for role "chat"',
-      `role "${role}" only supports "custom" or "disabled"`,
+      'mode "inherit" is not allowed for role "primary"',
+      'role "primary" only supports "custom" or "disabled"',
     );
   }
   if (mode !== "custom") {

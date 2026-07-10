@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { initAiSettings, runEnvImport } from "../src/ai/initAiSettings.js";
+import { initAiSettings, runEnvImport, runPrimaryModelMigration } from "../src/ai/initAiSettings.js";
 import { aiConfig } from "../src/ai/models.js";
 import { getModelsRuntime, setModelsRuntimeForTests } from "../src/ai/modelsRuntime.js";
 import { createSecretBox, type SecretBox } from "../src/ai/secretBox.js";
@@ -185,5 +185,113 @@ describe("initAiSettings", () => {
     expect(aiConfig().analystModel?.id).toBe(analystModel.id);
     expect(aiConfig().analystModel?.thinkingLevel).toBe("off");
     expect(getModelsRuntime()).toBe(models);
+  });
+});
+
+describe("runPrimaryModelMigration", () => {
+  let dir: string;
+  let db: Db;
+
+  beforeEach(() => {
+    const t = tempDb();
+    dir = t.dir;
+    db = t.db;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  function insertRole(role: string, mode: string, provider: string | null, modelId: string | null, thinkingLevel: string | null) {
+    db.insert(aiRoleSettings)
+      .values({ role, mode, provider, modelId, thinkingLevel, updatedAt: new Date().toISOString() })
+      .run();
+  }
+
+  function roleRows() {
+    return new Map(db.select().from(aiRoleSettings).all().map((r) => [r.role, r]));
+  }
+
+  it("collapses identical custom rows into primary + inherit", () => {
+    for (const role of ["comment", "analyst", "deepDive"]) {
+      insertRole(role, "custom", "anthropic", "claude-sonnet-4-5", "off");
+    }
+    insertRole("chat", "inherit", null, null, null);
+
+    runPrimaryModelMigration(db);
+
+    const rows = roleRows();
+    expect(rows.get("primary")).toMatchObject({
+      mode: "custom",
+      provider: "anthropic",
+      modelId: "claude-sonnet-4-5",
+      thinkingLevel: "off",
+    });
+    for (const role of ["comment", "analyst", "deepDive", "chat"]) {
+      expect(rows.get(role)).toMatchObject({ mode: "inherit", provider: null, modelId: null, thinkingLevel: null });
+    }
+    const marker = db.select().from(appMeta).where(eq(appMeta.key, "primary_model_v1")).get();
+    expect(marker?.value).toBe("completed");
+  });
+
+  it("keeps custom rows whose config differs from the anchor", () => {
+    insertRole("analyst", "custom", "anthropic", "claude-sonnet-4-5", "off");
+    insertRole("comment", "custom", "anthropic", "claude-sonnet-4-5", "high");
+    insertRole("deepDive", "disabled", null, null, null);
+
+    runPrimaryModelMigration(db);
+
+    const rows = roleRows();
+    expect(rows.get("primary")).toMatchObject({ mode: "custom", modelId: "claude-sonnet-4-5", thinkingLevel: "off" });
+    expect(rows.get("analyst")).toMatchObject({ mode: "inherit" });
+    expect(rows.get("comment")).toMatchObject({ mode: "custom", thinkingLevel: "high" });
+    expect(rows.get("deepDive")).toMatchObject({ mode: "disabled" });
+  });
+
+  it("writes a disabled primary when no custom row exists", () => {
+    insertRole("comment", "disabled", null, null, null);
+    insertRole("chat", "inherit", null, null, null);
+
+    runPrimaryModelMigration(db);
+
+    expect(roleRows().get("primary")).toMatchObject({
+      mode: "disabled",
+      provider: null,
+      modelId: null,
+      thinkingLevel: null,
+    });
+    expect(roleRows().get("comment")).toMatchObject({ mode: "disabled" });
+  });
+
+  it("is a no-op when the marker is present", () => {
+    db.insert(appMeta).values({ key: "primary_model_v1", value: "completed" }).run();
+    insertRole("analyst", "custom", "anthropic", "claude-sonnet-4-5", "off");
+
+    runPrimaryModelMigration(db);
+
+    expect(roleRows().has("primary")).toBe(false);
+    expect(roleRows().get("analyst")).toMatchObject({ mode: "custom" });
+  });
+
+  it("runs after env import inside initAiSettings so a fresh boot lands on primary + inherit", () => {
+    const secretBox = tempSecretBox(dir);
+    try {
+      initAiSettings(db, {
+        env: { AI_ANALYST_MODEL: "anthropic/claude-sonnet-4-5", ANTHROPIC_API_KEY: "sk-test" },
+        secretBox,
+        codexAuthPath: join(dir, "codex-auth.json"),
+      });
+      const rows = roleRows();
+      expect(rows.get("primary")).toMatchObject({ mode: "custom", modelId: "claude-sonnet-4-5" });
+      expect(rows.get("analyst")).toMatchObject({ mode: "inherit" });
+      const config = aiConfig();
+      expect(config.analystModel?.id).toBe("claude-sonnet-4-5");
+      expect(config.chatModel).toBe(config.analystModel);
+      expect(config.commentModel).toBeNull();
+    } finally {
+      setActiveSettingsStore(null);
+      setModelsRuntimeForTests(null);
+    }
   });
 });

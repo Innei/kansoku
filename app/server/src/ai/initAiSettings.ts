@@ -11,7 +11,7 @@ import { type AppCredentialStore, createCredentialStore } from "./credentialStor
 import { initModelsRuntime, SINGLE_KEY_PROVIDERS } from "./modelsRuntime.js";
 import { parseModelRef } from "./models.js";
 import { createSecretBox, type SecretBox } from "./secretBox.js";
-import { type AiRole, createSettingsStore, setActiveSettingsStore } from "./settingsStore.js";
+import { type AiTaskRole, createSettingsStore, setActiveSettingsStore } from "./settingsStore.js";
 
 export interface AiRuntime {
   secretBox: SecretBox;
@@ -31,17 +31,19 @@ export function setAiRuntimeForTests(next: AiRuntime | null): void {
   runtime = next;
 }
 
-const ROLE_ENV_VARS: Record<AiRole, string> = {
+const ROLE_ENV_VARS: Record<AiTaskRole, string> = {
   comment: "AI_COMMENT_MODEL",
   analyst: "AI_ANALYST_MODEL",
   deepDive: "AI_DEEPDIVE_MODEL",
   chat: "AI_CHAT_MODEL",
 };
 
-const ROLES: AiRole[] = ["comment", "analyst", "deepDive", "chat"];
+const ROLES: AiTaskRole[] = ["comment", "analyst", "deepDive", "chat"];
 
 const ENV_IMPORT_MARKER_KEY = "env_import_v1";
 const ENV_IMPORT_MARKER_VALUE = "completed";
+const PRIMARY_MARKER_KEY = "primary_model_v1";
+const PRIMARY_ANCHOR_ORDER: AiTaskRole[] = ["analyst", "comment", "deepDive", "chat"];
 
 const catalog = builtinModels();
 
@@ -99,12 +101,61 @@ export function runEnvImport(db: Db, secretBox: SecretBox, env: NodeJS.ProcessEn
   });
 }
 
+export function runPrimaryModelMigration(db: Db): void {
+  const marker = db.select().from(appMeta).where(eq(appMeta.key, PRIMARY_MARKER_KEY)).get();
+  if (marker?.value === ENV_IMPORT_MARKER_VALUE) return;
+
+  db.transaction((tx) => {
+    const updatedAt = new Date().toISOString();
+    const rows = tx.select().from(aiRoleSettings).all();
+    const byRole = new Map(rows.map((row) => [row.role, row]));
+
+    const anchorRole = PRIMARY_ANCHOR_ORDER.find((role) => byRole.get(role)?.mode === "custom");
+    const anchor = anchorRole ? byRole.get(anchorRole) : undefined;
+
+    const primary = anchor
+      ? {
+          mode: "custom",
+          provider: anchor.provider,
+          modelId: anchor.modelId,
+          thinkingLevel: anchor.thinkingLevel,
+        }
+      : { mode: "disabled", provider: null, modelId: null, thinkingLevel: null };
+
+    tx.insert(aiRoleSettings)
+      .values({ role: "primary", ...primary, updatedAt })
+      .onConflictDoUpdate({ target: aiRoleSettings.role, set: { ...primary, updatedAt } })
+      .run();
+
+    if (anchor) {
+      for (const row of rows) {
+        if (row.role === "primary" || row.mode !== "custom") continue;
+        const matches =
+          row.provider === anchor.provider &&
+          row.modelId === anchor.modelId &&
+          row.thinkingLevel === anchor.thinkingLevel;
+        if (!matches) continue;
+        tx.update(aiRoleSettings)
+          .set({ mode: "inherit", provider: null, modelId: null, thinkingLevel: null, updatedAt })
+          .where(eq(aiRoleSettings.role, row.role))
+          .run();
+      }
+    }
+
+    tx.insert(appMeta)
+      .values({ key: PRIMARY_MARKER_KEY, value: ENV_IMPORT_MARKER_VALUE })
+      .onConflictDoUpdate({ target: appMeta.key, set: { value: ENV_IMPORT_MARKER_VALUE } })
+      .run();
+  });
+}
+
 export function initAiSettings(
   db: Db,
   opts?: { env?: NodeJS.ProcessEnv; secretBox?: SecretBox; codexAuthPath?: string },
 ): { models: MutableModels } {
   const box = opts?.secretBox ?? createSecretBox(join(CHART_DATA_DIR, "ai-secret.key"));
   runEnvImport(db, box, opts?.env ?? process.env);
+  runPrimaryModelMigration(db);
   setActiveSettingsStore(createSettingsStore(db));
   const credentials = createCredentialStore(db, box, { codexAuthPath: opts?.codexAuthPath });
   const models = initModelsRuntime(credentials);

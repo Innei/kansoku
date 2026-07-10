@@ -6,8 +6,10 @@ import { getModelsRuntime, SINGLE_KEY_PROVIDERS } from "../ai/modelsRuntime.js";
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import type { SecretBox } from "../ai/secretBox.js";
 import { type AiRole, getActiveSettingsStore, type SettingsStore } from "../ai/settingsStore.js";
+import { listUsage, type AiUsageRecord } from "../ai/usageStore.js";
 import { getDb, type Db } from "../db/index.js";
 import { ClientError } from "../errors.js";
+import { easternDate } from "../services/session.js";
 import {
   allowedProviders,
   categorizeTestError,
@@ -29,6 +31,20 @@ export interface SettingsRouteOptions {
   models?: MutableModels;
   testTimeoutMs?: number;
   db?: Db;
+}
+
+function usageRole(record: AiUsageRecord): "comment" | "analyst" | "deepDive" | "chat" | null {
+  switch (record.layer) {
+    case "commentator":
+    case "event-filter":
+      return "comment";
+    case "analyst":
+      return record.origin === "deep-dive" ? "deepDive" : "analyst";
+    case "chat":
+      return "chat";
+    default:
+      return null;
+  }
 }
 
 async function collectKnownSecrets(credentials: AppCredentialStore, provider: string): Promise<string[]> {
@@ -180,6 +196,26 @@ export const settingsRoute: FastifyPluginAsync<SettingsRouteOptions> = async (ap
     } finally {
       clearTimeout(timer);
     }
+  });
+
+  app.get("/ai/usage-today", async () => {
+    const records = await listUsage(easternDate(new Date()), db);
+    const roles = {
+      comment: { calls: 0, cost: 0 },
+      analyst: { calls: 0, cost: 0 },
+      deepDive: { calls: 0, cost: 0 },
+      chat: { calls: 0, cost: 0 },
+    };
+    const total = { calls: 0, cost: 0 };
+    for (const record of records) {
+      total.calls += record.calls;
+      total.cost += record.cost_total;
+      const role = usageRole(record);
+      if (!role) continue;
+      roles[role].calls += record.calls;
+      roles[role].cost += record.cost_total;
+    }
+    return { ok: true, data: { roles, total } };
   });
 
   app.post("/ai/reset-credentials", async () => {

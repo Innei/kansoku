@@ -26,45 +26,35 @@ describe("createSettingsStore defaults", () => {
     try {
       const db = createDb(path);
       const store = createSettingsStore(db);
-      expect(store.getRole("comment")).toEqual({
+      for (const role of ["comment", "analyst", "deepDive", "chat"] as const) {
+        expect(store.getRole(role)).toEqual({
+          mode: "inherit",
+          provider: null,
+          modelId: null,
+          thinkingLevel: null,
+        });
+      }
+      expect(store.getRole("primary")).toEqual({
         mode: "disabled",
         provider: null,
         modelId: null,
         thinkingLevel: null,
       });
-      expect(store.getRole("analyst")).toEqual({
-        mode: "disabled",
-        provider: null,
-        modelId: null,
-        thinkingLevel: null,
-      });
-      expect(store.getRole("deepDive")).toEqual({
-        mode: "disabled",
-        provider: null,
-        modelId: null,
-        thinkingLevel: null,
-      });
-      expect(store.getRole("chat")).toEqual({
-        mode: "inherit",
-        provider: null,
-        modelId: null,
-        thinkingLevel: null,
-      });
-      expect(warn).toHaveBeenCalledTimes(4);
+      expect(warn).toHaveBeenCalledTimes(5);
     } finally {
       warn.mockRestore();
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it("listRoles returns all four roles", () => {
+  it("listRoles returns primary plus all four task roles", () => {
     const { dir, path } = tempDbPath();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
       const db = createDb(path);
       const store = createSettingsStore(db);
       const all = store.listRoles();
-      expect(Object.keys(all).sort()).toEqual(["analyst", "chat", "comment", "deepDive"]);
+      expect(Object.keys(all).sort()).toEqual(["analyst", "chat", "comment", "deepDive", "primary"]);
     } finally {
       vi.restoreAllMocks();
       rmSync(dir, { recursive: true, force: true });
@@ -153,15 +143,18 @@ describe("createSettingsStore setRole persistence", () => {
     }
   });
 
-  it("throws when setting mode inherit on a non-chat role", () => {
+  it("throws when setting mode inherit on the primary role and accepts it on task roles", () => {
     const { dir, path } = tempDbPath();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     try {
       const db = createDb(path);
       const store = createSettingsStore(db);
       expect(() =>
-        store.setRole("analyst", { mode: "inherit", provider: null, modelId: null, thinkingLevel: null }),
+        store.setRole("primary", { mode: "inherit", provider: null, modelId: null, thinkingLevel: null }),
       ).toThrow();
+      expect(() =>
+        store.setRole("comment", { mode: "inherit", provider: null, modelId: null, thinkingLevel: null }),
+      ).not.toThrow();
     } finally {
       vi.restoreAllMocks();
       rmSync(dir, { recursive: true, force: true });
@@ -319,7 +312,25 @@ describe("aiConfig integration with settingsStore", () => {
     expect(aiConfig().analystModel).toBeNull();
   });
 
-  it("chat inherit follows analyst", () => {
+  it("inherit roles follow the primary model", () => {
+    const tmp = tempDbPath();
+    dir = tmp.dir;
+    const store = createSettingsStore(createDb(tmp.path));
+    store.setRole("primary", {
+      mode: "custom",
+      provider: realModel.provider,
+      modelId: realModel.id,
+      thinkingLevel: "medium",
+    });
+    setActiveSettingsStore(store);
+
+    const config = aiConfig();
+    expect(config.chatModel).toEqual({ ...realModel, thinkingLevel: "medium" });
+    expect(config.commentModel).toBe(config.chatModel);
+    expect(config.analystModel).toBe(config.chatModel);
+  });
+
+  it("inherit roles resolve to null when primary is unset, and chat no longer follows analyst", () => {
     const tmp = tempDbPath();
     dir = tmp.dir;
     const store = createSettingsStore(createDb(tmp.path));
@@ -332,7 +343,24 @@ describe("aiConfig integration with settingsStore", () => {
     setActiveSettingsStore(store);
 
     const config = aiConfig();
-    expect(config.chatModel).toEqual(config.analystModel);
+    expect(config.analystModel).not.toBeNull();
+    expect(config.chatModel).toBeNull();
+    expect(config.commentModel).toBeNull();
+  });
+
+  it("inherit roles resolve to null when primary points at a model no longer in the catalog", () => {
+    const tmp = tempDbPath();
+    dir = tmp.dir;
+    const store = createSettingsStore(createDb(tmp.path));
+    store.setRole("primary", {
+      mode: "custom",
+      provider: realModel.provider,
+      modelId: "gone-model-xyz",
+      thinkingLevel: "medium",
+    });
+    setActiveSettingsStore(store);
+
+    expect(aiConfig().chatModel).toBeNull();
   });
 
   it("chat disabled returns null even while analyst is set", () => {

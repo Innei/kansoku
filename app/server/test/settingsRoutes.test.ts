@@ -12,7 +12,8 @@ import { SINGLE_KEY_PROVIDERS } from "../src/ai/modelsRuntime.js";
 import { createSecretBox, type SecretBox } from "../src/ai/secretBox.js";
 import { createSettingsStore, type SettingsStore } from "../src/ai/settingsStore.js";
 import { createDb, type Db } from "../src/db/index.js";
-import { providerCredentials } from "../src/db/schema.js";
+import { aiUsage, providerCredentials } from "../src/db/schema.js";
+import { easternDate } from "../src/services/session.js";
 import { ClientError } from "../src/errors.js";
 import { settingsRoute, type SettingsRouteOptions } from "../src/routes/settings.js";
 
@@ -102,10 +103,11 @@ describe("envelope", () => {
     expect(body.data).toBeDefined();
     expect(body.data.credentials).toEqual([]);
     expect(typeof body.data.masterKey).toBe("string");
+    expect(body.data.roles.primary).toMatchObject({ mode: "disabled", stale: false });
     expect(body.data.roles.chat).toMatchObject({ mode: "inherit", stale: false });
-    expect(body.data.roles.comment).toMatchObject({ mode: "disabled", stale: false });
-    expect(body.data.roles.analyst).toMatchObject({ mode: "disabled", stale: false });
-    expect(body.data.roles.deepDive).toMatchObject({ mode: "disabled", stale: false });
+    expect(body.data.roles.comment).toMatchObject({ mode: "inherit", stale: false });
+    expect(body.data.roles.analyst).toMatchObject({ mode: "inherit", stale: false });
+    expect(body.data.roles.deepDive).toMatchObject({ mode: "inherit", stale: false });
   });
 });
 
@@ -117,10 +119,13 @@ describe("PUT/DELETE /ai/roles/:role", () => {
     expect(res.json().ok).toBe(false);
   });
 
-  it("rejects inherit mode outside the chat role", async () => {
+  it("rejects inherit mode on the primary role and accepts it on task roles", async () => {
     const app = await buildApp(ctx);
-    const res = await app.inject({ method: "PUT", url: "/ai/roles/comment", payload: { mode: "inherit" } });
-    expect(res.statusCode).toBe(400);
+    const rejected = await app.inject({ method: "PUT", url: "/ai/roles/primary", payload: { mode: "inherit" } });
+    expect(rejected.statusCode).toBe(400);
+    const accepted = await app.inject({ method: "PUT", url: "/ai/roles/comment", payload: { mode: "inherit" } });
+    expect(accepted.statusCode).toBe(200);
+    expect(accepted.json().data).toMatchObject({ role: "comment", mode: "inherit" });
   });
 
   it("rejects an unknown provider", async () => {
@@ -365,5 +370,59 @@ describe("no-plaintext sweep", () => {
     for (const res of [getAi, getCatalog, testRes]) {
       expect(JSON.stringify(res.json())).not.toContain(canary);
     }
+  });
+});
+
+describe("GET /ai/usage-today", () => {
+  function insertUsage(layer: string, origin: string | null, calls: number, cost: number, date: string) {
+    ctx.db
+      .insert(aiUsage)
+      .values({
+        id: `${layer}-${origin ?? "none"}-${date}-${Math.abs(cost * 1000) | 0}-${calls}`,
+        ts: new Date().toISOString(),
+        easternDate: date,
+        layer,
+        symbol: "TEST",
+        model: "anthropic/claude-sonnet-4-5",
+        origin,
+        calls,
+        totalTokens: 100,
+        input: 50,
+        output: 50,
+        cacheRead: 0,
+        cacheWrite: 0,
+        costTotal: cost,
+      })
+      .run();
+  }
+
+  it("groups today's usage by role, folds event-filter into comment, splits deep-dive from analyst", async () => {
+    const today = easternDate(new Date());
+    insertUsage("commentator", null, 3, 0.03, today);
+    insertUsage("event-filter", null, 2, 0.01, today);
+    insertUsage("analyst", "escalation", 1, 0.2, today);
+    insertUsage("analyst", "deep-dive", 1, 0.5, today);
+    insertUsage("chat", null, 4, 0.04, today);
+    insertUsage("mystery-layer", null, 1, 1.0, today);
+    insertUsage("chat", null, 9, 9.0, "2000-01-01");
+
+    const app = await buildApp(ctx);
+    const res = await app.inject({ method: "GET", url: "/ai/usage-today" });
+    expect(res.statusCode).toBe(200);
+    const { data } = res.json();
+    expect(data.roles.comment).toEqual({ calls: 5, cost: 0.04 });
+    expect(data.roles.analyst).toEqual({ calls: 1, cost: 0.2 });
+    expect(data.roles.deepDive).toEqual({ calls: 1, cost: 0.5 });
+    expect(data.roles.chat).toEqual({ calls: 4, cost: 0.04 });
+    expect(data.total.calls).toBe(12);
+    expect(data.total.cost).toBeCloseTo(1.78, 10);
+  });
+
+  it("returns zeros with no usage rows", async () => {
+    const app = await buildApp(ctx);
+    const res = await app.inject({ method: "GET", url: "/ai/usage-today" });
+    const { data } = res.json();
+    expect(data.roles.comment).toEqual({ calls: 0, cost: 0 });
+    expect(data.total).toEqual({ calls: 0, cost: 0 });
   });
 });

@@ -173,9 +173,9 @@ describe("aiConfig", () => {
     expect(aiConfig().chatModel?.id).toBe(realModel.id);
   });
 
-  it("falls back to the resolved analyst model when chat mode is inherit", () => {
+  it("resolves every inherit role from the primary model", () => {
     const store = storeOverDb();
-    store.setRole("analyst", {
+    store.setRole("primary", {
       mode: "custom",
       provider: realModel.provider,
       modelId: realModel.id,
@@ -185,12 +185,22 @@ describe("aiConfig", () => {
     const config = aiConfig();
     expect(config.chatModel?.id).toBe(realModel.id);
     expect(config.chatModel).toBe(config.analystModel);
+    expect(config.commentModel).toBe(config.analystModel);
+    expect(config.deepDiveModel).toBe(config.analystModel);
   });
 
-  it("returns null chatModel when chat is inherit and analyst is disabled", () => {
+  it("returns null for inherit roles when primary is unset; a custom analyst does not leak into chat", () => {
     const store = storeOverDb();
+    store.setRole("analyst", {
+      mode: "custom",
+      provider: realModel.provider,
+      modelId: realModel.id,
+      thinkingLevel: "medium",
+    });
     setActiveSettingsStore(store);
-    expect(aiConfig().chatModel).toBeNull();
+    const config = aiConfig();
+    expect(config.analystModel?.id).toBe(realModel.id);
+    expect(config.chatModel).toBeNull();
   });
 
   it("returns null chatModel when chat is disabled, even if analyst is set", () => {
