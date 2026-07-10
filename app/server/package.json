@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "KERNEL_PORT=5200 vite-node --watch src/main.node.ts",
+    "dev": "HOST_MODE=dev KERNEL_PORT=5200 vite-node --watch src/main.node.ts",
     "start": "vite-node src/main.node.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

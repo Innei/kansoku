@@ -2,7 +2,7 @@ import { initAiSettings } from "./ai/initAiSettings.js";
 import { startAiScheduler } from "./ai/scheduler.js";
 import { getDb } from "./db/index.js";
 import { loadDotenv } from "./dotenv.js";
-import { KERNEL_PORT, PORT } from "./env.js";
+import { HOST_MODE, KERNEL_PORT, PORT } from "./env.js";
 import { startHost } from "./host.js";
 
 loadDotenv();
@@ -13,7 +13,7 @@ process.env.PI_CACHE_RETENTION ??= "long";
 
 initAiSettings(getDb());
 
-const isDevKernel = Boolean(process.env.KERNEL_PORT);
+const isDevKernel = HOST_MODE === "dev";
 const bindPort = isDevKernel ? KERNEL_PORT : PORT;
 
 await startHost(bindPort, isDevKernel);
