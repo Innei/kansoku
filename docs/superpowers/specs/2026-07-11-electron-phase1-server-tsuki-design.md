@@ -67,10 +67,13 @@ web 端 WS 客户端零改动。桌面态的第二种传输绑定（MessagePort 
 
 ## 开发态与脚本
 
-- `pnpm dev`：vite（web/）为宿主，`@hono/vite-dev-server` 内嵌 server 内核；改 server 代码由该插件热重载，改 web 代码走 HMR。
+（spike 修订：`@hono/vite-dev-server` 不处理 WS upgrade，而实时层与 HTTP 路由共享进程内状态（内存 emitter），HTTP 与 WS 必须同进程。故放弃内嵌方案，改为全量 proxy。）
+
+- `pnpm dev`：并发起两个进程——vite dev server（web/，HMR）+ `vite-node --watch src/main.node.ts`（内核，HTTP+WS 单进程）；vite `server.proxy` 把 `/api`（含 `ws: true`）转到内核进程。
 - `pnpm start`：`vite-node src/main.node.ts`（生产形态本地跑，serve 预构建的 web 静态资源；web 未构建时提示先 build）。
-- 端口维持 5199。
+- 端口：对外维持 5199（vite dev 占 5199，内核进程占内部端口；start 模式内核直接占 5199）。
 - `.env` 加载（`dotenv.ts`）、`env.ts` 不动。
+- spike 已证实：vite-node 在 Vite 8 / vite-node 6 下正确产出 tsyringe 所需的装饰器 metadata，无需 swc 插件；tsx 与 node 原生 TS 均不可用。
 
 ## 测试策略
 
