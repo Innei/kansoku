@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, shell } from "electron";
+import { createServices } from "electron-ipc-decorator";
 import { createCredentialsBridgeHandlers, registerCredentialsIpc } from "./credentialsBridge.js";
 import { testLongbridgeCredentials } from "./credentialsTest.js";
 import { createCredentialStore } from "./credentialStore.js";
@@ -289,9 +290,10 @@ app.whenReady().then(async () => {
   try {
     const kernel = await bootKernel();
     const apiApp = kernel.app.getInstance();
+    const { ipcServiceClasses } = await import("./ipc/index.js");
+    createServices(ipcServiceClasses);
 
     registerAppProtocolHandler({
-      kernelFetch: async (request) => apiApp.fetch(request),
       distRoot: WEB_DIST_ROOT,
       distRootExists: () => existsSync(WEB_DIST_ROOT),
     });
