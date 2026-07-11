@@ -291,6 +291,7 @@ describe("POST /ai/test", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(typeof body.data.latencyMs).toBe("number");
+    expect(body.data.ok).toBe(true);
   });
 
   it("redacts a plaintext key that leaks into the upstream error message", async () => {

@@ -145,8 +145,9 @@ function createWindow() {
   win.loadURL(url);
 }
 
-// The preload only exposes desktop.externalApi to app:// pages (mirrors the
-// __DESKTOP_RT__ gate), so these handlers don't re-check the sender origin.
+// The preload exposes desktop.externalApi only to privileged origins (app://
+// pages, or the dev renderer under ELECTRON_DEV — same gate as __DESKTOP_RT__),
+// so these handlers don't re-check the sender origin.
 function registerExternalApiIpc(controller: ExternalApiController): void {
   ipcMain.handle("desktop:external-api:get-state", () => controller.getState());
   ipcMain.handle("desktop:external-api:enable", () => controller.enable());

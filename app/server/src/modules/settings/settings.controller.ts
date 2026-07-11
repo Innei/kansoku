@@ -45,7 +45,7 @@ export class SettingsController {
   @Post("/ai/test")
   async postTest(@Body() body: Record<string, unknown> | null) {
     const result = await settingsService.testConnection(body ?? {});
-    if (result.ok) return { ok: true, data: { latencyMs: result.latencyMs } };
+    if (result.ok) return { ok: true, data: result };
     return jsonResponse(result.status, { ok: false, error: result.error, hint: result.hint });
   }
 
