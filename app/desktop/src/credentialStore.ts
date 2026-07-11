@@ -1,5 +1,5 @@
 import { chmodSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import type { LongbridgeAuth, LongbridgeCredentials } from "../../server/src/services/credentials/types.js";
+import type { LongbridgeAuth, LongbridgeCredentials } from "../../packages/core/src/services/credentials/types.js";
 
 export interface SafeStorageLike {
   isEncryptionAvailable(): boolean;

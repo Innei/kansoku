@@ -4,7 +4,7 @@ import {
   selectCredentialProvider,
 } from "../src/desktopCredentialProvider.js";
 import type { CredentialStore } from "../src/credentialStore.js";
-import type { CredentialProvider } from "../../server/src/services/credentials/types.js";
+import type { CredentialProvider } from "../../packages/core/src/services/credentials/types.js";
 
 const CREDS = { appKey: "k", appSecret: "s", accessToken: "t" };
 const APIKEY_AUTH = { kind: "apikey" as const, ...CREDS };

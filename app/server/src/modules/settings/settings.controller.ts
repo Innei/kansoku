@@ -1,14 +1,14 @@
 import type { MutableModels } from "@earendil-works/pi-ai";
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { Body, Controller, Delete, Get, Param, Post, Put } from "@tsuki-hono/common";
-import { getAiRuntime } from "../../ai/initAiSettings.js";
-import type { AppCredentialStore } from "../../ai/credentialStore.js";
-import { getModelsRuntime, SINGLE_KEY_PROVIDERS } from "../../ai/modelsRuntime.js";
-import type { SecretBox } from "../../ai/secretBox.js";
-import { type AiRole, getActiveSettingsStore, type SettingsStore } from "../../ai/settingsStore.js";
-import { listUsage, type AiUsageRecord } from "../../ai/usageStore.js";
-import { getDb, type Db } from "../../db/index.js";
-import { ClientError } from "../../errors.js";
+import { getAiRuntime } from "../../../../packages/core/src/ai/initAiSettings.js";
+import type { AppCredentialStore } from "../../../../packages/core/src/ai/credentialStore.js";
+import { getModelsRuntime, SINGLE_KEY_PROVIDERS } from "../../../../packages/core/src/ai/modelsRuntime.js";
+import type { SecretBox } from "../../../../packages/core/src/ai/secretBox.js";
+import { type AiRole, getActiveSettingsStore, type SettingsStore } from "../../../../packages/core/src/ai/settingsStore.js";
+import { listUsage, type AiUsageRecord } from "../../../../packages/core/src/ai/usageStore.js";
+import { getDb, type Db } from "../../../../packages/core/src/db/index.js";
+import { ClientError } from "../../../../packages/core/src/errors.js";
 import {
   allowedProviders,
   categorizeTestError,
@@ -18,8 +18,8 @@ import {
   sanitizeAuthError,
   validateCustomRef,
   validateRoleSetting,
-} from "./settingsValidation.js";
-import { easternDate } from "../../services/session.js";
+} from "../../../../packages/core/src/modules/settings/settingsValidation.js";
+import { easternDate } from "../../../../packages/core/src/services/session.js";
 import { jsonResponse } from "../../httpResponse.js";
 
 const DEFAULT_TEST_TIMEOUT_MS = 25_000;

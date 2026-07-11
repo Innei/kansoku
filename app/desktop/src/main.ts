@@ -50,8 +50,8 @@ async function bootKernel() {
   const { initServerRuntime } = await import("../../server/src/runtimeInit.js");
   const { createKernel } = await import("../../server/src/bootstrap.js");
   const { attachRealtimeBridge } = await import("./realtimeBridge.js");
-  const { envCredentialProvider } = await import("../../server/src/services/credentials/envCredentialProvider.js");
-  const { CHART_DATA_DIR } = await import("../../server/src/env.js");
+  const { envCredentialProvider } = await import("../../packages/core/src/services/credentials/envCredentialProvider.js");
+  const { CHART_DATA_DIR } = await import("../../packages/core/src/env.js");
 
   const credentialStore = createCredentialStore({
     safeStorage,

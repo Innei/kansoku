@@ -1,4 +1,4 @@
-import type { CredentialProvider, LongbridgeAuth, LongbridgeCredentials } from "../../server/src/services/credentials/types.js";
+import type { CredentialProvider, LongbridgeAuth, LongbridgeCredentials } from "../../packages/core/src/services/credentials/types.js";
 import type { CredentialStore, SetCredentialsResult } from "./credentialStore.js";
 
 export interface DesktopCredentialProvider extends CredentialProvider {

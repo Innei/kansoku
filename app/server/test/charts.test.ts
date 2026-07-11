@@ -22,8 +22,8 @@ const build = vi.hoisted(() => ({
   refreshBody: vi.fn((): Record<string, unknown> | null => null),
 }));
 
-vi.mock("../src/services/store.js", () => store);
-vi.mock("../src/services/build.js", () => build);
+vi.mock("../../packages/core/src/services/store.js", () => store);
+vi.mock("../../packages/core/src/services/build.js", () => build);
 
 function patchReq(id: string, payload: unknown): [string, RequestInit] {
   return [

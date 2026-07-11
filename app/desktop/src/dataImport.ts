@@ -5,7 +5,7 @@ const CHART_DATA_REL = join("journal", "charts", "data");
 
 // app.db is deliberately never part of the import scope: the packaged
 // kernel holds an open WAL-mode connection to dataRoot's app.db for the
-// entire app lifetime (see server/src/db/index.ts), and this menu item
+// entire app lifetime (see packages/core/src/db/index.ts), and this menu item
 // runs while that connection is live — copyFileSync-ing over it would risk
 // corrupting the WAL. Only chart JSONs, which nothing holds open, are safe
 // to import this way.

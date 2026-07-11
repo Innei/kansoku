@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const models = vi.hoisted(() => ({ aiConfig: vi.fn() }));
 const analyst = vi.hoisted(() => ({ runAnalyst: vi.fn() }));
 
-vi.mock("../src/ai/models.js", () => models);
-vi.mock("../src/ai/analyst.js", () => analyst);
+vi.mock("../../packages/core/src/ai/models.js", () => models);
+vi.mock("../../packages/core/src/ai/analyst.js", () => analyst);
 
 const { tsukiRequest } = await import("./helpers.js");
 

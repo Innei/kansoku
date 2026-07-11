@@ -6,8 +6,10 @@ import type { Annotation } from "../../shared/types.js";
 
 let annotationsDir: string;
 
-vi.mock("../src/env.js", async () => {
-  const actual = await vi.importActual<typeof import("../src/env.js")>("../src/env.js");
+vi.mock("../../packages/core/src/env.js", async () => {
+  const actual = await vi.importActual<typeof import("../../packages/core/src/env.js")>(
+    "../../packages/core/src/env.js",
+  );
   return {
     ...actual,
     get ANNOTATIONS_DIR() {

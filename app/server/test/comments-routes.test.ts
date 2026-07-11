@@ -8,10 +8,10 @@ const comments = vi.hoisted(() => ({
   appendComment: vi.fn(),
 }));
 
-vi.mock("../src/ai/comments.js", () => comments);
+vi.mock("../../packages/core/src/ai/comments.js", () => comments);
 
 const { tsukiRequest } = await import("./helpers.js");
-const { easternDate } = await import("../src/services/session.js");
+const { easternDate } = await import("../../packages/core/src/services/session.js");
 
 function comment(overrides: Partial<CockpitComment> = {}): CockpitComment {
   return {

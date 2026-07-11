@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const deepDive = vi.hoisted(() => ({ startDeepDive: vi.fn(), deepDiveState: vi.fn() }));
 
-vi.mock("../src/ai/deepDive.js", () => deepDive);
+vi.mock("../../packages/core/src/ai/deepDive.js", () => deepDive);
 
 const { tsukiRequest } = await import("./helpers.js");
 

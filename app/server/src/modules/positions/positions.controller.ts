@@ -1,7 +1,7 @@
 import { Controller, Get } from "@tsuki-hono/common";
 import type { PortfolioSummary } from "../../../../shared/types.js";
-import { ClientError } from "../../errors.js";
-import { getProvider } from "../../services/marketdata/registry.js";
+import { ClientError } from "../../../../packages/core/src/errors.js";
+import { getProvider } from "../../../../packages/core/src/services/marketdata/registry.js";
 import { summarizePortfolio } from "./positions.utils.js";
 
 const CACHE_TTL_MS = 30_000;

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createDesktopSecretBox } from "../src/desktopSecretBox.js";
-import { SecretBoxError } from "../../server/src/ai/secretBox.js";
+import { SecretBoxError } from "../../packages/core/src/ai/secretBox.js";
 import type { SafeStorageLike } from "../src/credentialStore.js";
 
 function fakeSafeStorage(available = true): SafeStorageLike {

@@ -2,34 +2,34 @@ import { createServer, type Server } from "node:http";
 import { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import WebSocket from "ws";
-import type { Connection } from "../src/realtime/connection.js";
+import type { Connection } from "../../packages/core/src/realtime/connection.js";
 
-vi.mock("../src/ai/comments.js", () => ({
+vi.mock("../../packages/core/src/ai/comments.js", () => ({
   onComment: vi.fn(() => () => {}),
   listComments: vi.fn(async () => []),
 }));
-vi.mock("../src/ai/chat.js", () => ({
+vi.mock("../../packages/core/src/ai/chat.js", () => ({
   onChatEvent: vi.fn(),
   chatTurnState: vi.fn(),
 }));
-vi.mock("../src/realtime/analyses.js", () => ({ subscribeAnalyses: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/benchmark.js", () => ({ subscribeBenchmark: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/board.js", () => ({ subscribeBoard: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/charts.js", () => ({ subscribeChart: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/position.js", () => ({ subscribePosition: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/quotes.js", () => ({ subscribeQuotes: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/analyses.js", () => ({ subscribeAnalyses: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/benchmark.js", () => ({ subscribeBenchmark: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/board.js", () => ({ subscribeBoard: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/charts.js", () => ({ subscribeChart: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/position.js", () => ({ subscribePosition: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/quotes.js", () => ({ subscribeQuotes: vi.fn(() => () => {}) }));
 
-const { parseWsMessage, handleConnection } = await import("../src/realtime/channelProtocol.js");
+const { parseWsMessage, handleConnection } = await import("../../packages/core/src/realtime/channelProtocol.js");
 const { attachWs } = await import("../src/realtime/wsHost.js");
-const { activeLeaseSymbols, hasActiveLease, LEASE_GRACE_MS, resetLeases } = await import("../src/ai/leases.js");
-const { emitNotice } = await import("../src/ai/notices.js");
-const { subscribeBoard } = (await import("../src/realtime/board.js")) as unknown as {
+const { activeLeaseSymbols, hasActiveLease, LEASE_GRACE_MS, resetLeases } = await import("../../packages/core/src/ai/leases.js");
+const { emitNotice } = await import("../../packages/core/src/ai/notices.js");
+const { subscribeBoard } = (await import("../../packages/core/src/realtime/board.js")) as unknown as {
   subscribeBoard: ReturnType<typeof vi.fn>;
 };
-const { subscribeQuotes } = (await import("../src/realtime/quotes.js")) as unknown as {
+const { subscribeQuotes } = (await import("../../packages/core/src/realtime/quotes.js")) as unknown as {
   subscribeQuotes: ReturnType<typeof vi.fn>;
 };
-const { onChatEvent, chatTurnState } = (await import("../src/ai/chat.js")) as unknown as {
+const { onChatEvent, chatTurnState } = (await import("../../packages/core/src/ai/chat.js")) as unknown as {
   onChatEvent: ReturnType<typeof vi.fn>;
   chatTurnState: ReturnType<typeof vi.fn>;
 };

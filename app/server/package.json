@@ -28,10 +28,8 @@
     "better-sqlite3": "^12.11.1",
     "drizzle-orm": "^0.45.2",
     "hono": "4.12.26",
-    "longbridge": "^4.3.3",
     "reflect-metadata": "0.2.2",
     "tsyringe": "4.10.0",
-    "typebox": "1.1.38",
     "ws": "^8.21.0"
   }
 }

@@ -1,5 +1,5 @@
-import { startAiScheduler } from "./ai/scheduler.js";
-import { HOST_MODE, KERNEL_PORT, PORT } from "./env.js";
+import { startAiScheduler } from "../../packages/core/src/ai/scheduler.js";
+import { HOST_MODE, KERNEL_PORT, PORT } from "../../packages/core/src/env.js";
 import { startHost } from "./host.js";
 import { initServerRuntime } from "./runtimeInit.js";
 

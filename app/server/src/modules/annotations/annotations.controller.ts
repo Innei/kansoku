@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put } from "@tsuki-hono/common";
 import type { Annotation, AnnotationKind, AnnotationPoint } from "../../../../shared/types.js";
-import { ClientError } from "../../errors.js";
-import { loadAnnotations, saveAnnotations } from "../../services/annotations.js";
+import { ClientError } from "../../../../packages/core/src/errors.js";
+import { loadAnnotations, saveAnnotations } from "../../../../packages/core/src/services/annotations.js";
 
 const KINDS: AnnotationKind[] = ["trendline", "hline", "rect", "fib"];
 

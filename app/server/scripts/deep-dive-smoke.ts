@@ -3,15 +3,15 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { createAgentSession } from "../src/ai/agentSession.js";
-import { deepDiveState, startDeepDive } from "../src/ai/deepDive.js";
-import { buildSystemPrompt, buildTools } from "../src/ai/deepDiveTools.js";
-import { initAiSettings } from "../src/ai/initAiSettings.js";
-import { aiConfig } from "../src/ai/models.js";
-import { getDb } from "../src/db/index.js";
+import { createAgentSession } from "../../packages/core/src/ai/agentSession.js";
+import { deepDiveState, startDeepDive } from "../../packages/core/src/ai/deepDive.js";
+import { buildSystemPrompt, buildTools } from "../../packages/core/src/ai/deepDiveTools.js";
+import { initAiSettings } from "../../packages/core/src/ai/initAiSettings.js";
+import { aiConfig } from "../../packages/core/src/ai/models.js";
+import { getDb } from "../../packages/core/src/db/index.js";
 import { loadDotenv } from "../src/dotenv.js";
-import { PROJECT_ROOT } from "../src/env.js";
-import { loadSkillIndex, readSkill } from "../src/services/skills.js";
+import { PROJECT_ROOT } from "../../packages/core/src/env.js";
+import { loadSkillIndex, readSkill } from "../../packages/core/src/services/skills.js";
 
 const nodeExecAsync = promisify(nodeExec);
 

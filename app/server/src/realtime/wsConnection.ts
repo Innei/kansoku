@@ -1,5 +1,5 @@
 import type { WebSocket } from "ws";
-import type { Connection } from "./connection.js";
+import type { Connection } from "../../../packages/core/src/realtime/connection.js";
 
 const PING_MS = 15_000;
 

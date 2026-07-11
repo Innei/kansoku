@@ -1,6 +1,6 @@
 import { createApplication } from "@tsuki-hono/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { RawPortfolio } from "../src/services/marketdata/types.js";
+import type { RawPortfolio } from "../../packages/core/src/services/marketdata/types.js";
 
 const provider = vi.hoisted(() => ({
   name: "mock",
@@ -11,10 +11,10 @@ const provider = vi.hoisted(() => ({
   getPortfolio: vi.fn() as ReturnType<typeof vi.fn> | undefined,
 }));
 
-vi.mock("../src/services/marketdata/registry.js", () => ({ getProvider: () => provider }));
+vi.mock("../../packages/core/src/services/marketdata/registry.js", () => ({ getProvider: () => provider }));
 
 const { summarizePortfolio } = await import("../src/modules/positions/positions.utils.js");
-const { ClientError } = await import("../src/errors.js");
+const { ClientError } = await import("../../packages/core/src/errors.js");
 const { AppExceptionFilter } = await import("../src/filters/app-exception.filter.js");
 const { PositionsModule } = await import("../src/modules/positions/positions.module.js");
 

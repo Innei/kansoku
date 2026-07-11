@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PortLike } from "../src/realtimeBridge.js";
 
 const handleConnection = vi.fn();
-vi.mock("../../server/src/realtime/channelProtocol.js", () => ({ handleConnection }));
+vi.mock("../../packages/core/src/realtime/channelProtocol.js", () => ({ handleConnection }));
 
 interface FakeIpcMainEvent {
   ports: FakePort[];

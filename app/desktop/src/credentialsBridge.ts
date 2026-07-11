@@ -1,4 +1,4 @@
-import type { LongbridgeCredentials } from "../../server/src/services/credentials/types.js";
+import type { LongbridgeCredentials } from "../../packages/core/src/services/credentials/types.js";
 import { CREDENTIALS_CHANNELS } from "./credentialsChannels.js";
 import type { DesktopCredentialProvider } from "./desktopCredentialProvider.js";
 import type { SetCredentialsResult } from "./credentialStore.js";

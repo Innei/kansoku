@@ -1,6 +1,6 @@
 import { Config, QuoteContext } from "longbridge";
-import { sanitizeAuthError } from "../../server/src/modules/settings/settingsValidation.js";
-import type { LongbridgeCredentials } from "../../server/src/services/credentials/types.js";
+import { sanitizeAuthError } from "../../packages/core/src/modules/settings/settingsValidation.js";
+import type { LongbridgeCredentials } from "../../packages/core/src/services/credentials/types.js";
 import type { TestCredentialsResult } from "./credentialsBridge.js";
 import { classifyCredentialTestError } from "./credentialsTestErrors.js";
 

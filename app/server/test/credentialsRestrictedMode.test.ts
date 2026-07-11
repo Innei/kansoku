@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { setCredentialProviderForTests } from "../src/services/credentials/registry.js";
-import { resetCredentialStatusForTests } from "../src/services/credentials/credentialStatus.js";
-import type { CredentialProvider } from "../src/services/credentials/types.js";
+import { setCredentialProviderForTests } from "../../packages/core/src/services/credentials/registry.js";
+import { resetCredentialStatusForTests } from "../../packages/core/src/services/credentials/credentialStatus.js";
+import type { CredentialProvider } from "../../packages/core/src/services/credentials/types.js";
 
 const { tsukiRequest } = await import("./helpers.js");
 

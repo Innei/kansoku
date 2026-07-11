@@ -52,6 +52,40 @@ importers:
         specifier: ^4.1.9
         version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
+  packages/core:
+    dependencies:
+      '@earendil-works/pi-agent-core':
+        specifier: ^0.80.6
+        version: 0.80.6(ws@8.21.0)(zod@4.4.3)
+      '@earendil-works/pi-ai':
+        specifier: ^0.80.6
+        version: 0.80.6(ws@8.21.0)(zod@4.4.3)
+      better-sqlite3:
+        specifier: ^12.11.1
+        version: 12.11.1
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.11.1)
+      longbridge:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typebox:
+        specifier: 1.1.38
+        version: 1.1.38
+    devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
+      '@types/node':
+        specifier: ^26.0.1
+        version: 26.1.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.9
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
+
   server:
     dependencies:
       '@earendil-works/pi-agent-core':
@@ -78,18 +112,12 @@ importers:
       hono:
         specifier: 4.12.26
         version: 4.12.26
-      longbridge:
-        specifier: ^4.3.3
-        version: 4.3.3
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
       tsyringe:
         specifier: 4.10.0
         version: 4.10.0
-      typebox:
-        specifier: 1.1.38
-        version: 1.1.38
       ws:
         specifier: ^8.21.0
         version: 8.21.0
@@ -3155,7 +3183,7 @@ snapshots:
       '@aws-sdk/types': 3.974.0
       '@smithy/core': 3.29.2
       '@smithy/fetch-http-handler': 5.6.4
-      '@smithy/node-http-handler': 4.7.3
+      '@smithy/node-http-handler': 4.9.4
       '@smithy/types': 4.16.0
       tslib: 2.8.1
 

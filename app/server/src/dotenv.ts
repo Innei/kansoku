@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PROJECT_ROOT } from "./env.js";
+import { PROJECT_ROOT } from "../../packages/core/src/env.js";
 
 export function loadDotenv(path = join(PROJECT_ROOT, ".env")): void {
   let raw: string;

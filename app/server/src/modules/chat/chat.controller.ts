@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Param, Post } from "@tsuki-hono/common";
 import type { ChartDoc } from "../../../../shared/types.js";
-import { type ChatDeps, chatTurnState, runChatTurn, toDisplayMessages } from "../../ai/chat.js";
-import { getSessionByChartId, listMessages } from "../../ai/chatStore.js";
-import { aiConfig } from "../../ai/models.js";
-import { ClientError } from "../../errors.js";
+import { type ChatDeps, chatTurnState, runChatTurn, toDisplayMessages } from "../../../../packages/core/src/ai/chat.js";
+import { getSessionByChartId, listMessages } from "../../../../packages/core/src/ai/chatStore.js";
+import { aiConfig } from "../../../../packages/core/src/ai/models.js";
+import { ClientError } from "../../../../packages/core/src/errors.js";
 import { jsonResponse } from "../../httpResponse.js";
-import { loadChart } from "../../services/store.js";
+import { loadChart } from "../../../../packages/core/src/services/store.js";
 
 const MAX_TEXT_LENGTH = 4000;
 

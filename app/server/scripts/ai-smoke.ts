@@ -1,13 +1,13 @@
-import { runAnalyst } from "../src/ai/analyst.js";
-import { listComments } from "../src/ai/comments.js";
-import { runCommentator } from "../src/ai/commentator.js";
-import { buildCommentPack } from "../src/ai/datapack.js";
-import { initAiSettings } from "../src/ai/initAiSettings.js";
-import { aiConfig, type AiConfig } from "../src/ai/models.js";
-import type { Trigger } from "../src/ai/triggers.js";
-import { getDb } from "../src/db/index.js";
+import { runAnalyst } from "../../packages/core/src/ai/analyst.js";
+import { listComments } from "../../packages/core/src/ai/comments.js";
+import { runCommentator } from "../../packages/core/src/ai/commentator.js";
+import { buildCommentPack } from "../../packages/core/src/ai/datapack.js";
+import { initAiSettings } from "../../packages/core/src/ai/initAiSettings.js";
+import { aiConfig, type AiConfig } from "../../packages/core/src/ai/models.js";
+import type { Trigger } from "../../packages/core/src/ai/triggers.js";
+import { getDb } from "../../packages/core/src/db/index.js";
 import { loadDotenv } from "../src/dotenv.js";
-import { easternDate } from "../src/services/session.js";
+import { easternDate } from "../../packages/core/src/services/session.js";
 
 function fail(message: string): never {
   console.error(`error: ${message}`);

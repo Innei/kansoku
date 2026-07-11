@@ -1,6 +1,6 @@
 import { Controller, Get } from "@tsuki-hono/common";
-import { getLastCredentialError } from "../../services/credentials/credentialStatus.js";
-import { getCredentialProvider } from "../../services/credentials/registry.js";
+import { getLastCredentialError } from "../../../../packages/core/src/services/credentials/credentialStatus.js";
+import { getCredentialProvider } from "../../../../packages/core/src/services/credentials/registry.js";
 
 @Controller("credentials")
 export class CredentialsController {

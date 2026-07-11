@@ -12,7 +12,7 @@ files:
 extraResources:
   - from: ../web/dist
     to: web-dist
-  - from: ../server/drizzle
+  - from: ../packages/core/drizzle
     to: drizzle
 extraFiles:
   - from: native/sparkle-bridge/vendor/Sparkle.framework

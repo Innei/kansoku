@@ -1,10 +1,10 @@
-import type { SecretBox } from "./ai/secretBox.js";
-import { initAiSettings } from "./ai/initAiSettings.js";
-import { getDb } from "./db/index.js";
+import type { SecretBox } from "../../packages/core/src/ai/secretBox.js";
+import { initAiSettings } from "../../packages/core/src/ai/initAiSettings.js";
+import { getDb } from "../../packages/core/src/db/index.js";
 import { loadDotenv } from "./dotenv.js";
-import { initAuthUrlOpener, type AuthUrlOpener } from "./services/credentials/authUrlOpener.js";
-import { initCredentialProvider } from "./services/credentials/registry.js";
-import type { CredentialProvider } from "./services/credentials/types.js";
+import { initAuthUrlOpener, type AuthUrlOpener } from "../../packages/core/src/services/credentials/authUrlOpener.js";
+import { initCredentialProvider } from "../../packages/core/src/services/credentials/registry.js";
+import type { CredentialProvider } from "../../packages/core/src/services/credentials/types.js";
 
 export interface ServerRuntimeOptions {
   credentialProvider?: CredentialProvider;

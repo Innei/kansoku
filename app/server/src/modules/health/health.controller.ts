@@ -1,5 +1,5 @@
 import { Controller, Get } from "@tsuki-hono/common";
-import { CHART_DATA_DIR, PORT } from "../../env.js";
+import { CHART_DATA_DIR, PORT } from "../../../../packages/core/src/env.js";
 
 @Controller("health")
 export class HealthController {

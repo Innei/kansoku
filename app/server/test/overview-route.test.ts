@@ -26,17 +26,17 @@ const usage = vi.hoisted(() => ({
   summarizeUsage: vi.fn(),
 }));
 
-vi.mock("../src/services/marketdata/registry.js", () => ({ getProvider: () => provider }));
-vi.mock("../src/services/store.js", () => store);
-vi.mock("../src/ai/comments.js", () => comments);
-vi.mock("../src/ai/usageStore.js", () => usage);
-vi.mock("../src/services/cockpit/outcomeCache.js", () => ({
+vi.mock("../../packages/core/src/services/marketdata/registry.js", () => ({ getProvider: () => provider }));
+vi.mock("../../packages/core/src/services/store.js", () => store);
+vi.mock("../../packages/core/src/ai/comments.js", () => comments);
+vi.mock("../../packages/core/src/ai/usageStore.js", () => usage);
+vi.mock("../../packages/core/src/services/cockpit/outcomeCache.js", () => ({
   getResolvedOutcomes: async () => new Map(),
   saveResolvedOutcome: async () => {},
 }));
 
 const { resetOverviewCacheForTests } = await import("../src/modules/overview/overview.controller.js");
-const { easternDate } = await import("../src/services/session.js");
+const { easternDate } = await import("../../packages/core/src/services/session.js");
 
 const BASE = "/api/overview";
 

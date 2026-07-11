@@ -3,27 +3,27 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import WebSocket from "ws";
-import { CHART_DATA_DIR, PORT, WEB_DIST } from "../src/env.js";
+import { CHART_DATA_DIR, PORT, WEB_DIST } from "../../packages/core/src/env.js";
 
-vi.mock("../src/ai/comments.js", () => ({
+vi.mock("../../packages/core/src/ai/comments.js", () => ({
   onComment: vi.fn(() => () => {}),
   listComments: vi.fn(async () => []),
 }));
-vi.mock("../src/ai/chat.js", () => ({
+vi.mock("../../packages/core/src/ai/chat.js", () => ({
   onChatEvent: vi.fn(),
   chatTurnState: vi.fn(),
 }));
-vi.mock("../src/realtime/analyses.js", () => ({ subscribeAnalyses: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/benchmark.js", () => ({ subscribeBenchmark: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/board.js", () => ({
+vi.mock("../../packages/core/src/realtime/analyses.js", () => ({ subscribeAnalyses: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/benchmark.js", () => ({ subscribeBenchmark: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/board.js", () => ({
   subscribeBoard: vi.fn((push: (envelope: string) => void) => {
     push(JSON.stringify({ type: "board", value: 1 }));
     return () => {};
   }),
 }));
-vi.mock("../src/realtime/charts.js", () => ({ subscribeChart: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/position.js", () => ({ subscribePosition: vi.fn(() => () => {}) }));
-vi.mock("../src/realtime/quotes.js", () => ({ subscribeQuotes: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/charts.js", () => ({ subscribeChart: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/position.js", () => ({ subscribePosition: vi.fn(() => () => {}) }));
+vi.mock("../../packages/core/src/realtime/quotes.js", () => ({ subscribeQuotes: vi.fn(() => () => {}) }));
 
 const { startHost } = await import("../src/host.js");
 
