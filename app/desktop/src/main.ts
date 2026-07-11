@@ -1,3 +1,11 @@
+// bootEnv.js must stay the FIRST import in this file: its module body sets
+// TRADE_PROJECT_ROOT (and app.setName) before anything else runs, and ESM
+// import evaluation order is declaration order — every import below this one
+// transitively reaches packages/core's env.ts, whose top-level consts read
+// TRADE_PROJECT_ROOT once at module-load time. Reordering this import (or
+// inserting one above it that reaches core) silently reintroduces a bug
+// where env.ts captures an empty/wrong project root in the bundled output.
+import { dataRoot } from "./bootEnv.js";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, shell } from "electron";
@@ -12,7 +20,7 @@ import { createExternalApiController, type ExternalApiController } from "./exter
 import { isAllowedNavigationUrl, isExternalHttpUrl } from "./navigationGuard.js";
 import { DEFAULT_LONGBRIDGE_OAUTH_CLIENT_ID, performOAuthLogin } from "./oauthLogin.js";
 import { registerAppProtocolHandler, registerAppScheme } from "./protocolHost.js";
-import { resolveDataRoot, resolveRepoRoot, scaffoldDataRoot } from "./repoRoot.js";
+import { resolveRepoRoot } from "./repoRoot.js";
 import { initUpdater } from "./updater.js";
 
 // Scheme registration must run before app.ready — calling it at module top
@@ -20,23 +28,6 @@ import { initUpdater } from "./updater.js";
 // that ordering impossible to get wrong regardless of what else this file
 // grows into.
 registerAppScheme();
-
-// package.json's "name" is the scoped npm id ("@trade/desktop"), which
-// Electron would otherwise use verbatim for app.getPath("userData") — the
-// "/" turns into a nested folder. Pin it to productName before any path
-// resolution runs.
-app.setName("TradeCharts");
-
-const dataRoot = resolveDataRoot({
-  isPackaged: app.isPackaged,
-  envOverride: process.env.TRADE_PROJECT_ROOT,
-  userDataPath: app.getPath("userData"),
-});
-if (app.isPackaged) {
-  scaffoldDataRoot(dataRoot);
-  process.env.TRADE_MIGRATIONS_DIR = join(process.resourcesPath, "drizzle");
-}
-process.env.TRADE_PROJECT_ROOT = dataRoot;
 
 const DEV_WEB_URL = "http://localhost:5199";
 const PROD_APP_URL = "app://-/index.html";
