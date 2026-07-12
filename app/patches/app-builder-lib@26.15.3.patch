@@ -1,0 +1,32 @@
+diff --git a/out/targets/ArchiveTarget.js b/out/targets/ArchiveTarget.js
+index f59727f481c3ed954e0c280e82f3ecba78c0bf77..69d824a992d562455153680d05638c951f5cae4d 100644
+--- a/out/targets/ArchiveTarget.js
++++ b/out/targets/ArchiveTarget.js
+@@ -38,6 +38,9 @@ class ArchiveTarget extends core_1.Target {
+                 arch,
+             });
+             let updateInfo = null;
++            // Honor zip.writeUpdateInfo: false (upstream only exposes this for dmg).
++            // Mac zip otherwise hardcodes isWriteUpdateInfo=true in MacPackager.createTargets.
++            const shouldWriteUpdateInfo = this.options != null && this.options.writeUpdateInfo === false ? false : this.isWriteUpdateInfo;
+             if (format.startsWith("tar.")) {
+                 await (0, archive_1.tar)({ compression: packager.compression, format, outFile: artifactPath, dirToArchive: appOutDir, isMacApp: isMac, tempDirManager: packager.info.tempDirManager });
+             }
+@@ -61,7 +64,7 @@ class ArchiveTarget extends core_1.Target {
+                     preserveSymlinks: isMac,
+                 };
+                 await (0, archive_1.archive)(format, artifactPath, dirToArchive, archiveOptions);
+-                if (this.isWriteUpdateInfo && format === "zip") {
++                if (shouldWriteUpdateInfo && format === "zip") {
+                     if (isMac) {
+                         updateInfo = await (0, differentialUpdateInfoBuilder_1.createBlockmap)(artifactPath, this, packager, artifactName);
+                     }
+@@ -78,7 +81,7 @@ class ArchiveTarget extends core_1.Target {
+                 target: this,
+                 arch,
+                 packager,
+-                isWriteUpdateInfo: this.isWriteUpdateInfo,
++                isWriteUpdateInfo: shouldWriteUpdateInfo,
+             });
+         });
+         return Promise.resolve();

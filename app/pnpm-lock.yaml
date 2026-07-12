@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  app-builder-lib@26.15.3: 447066ee85b5544a7c2cf482e42539761714fe5b1bb87928ae67f423732a54a1
+
 importers:
 
   .:
@@ -47,7 +50,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
   packages/core:
     dependencies:
@@ -78,7 +81,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
   server:
     dependencies:
@@ -133,7 +136,7 @@ importers:
         version: 6.0.0(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
   web:
     dependencies:
@@ -194,7 +197,7 @@ importers:
         version: 8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
 packages:
 
@@ -3031,7 +3034,6 @@ packages:
       '@vitest/ui': 4.1.10
       happy-dom: '*'
       jsdom: '*'
-      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -4189,7 +4191,7 @@ snapshots:
 
   ansis@4.3.1: {}
 
-  app-builder-lib@26.15.3(dmg-builder@26.15.3):
+  app-builder-lib@26.15.3(patch_hash=447066ee85b5544a7c2cf482e42539761714fe5b1bb87928ae67f423732a54a1)(dmg-builder@26.15.3):
     dependencies:
       '@electron/asar': 3.4.1
       '@electron/fuses': 1.8.0
@@ -4553,7 +4555,7 @@ snapshots:
 
   dmg-builder@26.15.3:
     dependencies:
-      app-builder-lib: 26.15.3(dmg-builder@26.15.3)
+      app-builder-lib: 26.15.3(patch_hash=447066ee85b5544a7c2cf482e42539761714fe5b1bb87928ae67f423732a54a1)(dmg-builder@26.15.3)
       builder-util: 26.15.3
       fs-extra: 10.1.0
       js-yaml: 4.3.0
@@ -4595,7 +4597,7 @@ snapshots:
 
   electron-builder@26.15.3:
     dependencies:
-      app-builder-lib: 26.15.3(dmg-builder@26.15.3)
+      app-builder-lib: 26.15.3(patch_hash=447066ee85b5544a7c2cf482e42539761714fe5b1bb87928ae67f423732a54a1)(dmg-builder@26.15.3)
       builder-util: 26.15.3
       builder-util-runtime: 9.7.0
       chalk: 4.1.2
@@ -6293,7 +6295,7 @@ snapshots:
       jiti: 2.7.0
       yaml: 2.9.0
 
-  vitest@4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)):
+  vitest@4.1.10(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0):
     dependencies:
       '@vitest/expect': 4.1.10
       '@vitest/mocker': 4.1.10(vite@8.1.4(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -6319,7 +6321,18 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/node': 26.1.1
     transitivePeerDependencies:
+      - '@vitejs/devtools'
+      - esbuild
+      - jiti
+      - less
       - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
 
   web-streams-polyfill@3.3.3: {}
 

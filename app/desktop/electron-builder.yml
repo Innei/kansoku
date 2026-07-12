@@ -27,7 +27,11 @@ extraFiles:
 asarUnpack:
   - "**/node_modules/better-sqlite3/**"
   - "**/native/sparkle-bridge/build/**"
+# Updates ship via Sparkle, not electron-updater — skip blockmaps for both targets.
+# dmg has a native knob; zip needs the app-builder-lib patch (patches/app-builder-lib@…).
 dmg:
+  writeUpdateInfo: false
+zip:
   writeUpdateInfo: false
 mac:
   icon: build/icon.icns
