@@ -16,8 +16,10 @@ vi.mock("../src/services/build.js", () => build);
 vi.mock("../src/services/marketdata/longbridgeStream.js", () => ({
   getLongbridgeStream: () => longbridgeStream,
 }));
+vi.mock("../src/services/optionsLevels.js", () => ({ getOptionsLevels: vi.fn().mockResolvedValue(null) }));
+vi.mock("../src/services/events.js", () => ({ getEventRisk: vi.fn().mockResolvedValue(null) }));
 
-const { subscribeChart } = await import("../src/realtime/charts.js");
+const { subscribeChart, subscribePreview } = await import("../src/realtime/charts.js");
 
 type CandleCb = (bar: { ts: number; open: number; high: number; low: number; close: number; volume: number; symbol: string; period: string }) => void;
 
@@ -205,5 +207,127 @@ describe("subscribeChart candlestick-push wiring", () => {
     expect(input.timeframes.m5[0].time).toBe(new Date(3_000).toISOString());
     expect(input.timeframes.m5[1].time).toBe(new Date(4_000).toISOString());
     unsub();
+  });
+});
+
+describe("subscribePreview", () => {
+  const callbacksByPeriod = new Map<string, CandleCb>();
+  const unsubSpies = new Map<string, ReturnType<typeof vi.fn>>();
+
+  function previewBuildResult(symbol: string) {
+    return {
+      type: "intraday",
+      title: `${symbol} 短线多周期`,
+      slug: "preview-intraday",
+      symbol,
+      sessionDate: "2026-07-13",
+      input: {
+        symbol,
+        timeframes: {
+          m5: [{ time: new Date(1_000).toISOString(), open: 1, high: 1, low: 1, close: 1, volume: 1 }],
+          m15: [],
+          h1: [],
+        },
+      },
+      built: { kind: "intraday" },
+      meta: {},
+    };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    callbacksByPeriod.clear();
+    unsubSpies.clear();
+    build.buildChart.mockReset().mockImplementation(async (body: { symbol: string }) => previewBuildResult(body.symbol));
+    build.refreshBody.mockReset().mockImplementation((_type: string, input: { symbol: string }) => ({ type: "intraday", symbol: input.symbol }));
+    build.rebuild.mockReset().mockImplementation((_type: string, input: { timeframes?: { m5?: unknown[] } }) => ({
+      type: "intraday",
+      title: "预览",
+      symbol: "PREVIEW.US",
+      input: {},
+      built: { kind: "intraday", pushed: true, m5Len: input.timeframes?.m5?.length ?? 0 },
+      meta: {},
+    }));
+    longbridgeStream.subscribeCandlesticks.mockReset();
+    longbridgeStream.subscribeCandlesticks.mockImplementation((_symbol: string, period: string, cb: CandleCb) => {
+      callbacksByPeriod.set(period, cb);
+      const unsub = vi.fn();
+      unsubSpies.set(period, unsub);
+      return unsub;
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("builds via the provider and pushes an initial data envelope with no prediction fields", async () => {
+    const events: string[] = [];
+    const unsub = await subscribePreview("PQQ1.US", (e) => events.push(e));
+
+    expect(build.buildChart).toHaveBeenCalledWith(expect.objectContaining({ type: "intraday", symbol: "PQQ1.US" }));
+    const parsed = JSON.parse(events[0]);
+    expect(parsed.type).toBe("data");
+    expect(parsed.data.built.kind).toBe("intraday");
+    expect(parsed.data).not.toHaveProperty("prediction_stale");
+    unsub();
+  });
+
+  it("triggers a debounced rebuild push on a pushed candlestick bar", async () => {
+    const events: string[] = [];
+    const unsub = await subscribePreview("PQQ2.US", (e) => events.push(e));
+    // Subscribing kicks off the poller's own immediate safety-net tick (fire-and-forget);
+    // flush it out here so the assertions below only see the push-triggered rebuild.
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(0);
+    build.rebuild.mockClear();
+    events.length = 0;
+
+    const m5cb = callbacksByPeriod.get("5m")!;
+    m5cb({ symbol: "PQQ2.US", period: "5m", ts: 2_000, open: 2, high: 2, low: 2, close: 2, volume: 5 });
+    await vi.advanceTimersByTimeAsync(1_500);
+
+    expect(build.rebuild).toHaveBeenCalledTimes(1);
+    const dataEvents = events.map((e) => JSON.parse(e)).filter((e) => e.type === "data");
+    expect(dataEvents.some((e) => e.data.built.pushed)).toBe(true);
+    unsub();
+  });
+
+  it("shares one build across two subscribers to the same symbol and pushes an initial envelope to each", async () => {
+    const events1: string[] = [];
+    const events2: string[] = [];
+    const unsub1 = await subscribePreview("PQQ3.US", (e) => events1.push(e));
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(0);
+    build.buildChart.mockClear();
+
+    const unsub2 = await subscribePreview("PQQ3.US", (e) => events2.push(e));
+
+    expect(build.buildChart).not.toHaveBeenCalled();
+    expect(JSON.parse(events1[0]).data.built.kind).toBe("intraday");
+    expect(JSON.parse(events2[0]).data.built.kind).toBe("intraday");
+    unsub1();
+    unsub2();
+  });
+
+  it("tears down state once both subscribers leave and rebuilds from scratch on a fresh subscribe", async () => {
+    const unsub1 = await subscribePreview("PQQ4.US", () => {});
+    const unsub2 = await subscribePreview("PQQ4.US", () => {});
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(longbridgeStream.subscribeCandlesticks).toHaveBeenCalledTimes(3);
+
+    unsub1();
+    unsub2();
+
+    for (const period of ["5m", "15m", "60m"]) {
+      expect(unsubSpies.get(period)).toHaveBeenCalledTimes(1);
+    }
+
+    build.buildChart.mockClear();
+    const unsub3 = await subscribePreview("PQQ4.US", () => {});
+    expect(build.buildChart).toHaveBeenCalledWith(expect.objectContaining({ type: "intraday", symbol: "PQQ4.US" }));
+    expect(longbridgeStream.subscribeCandlesticks).toHaveBeenCalledTimes(6);
+    unsub3();
   });
 });

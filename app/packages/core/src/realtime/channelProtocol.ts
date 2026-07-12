@@ -9,7 +9,7 @@ import { normalizeSymbol } from "../services/symbol.utils.js";
 import { subscribeAnalyses } from "./analyses.js";
 import { subscribeBenchmark } from "./benchmark.js";
 import { subscribeBoard } from "./board.js";
-import { subscribeChart } from "./charts.js";
+import { subscribeChart, subscribePreview } from "./charts.js";
 import type { Connection } from "./connection.js";
 import { subscribePosition } from "./position.js";
 import { subscribeQuotes } from "./quotes.js";
@@ -41,7 +41,7 @@ const MAX_CHANNELS_PER_SOCKET = 16;
 export interface WsSub {
   op: "sub";
   key: string;
-  kind: "quotes" | "chart" | "comments" | "analyses" | "position" | "benchmark" | "board" | "chat";
+  kind: "quotes" | "chart" | "comments" | "analyses" | "position" | "benchmark" | "board" | "chat" | "preview";
   extra?: string[];
   id?: string;
   count?: number;
@@ -86,6 +86,10 @@ export function parseWsMessage(raw: unknown): WsClientMessage | null {
     if (typeof msg.symbol !== "string" || !msg.symbol) return null;
     return { op: "sub", key: msg.key, kind: "benchmark", symbol: msg.symbol };
   }
+  if (msg.kind === "preview") {
+    if (typeof msg.symbol !== "string" || !msg.symbol) return null;
+    return { op: "sub", key: msg.key, kind: "preview", symbol: msg.symbol };
+  }
   if (msg.kind === "board") {
     return { op: "sub", key: msg.key, kind: "board" };
   }
@@ -125,6 +129,7 @@ async function attachChannel(msg: WsSub, push: (envelope: string) => void): Prom
   if (msg.kind === "analyses") return subscribeAnalyses(normalizeSymbol(msg.symbol as string), push);
   if (msg.kind === "position") return subscribePosition(normalizeSymbol(msg.symbol as string), push);
   if (msg.kind === "benchmark") return subscribeBenchmark(normalizeSymbol(msg.symbol as string), push);
+  if (msg.kind === "preview") return subscribePreview(msg.symbol as string, push);
   if (msg.kind === "chat") return attachChat(msg.id as string, push);
   return subscribeBoard(push);
 }
