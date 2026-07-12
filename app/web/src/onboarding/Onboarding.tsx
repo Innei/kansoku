@@ -1,61 +1,37 @@
-import { useState } from "react";
 import { Button, Card } from "../ui";
-import { CredentialsForm } from "../pages/settings/CredentialsForm";
-import { OAuthLoginSection } from "../pages/settings/OAuthLoginSection";
-import type { DesktopCredentialsBridge } from "../pages/settings/desktopCredentials";
+import type { CredentialsGetResult } from "../pages/settings/desktopCredentials";
 
-const LONGBRIDGE_PORTAL_URL = "https://open.longbridgeapp.com/";
+const INSTALL_URL = "https://open.longbridge.com/docs/cli/install";
 
-export function Onboarding({
-  bridge,
-  onDone,
-  onSkip,
-}: {
-  bridge: DesktopCredentialsBridge;
-  onDone: () => void;
-  onSkip: () => void;
-}) {
-  const [showManualForm, setShowManualForm] = useState(false);
-  const hasOAuth = typeof bridge.loginOAuth === "function";
+export function Onboarding({ status, onRecheck }: { status: CredentialsGetResult | null; onRecheck: () => void }) {
+  const state = status?.state ?? "cli_missing";
+  const title = state === "cli_missing" ? "安装 Longbridge CLI" : state === "login_required" ? "登录长桥账号" : "修复登录状态";
+  const command = state === "cli_missing" ? "curl -fsSL https://open.longbridge.com/install | sh" : "longbridge auth login";
+  const explanation =
+    state === "cli_missing"
+      ? "TradeCharts 使用本机 Longbridge CLI 获取行情和账户数据。安装完成后请返回这里重新检测。"
+      : state === "login_required"
+        ? "CLI 已安装，但尚未登录。请在终端执行登录命令，并在浏览器中完成授权。"
+        : "CLI 的登录文件无法读取或已经失效。请重新登录；如果问题持续，请升级 Longbridge CLI。";
 
   return (
-    <div className="page onboarding-page">
-      <Card className="onboarding-card">
-        <h1>欢迎使用</h1>
-        <p className="onboarding-explainer">
-          行情数据来自长桥（Longbridge），用长桥账号登录即可开始使用。授权在浏览器中完成，凭证只会加密保存在本机，
-          不会上传到任何第三方服务器。
-        </p>
-
-        <OAuthLoginSection bridge={bridge} label="用长桥账号登录并进入" onDone={onDone} />
-
-        {hasOAuth && (
-          <button type="button" className="settings-manual-cred-toggle" onClick={() => setShowManualForm((v) => !v)}>
-            {showManualForm ? "收起手动配置" : "手动填写 API 凭证（高级）"}
-          </button>
-        )}
-        {(showManualForm || !hasOAuth) && (
-          <>
-            <p className="onboarding-explainer">
-              也可以到{" "}
-              <a href={LONGBRIDGE_PORTAL_URL} target="_blank" rel="noreferrer">
-                长桥开放平台
-              </a>{" "}
-              申请一组 App Key / App Secret / Access Token 手动配置。
-            </p>
-            <CredentialsForm
-              bridge={bridge}
-              submitLabel="保存并进入"
-              onSaved={onDone}
-              hint="填入三项凭证后先测试连接，确认无误后再保存。"
-            />
-          </>
-        )}
-
-        <div className="onboarding-skip-row">
-          <Button onClick={onSkip}>跳过，稍后再配置</Button>
-        </div>
-      </Card>
-    </div>
+    <>
+      <div className="onboarding-drag-bar" aria-hidden="true">
+        <div className="desktop-titlebar-traffic-spacer" />
+      </div>
+      <div className="page onboarding-page">
+        <Card className="onboarding-card">
+          <h1>{title}</h1>
+          <p className="onboarding-explainer">{explanation}</p>
+          <pre className="onboarding-cli-command"><code>{command}</code></pre>
+          {status?.cliPath && <p className="onboarding-explainer">已找到：{status.cliPath}</p>}
+          {status?.lastError && <div className="settings-test-result settings-test-result--fail">{status.lastError}</div>}
+          <div className="settings-cred-actions">
+            <Button onClick={() => window.open(INSTALL_URL, "_blank", "noopener,noreferrer")}>查看安装说明</Button>
+            <Button accent onClick={onRecheck}>重新检测</Button>
+          </div>
+        </Card>
+      </div>
+    </>
   );
 }

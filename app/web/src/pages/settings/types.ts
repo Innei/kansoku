@@ -13,6 +13,7 @@ export type AiRoles = Record<Role | "primary", RoleSetting>;
 
 export interface CredentialEntry {
   provider: string;
+  kind: "api_key" | "oauth";
   masked: string | null;
   updatedAt: string;
   ok: boolean;
@@ -68,6 +69,33 @@ export const ROLE_LABEL: Record<Role, string> = {
 };
 
 export const CODEX_PROVIDER = "openai-codex";
+export const LOBEHUB_PROVIDER = "lobehub";
+
+export interface LobeHubAccount {
+  status: "unavailable" | "disconnected" | "connected" | "refresh_required";
+  email: string | null;
+  name: string | null;
+  userId: string | null;
+  updatedAt: string | null;
+  baseUrl: string;
+}
+
+export interface LobeHubCredits {
+  availableCredits: number;
+  availableUsd: number;
+  currentMonthCredits: number;
+  currentMonthUsd: number;
+  plan: string | null;
+  updatedAt: string;
+}
+
+export interface LobeHubDeviceLogin {
+  userCode: string;
+  verificationUri: string;
+  verificationUriComplete?: string;
+  expiresAt: string;
+  intervalSeconds: number;
+}
 
 export const THINKING_LABEL: Record<string, string> = {
   off: "关闭思考",

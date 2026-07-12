@@ -14,6 +14,7 @@
     "start": "electron .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "generate-icon": "bash scripts/generate-icon.sh",
     "prepackage": "pnpm --filter @trade/web build && (test -f ../web/dist/index.html || (echo 'web/dist/index.html missing after build' && exit 1))",
     "package": "tsdown && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64"
   },
@@ -21,9 +22,7 @@
     "@hono/node-server": "1.19.14",
     "better-sqlite3": "^12.11.1",
     "electron-ipc-decorator": "^1.0.1",
-    "electron-window-state": "5.0.3",
-    "longbridge": "^4.3.3",
-    "longbridge-darwin-arm64": "4.3.3"
+    "electron-window-state": "5.0.3"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.2.0",

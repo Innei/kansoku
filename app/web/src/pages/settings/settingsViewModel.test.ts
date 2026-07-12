@@ -20,7 +20,9 @@ const roles = {
 
 const settings: AiSettings = {
   roles,
-  credentials: [{ provider: "deepseek", masked: "sk-••••9A2F", updatedAt: "2026-07-10", ok: true }],
+  credentials: [
+    { provider: "deepseek", kind: "api_key", masked: "sk-••••9A2F", updatedAt: "2026-07-10", ok: true },
+  ],
   masterKey: "ready",
 };
 

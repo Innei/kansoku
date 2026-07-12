@@ -39,6 +39,16 @@ describe("createIpcClient", () => {
     expect(invoke).toHaveBeenCalledWith("charts.get", { id: "abc" });
   });
 
+  it("uses the independent LobeHub IPC group", async () => {
+    const invoke = vi.fn(async () => ({ ok: true, data: { status: "disconnected" } }));
+    vi.stubGlobal("window", { desktop: { rpc: { invoke } } });
+
+    const ipcClient = createIpcClient()!;
+    await ipcClient.lobehub.getAccount();
+
+    expect(invoke).toHaveBeenCalledWith("lobehub.getAccount", undefined);
+  });
+
   it("throws ApiError for an ok:false envelope and marks restricted mode", async () => {
     const invoke = vi.fn(async () => ({ ok: false, error: "not configured", code: "NO_CREDENTIALS", status: 503 }));
     vi.stubGlobal("window", { desktop: { rpc: { invoke } } });

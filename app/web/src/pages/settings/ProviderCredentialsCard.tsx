@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { errorMessage } from "../../api";
 import { client } from "../../client";
 import { Button, Card, Dot, Input, openModal, Select, SectionTitle } from "../../ui";
@@ -8,6 +8,10 @@ import {
   type Catalog,
   type CatalogProvider,
   type CredentialEntry,
+  type LobeHubAccount,
+  type LobeHubCredits,
+  type LobeHubDeviceLogin,
+  LOBEHUB_PROVIDER,
 } from "./types";
 
 const CODEX_STATUS_LABEL: Record<string, string> = {
@@ -161,16 +165,183 @@ function CodexAuthRow({ provider }: { provider: CatalogProvider }) {
   );
 }
 
+function DeviceLoginDialog({
+  login,
+  closeModal,
+  onConnected,
+}: {
+  login: LobeHubDeviceLogin;
+  closeModal: () => void;
+  onConnected: () => void;
+}) {
+  const [status, setStatus] = useState("等待在浏览器中确认…");
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const poll = async () => {
+      try {
+        const result = await client.lobehub.pollDeviceLogin();
+        if (cancelled) return;
+        if (result.status === "connected") {
+          onConnected();
+          closeModal();
+          return;
+        }
+        if (result.status === "denied") {
+          setStatus("授权已拒绝，请重新发起登录");
+          return;
+        }
+        if (result.status === "expired") {
+          setStatus("验证码已过期，请重新发起登录");
+          return;
+        }
+        timer = setTimeout(poll, result.intervalSeconds * 1000);
+      } catch (error) {
+        if (!cancelled) setStatus(errorMessage(error));
+      }
+    };
+    timer = setTimeout(poll, login.intervalSeconds * 1000);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [closeModal, login.intervalSeconds, onConnected]);
+
+  const url = login.verificationUriComplete ?? login.verificationUri;
+  return (
+    <div className="settings-device-login">
+      <p>请在 LobeHub Cloud 确认登录，并在需要时输入以下验证码。</p>
+      <div className="settings-device-code">{login.userCode}</div>
+      <div className="settings-provider-meta">{status}</div>
+      <div className="settings-cred-actions">
+        <Button onClick={() => void navigator.clipboard.writeText(login.userCode)}>复制验证码</Button>
+        <Button accent onClick={() => window.open(url, "_blank", "noopener,noreferrer")}>
+          打开 LobeHub Cloud
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const formatUsd = (value: number) => `$${value.toFixed(value < 1 ? 4 : 2)}`;
+
+function LobeHubAuthRow({
+  provider,
+  account,
+  credits,
+  creditsError,
+  onChanged,
+}: {
+  provider: CatalogProvider;
+  account: LobeHubAccount | null;
+  credits: LobeHubCredits | null;
+  creditsError: string | null;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const status = account?.status ?? "disconnected";
+  const tone = status === "connected" ? "up" : status === "refresh_required" ? "down" : "accent";
+  const label =
+    status === "connected"
+      ? "已连接"
+      : status === "refresh_required"
+        ? "需要重新登录"
+        : status === "unavailable"
+          ? "等待 Client ID"
+          : "未连接";
+
+  const login = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const info = await client.lobehub.startDeviceLogin();
+      openModal({
+        title: "连接 LobeHub Cloud",
+        body: (closeModal) => (
+          <DeviceLoginDialog login={info} closeModal={closeModal} onConnected={onChanged} />
+        ),
+      });
+      window.open(info.verificationUriComplete ?? info.verificationUri, "_blank", "noopener,noreferrer");
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const logout = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await client.lobehub.deleteSession();
+      onChanged();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="settings-provider-row" id={"settings-provider-" + provider.id}>
+      <div className="settings-provider-head">
+        <span className="settings-provider-name">{provider.name}</span>
+        <span className={"settings-provider-state settings-provider-state--" + tone}>
+          <Dot tone={tone} />
+          {label}
+        </span>
+      </div>
+      {status === "connected" ? (
+        <>
+          <div className="settings-provider-meta">
+            {account?.email ?? account?.name ?? account?.userId ?? "LobeHub Cloud 个人账户"}
+            {credits?.plan ? ` · ${credits.plan}` : ""}
+          </div>
+          <div className="settings-lobehub-credits">
+            <span>可用额度 {credits ? formatUsd(credits.availableUsd) : "读取中…"}</span>
+            <span>本月使用 {credits ? formatUsd(credits.currentMonthUsd) : creditsError ?? "读取中…"}</span>
+            <span>{provider.models.length} 个对话模型</span>
+          </div>
+        </>
+      ) : (
+        <div className="settings-provider-meta">
+          {status === "unavailable"
+            ? "Cloud 开发者 Client 完成后配置 LOBEHUB_OAUTH_CLIENT_ID 即可启用"
+            : "使用 Device Flow 登录个人 LobeHub Cloud 账户"}
+        </div>
+      )}
+      <div className="settings-provider-actions">
+        {status === "connected" ? (
+          <Button disabled={busy} onClick={logout}>{busy ? "退出中…" : "退出登录"}</Button>
+        ) : (
+          <Button accent disabled={busy || status === "unavailable"} onClick={login}>
+            {busy ? "启动中…" : status === "refresh_required" ? "重新登录" : "登录 LobeHub Cloud"}
+          </Button>
+        )}
+      </div>
+      {error ? <div className="settings-provider-error" role="alert">{error}</div> : null}
+    </div>
+  );
+}
+
 export function ProviderCredentialsCard({
   settings,
   catalog,
   usedProviderIds,
   onChanged,
+  lobehubAccount,
+  lobehubCredits,
+  lobehubCreditsError,
 }: {
   settings: AiSettings;
   catalog: Catalog;
   usedProviderIds: string[];
   onChanged: () => void;
+  lobehubAccount: LobeHubAccount | null;
+  lobehubCredits: LobeHubCredits | null;
+  lobehubCreditsError: string | null;
 }) {
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const [editKey, setEditKey] = useState("");
@@ -253,7 +424,10 @@ export function ProviderCredentialsCard({
   const usedProviders = new Set(usedProviderIds);
   const visibleProviders = catalog.providers.filter(
     (provider) =>
-      provider.id === CODEX_PROVIDER || credentials.has(provider.id) || usedProviders.has(provider.id),
+      provider.id === CODEX_PROVIDER ||
+      provider.id === LOBEHUB_PROVIDER ||
+      credentials.has(provider.id) ||
+      usedProviders.has(provider.id),
   );
   const availableToAdd = catalog.providers.filter(
     (provider) =>
@@ -262,7 +436,9 @@ export function ProviderCredentialsCard({
       !usedProviders.has(provider.id),
   );
   const effectiveAddProvider = addProvider || availableToAdd[0]?.id || "";
-  const apiKeyCount = settings.credentials.filter((credential) => credential.ok).length;
+  const apiKeyCount = settings.credentials.filter(
+    (credential) => credential.kind === "api_key" && credential.ok,
+  ).length;
   const codex = catalog.providers.find((provider) => provider.id === CODEX_PROVIDER);
   const codexSummary =
     codex?.auth.status === "configured"
@@ -270,12 +446,18 @@ export function ProviderCredentialsCard({
       : codex?.auth.status === "error"
         ? "Codex 登录异常"
         : "Codex 未登录";
+  const lobehubSummary =
+    lobehubAccount?.status === "connected"
+      ? "LobeHub 已连接"
+      : lobehubAccount?.status === "unavailable"
+        ? "LobeHub 待启用"
+        : "LobeHub 未连接";
 
   return (
     <Card className="settings-credentials-card" id="settings-provider-panel">
       <div className="settings-card-heading">
         <SectionTitle>Provider 与凭据</SectionTitle>
-        <span>{apiKeyCount + " 个 key · " + codexSummary}</span>
+        <span>{apiKeyCount + " 个 key · " + codexSummary + " · " + lobehubSummary}</span>
       </div>
       {settings.masterKey === "invalid" ? (
         <div className="settings-warning-strip">
@@ -285,7 +467,16 @@ export function ProviderCredentialsCard({
       ) : null}
       <div className="settings-provider-list">
         {visibleProviders.map((provider) =>
-          provider.id === CODEX_PROVIDER || provider.auth.kind === "oauth" ? (
+          provider.id === LOBEHUB_PROVIDER ? (
+            <LobeHubAuthRow
+              key={provider.id}
+              provider={provider}
+              account={lobehubAccount}
+              credits={lobehubCredits}
+              creditsError={lobehubCreditsError}
+              onChanged={onChanged}
+            />
+          ) : provider.id === CODEX_PROVIDER || provider.auth.kind === "oauth" ? (
             <CodexAuthRow key={provider.id} provider={provider} />
           ) : (
             <ProviderAuthRow

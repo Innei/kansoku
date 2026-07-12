@@ -1,5 +1,6 @@
 import type { Api, Model, ModelThinkingLevel, ThinkingLevel } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
+import { getModelsRuntime } from "./modelsRuntime.js";
 import { type AiTaskRole, getActiveSettingsStore, type RoleSetting } from "./settingsStore.js";
 
 export type ModelRef = { provider: string; id: string; thinkingLevel?: ThinkingLevel };
@@ -58,7 +59,13 @@ export function resolveModel(
 }
 
 function resolveCustom(setting: RoleSetting): AiModel | null {
-  const model = catalog.getModel(setting.provider as string, setting.modelId as string);
+  let model: AiModel | undefined;
+  try {
+    model = getModelsRuntime().getModel(setting.provider as string, setting.modelId as string);
+  } catch {
+    // Unit-level consumers may use the static catalog without initializing the app runtime.
+    model = catalog.getModel(setting.provider as string, setting.modelId as string);
+  }
   if (!model) return null;
   return { ...model, thinkingLevel: setting.thinkingLevel ?? undefined };
 }

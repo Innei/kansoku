@@ -2,6 +2,7 @@ import type { Api, Model, ModelThinkingLevel, MutableModels } from "@earendil-wo
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { ClientError } from "../../errors.js";
 import { SINGLE_KEY_PROVIDERS } from "../../ai/modelsRuntime.js";
+import { LOBEHUB_PROVIDER } from "../../ai/lobehub/types.js";
 import type { AiRole, RoleMode, RoleSetting } from "../../ai/settingsStore.js";
 
 export const CODEX_PROVIDER = "openai-codex";
@@ -9,7 +10,7 @@ export const ROLES: AiRole[] = ["primary", "comment", "analyst", "deepDive", "ch
 const MODES: RoleMode[] = ["custom", "disabled", "inherit"];
 
 export function allowedProviders(): string[] {
-  return [...SINGLE_KEY_PROVIDERS, CODEX_PROVIDER];
+  return [...SINGLE_KEY_PROVIDERS, CODEX_PROVIDER, LOBEHUB_PROVIDER];
 }
 
 export function parseRole(raw: string): AiRole {

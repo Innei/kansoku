@@ -3,7 +3,15 @@ import { Check, TriangleAlert } from "lucide-react";
 import { errorMessage } from "../../api";
 import { client } from "../../client";
 import { Button, Chip, openModal, Select, Spinner } from "../../ui";
-import { defaultCustom, firstModelId, providerKeyReady, providerLabel, saveRole, selectableProviders } from "./roleShared";
+import {
+  defaultCustom,
+  defaultThinkingLevel,
+  firstModelId,
+  providerKeyReady,
+  providerLabel,
+  saveRole,
+  selectableProviders,
+} from "./roleShared";
 import { thinkingLabel, type Catalog, type CredentialEntry, type RoleSetting } from "./types";
 import { useSaveQueue } from "./useSaveQueue";
 
@@ -42,11 +50,22 @@ export function PrimaryRow({
   };
 
   const setProvider = (provider: string) => {
-    push({ mode: "custom", provider, modelId: firstModelId(catalog, provider), thinkingLevel: "off", stale: false });
+    const modelId = firstModelId(catalog, provider);
+    push({
+      mode: "custom",
+      provider,
+      modelId,
+      thinkingLevel: defaultThinkingLevel(catalog, provider, modelId),
+      stale: false,
+    });
   };
 
   const setModelId = (modelId: string) => {
-    push({ ...draft, modelId, thinkingLevel: "off" });
+    push({
+      ...draft,
+      modelId,
+      thinkingLevel: defaultThinkingLevel(catalog, draft.provider ?? "", modelId),
+    });
   };
 
   const setThinkingLevel = (thinkingLevel: string) => {

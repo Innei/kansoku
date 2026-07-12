@@ -1,5 +1,6 @@
 import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
 import { SINGLE_KEY_PROVIDERS } from "../../ai/modelsRuntime.js";
+import { LOBEHUB_PROVIDER } from "../../ai/lobehub/types.js";
 import type { AiRole } from "../../ai/settingsStore.js";
 import type { AiUsageRecord } from "../../ai/usageStore.js";
 import { listUsage } from "../../ai/usageStore.js";
@@ -81,7 +82,12 @@ export const settingsService: SettingsApi = {
   },
 
   async getCatalog() {
-    const { credentials, models } = settingsDeps();
+    const { credentials, lobehub, models } = settingsDeps();
+    try {
+      await models.refresh(LOBEHUB_PROVIDER);
+    } catch (error) {
+      console.warn(`settings: using cached LobeHub model catalog: ${String(error)}`);
+    }
     const configuredApiKey = new Set(credentials.list().filter((e) => e.ok).map((e) => e.provider));
     const providers = [];
     for (const id of allowedProviders()) {
@@ -94,7 +100,22 @@ export const settingsService: SettingsApi = {
       }));
 
       let auth: { kind: "api_key" | "oauth"; status: "configured" | "missing" | "error" };
-      if (id === CODEX_PROVIDER) {
+      if (id === LOBEHUB_PROVIDER) {
+        try {
+          const account = await lobehub.getAccount();
+          auth = {
+            kind: "oauth",
+            status:
+              account.status === "connected"
+                ? "configured"
+                : account.status === "refresh_required"
+                  ? "error"
+                  : "missing",
+          };
+        } catch {
+          auth = { kind: "oauth", status: "error" };
+        }
+      } else if (id === CODEX_PROVIDER) {
         try {
           const credential = await credentials.read(CODEX_PROVIDER);
           auth = { kind: "oauth", status: credential ? "configured" : "missing" };

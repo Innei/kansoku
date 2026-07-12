@@ -6,7 +6,10 @@ export default defineConfig([
     outDir: "dist-main",
     format: "esm",
     platform: "node",
-    deps: { neverBundle: ["electron", "better-sqlite3", "longbridge"] },
+    deps: {
+      alwaysBundle: ["electron-window-state"],
+      neverBundle: ["electron", "better-sqlite3"],
+    },
     dts: false,
     clean: true,
   },

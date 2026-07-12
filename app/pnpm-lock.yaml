@@ -26,12 +26,6 @@ importers:
       electron-window-state:
         specifier: 5.0.3
         version: 5.0.3
-      longbridge:
-        specifier: ^4.3.3
-        version: 4.3.3
-      longbridge-darwin-arm64:
-        specifier: 4.3.3
-        version: 4.3.3
     devDependencies:
       '@electron/rebuild':
         specifier: ^4.2.0
@@ -72,9 +66,6 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.11.1)
-      longbridge:
-        specifier: ^4.3.3
-        version: 4.3.3
       typebox:
         specifier: 1.1.38
         version: 1.1.38
@@ -2077,42 +2068,6 @@ packages:
 
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
-
-  longbridge-darwin-arm64@4.3.3:
-    resolution: {integrity: sha512-enNmMUPq5oy5iyQMtKL3YU/O1ZirAsK0Usk2eL8LGXDTbKdbGBssh1qA5xAmSkaMYyYZPY/PvedcC3DU7KhgVQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [darwin]
-
-  longbridge-darwin-x64@4.3.3:
-    resolution: {integrity: sha512-Jk4Ueb44lddFjbMgOByXVQgL8Xc59lfmKMnjj0N6sunVH9TyNMEHgweZK0CCJufglm+tObsMydrZXaPZ3BnMSQ==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [darwin]
-
-  longbridge-linux-arm64-gnu@4.3.3:
-    resolution: {integrity: sha512-NcAr1I23+S29wrGHJklRY07dAk8OwMVe+UWKeXrRAR5zvnI3c92s5EFKirviqDscdB7eLxfCJJlWuFtwUUTgFw==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-    libc: [glibc]
-
-  longbridge-linux-x64-gnu@4.3.3:
-    resolution: {integrity: sha512-i7HFaz/D0ZrCQF6tvYrd84B0n2nVIyW+Y8UyUlgWPT/0znoOraAuAvlAzgP/hBRZVyvN7smblc5P0Tzb4X72DQ==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
-  longbridge-win32-x64-msvc@4.3.3:
-    resolution: {integrity: sha512-I/OYUVyFsZ6wH+aliE2HRYYpXMtr5D9GUGqenDMUrNFwCCBZ2nlsM1dEVElqz39W63+5qrXiIeFOHqwopktO2Q==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [win32]
-
-  longbridge@4.3.3:
-    resolution: {integrity: sha512-5YPzh/++nxaZl4FAC1R6E5Lh7Bd46jge7qfe/E41EFFKftXu7OPOT1fbghqF9lHPA1p0V+klyVtE+4gdfDnC4g==}
-    engines: {node: '>= 10'}
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
@@ -5092,28 +5047,6 @@ snapshots:
   lodash@4.18.1: {}
 
   long@5.3.2: {}
-
-  longbridge-darwin-arm64@4.3.3: {}
-
-  longbridge-darwin-x64@4.3.3:
-    optional: true
-
-  longbridge-linux-arm64-gnu@4.3.3:
-    optional: true
-
-  longbridge-linux-x64-gnu@4.3.3:
-    optional: true
-
-  longbridge-win32-x64-msvc@4.3.3:
-    optional: true
-
-  longbridge@4.3.3:
-    optionalDependencies:
-      longbridge-darwin-arm64: 4.3.3
-      longbridge-darwin-x64: 4.3.3
-      longbridge-linux-arm64-gnu: 4.3.3
-      longbridge-linux-x64-gnu: 4.3.3
-      longbridge-win32-x64-msvc: 4.3.3
 
   longest-streak@3.1.0: {}
 

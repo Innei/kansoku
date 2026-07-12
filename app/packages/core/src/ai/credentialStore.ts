@@ -11,6 +11,7 @@ const CODEX_PROVIDER = "openai-codex";
 
 export interface CredentialListEntry {
   provider: string;
+  kind: "api_key" | "oauth";
   masked: string | null;
   updatedAt: string;
   ok: boolean;
@@ -200,9 +201,20 @@ export function createCredentialStore(
           const plaintext = secretBox.decrypt(row.provider, row.secret);
           const credential = JSON.parse(plaintext) as Credential;
           const masked = credential.type === "api_key" && credential.key ? maskKey(credential.key) : null;
-          return { provider: row.provider, masked, updatedAt: row.updatedAt, ok: masked !== null };
+          const oauthOk =
+            credential.type === "oauth" &&
+            typeof credential.access === "string" &&
+            typeof credential.refresh === "string" &&
+            typeof credential.expires === "number";
+          return {
+            provider: row.provider,
+            kind: credential.type,
+            masked,
+            updatedAt: row.updatedAt,
+            ok: credential.type === "api_key" ? masked !== null : oauthOk,
+          };
         } catch {
-          return { provider: row.provider, masked: null, updatedAt: row.updatedAt, ok: false };
+          return { provider: row.provider, kind: "api_key", masked: null, updatedAt: row.updatedAt, ok: false };
         }
       });
     },

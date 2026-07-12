@@ -12,7 +12,16 @@ import { RoleModelsCard } from "./RoleModelsCard";
 import { SettingsIssuesPanel } from "./SettingsIssuesPanel";
 import { SettingsStatusStrip } from "./SettingsStatusStrip";
 import { deriveSettingsViewModel } from "./settingsViewModel";
-import type { AiRoles, AiSettings, Catalog, Role, RoleSetting, UsageToday } from "./types";
+import type {
+  AiRoles,
+  AiSettings,
+  Catalog,
+  LobeHubAccount,
+  LobeHubCredits,
+  Role,
+  RoleSetting,
+  UsageToday,
+} from "./types";
 
 function SettingsWorkspace({
   settings,
@@ -21,6 +30,9 @@ function SettingsWorkspace({
   usageError,
   reloadUsage,
   reloadAll,
+  lobehubAccount,
+  lobehubCredits,
+  lobehubCreditsError,
 }: {
   settings: AiSettings;
   catalog: Catalog;
@@ -28,6 +40,9 @@ function SettingsWorkspace({
   usageError: string | null;
   reloadUsage: () => void;
   reloadAll: () => void;
+  lobehubAccount: LobeHubAccount | null;
+  lobehubCredits: LobeHubCredits | null;
+  lobehubCreditsError: string | null;
 }) {
   const [roleDrafts, setRoleDrafts] = useState<AiRoles>(() => settings.roles);
   const updateRoleDraft = (role: Role | "primary", next: RoleSetting) => {
@@ -61,6 +76,9 @@ function SettingsWorkspace({
             catalog={catalog}
             usedProviderIds={usedProviderIds}
             onChanged={reloadAll}
+            lobehubAccount={lobehubAccount}
+            lobehubCredits={lobehubCredits}
+            lobehubCreditsError={lobehubCreditsError}
           />
           <SettingsIssuesPanel issues={view.issues} />
           <ExternalApiCard />
@@ -104,10 +122,21 @@ export function SettingsPage() {
     "settings.getUsageToday",
     () => client.settings.getUsageToday(),
   );
+  const { data: lobehubAccount, reload: reloadLobeHubAccount } = useQuery<LobeHubAccount>(
+    "lobehub.getAccount",
+    () => client.lobehub.getAccount(),
+  );
+  const {
+    data: lobehubCredits,
+    error: lobehubCreditsError,
+    reload: reloadLobeHubCredits,
+  } = useQuery<LobeHubCredits>("lobehub.getCredits", () => client.lobehub.getCredits());
 
   const reloadAll = () => {
     reloadSettings();
     reloadCatalog();
+    reloadLobeHubAccount();
+    reloadLobeHubCredits();
   };
 
   if (settingsError || catalogError) {
@@ -152,6 +181,9 @@ export function SettingsPage() {
         usageError={usageError}
         reloadUsage={reloadUsage}
         reloadAll={reloadAll}
+        lobehubAccount={lobehubAccount}
+        lobehubCredits={lobehubCredits}
+        lobehubCreditsError={lobehubCreditsError}
       />
     </div>
   );

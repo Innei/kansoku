@@ -149,6 +149,8 @@ pnpm start          # http://localhost:5199
 
 首次启动时，server 会把旧 `.env` 里的 `AI_*_MODEL` 和对应的 `*_API_KEY` 一次性导入数据库（导入后 `.env` 里这些行可以删掉，留着也不影响，因为已经导入过就不会再导）。
 
+LobeHub Cloud 通过 Device Flow 登录个人账户，不保存 Cloud 密码。Cloud 开发者 Client 就绪后，在 `.env` 配置 `LOBEHUB_OAUTH_CLIENT_ID`；默认连接 `https://app.lobehub.com`，开发环境可用 `LOBEHUB_CLOUD_URL` 覆盖。未配置 Client ID 时，设置页会显示“等待 Client ID”，不会复用 `lobehub-cli` 的 Client ID。
+
 **点评存哪**：SQLite（见下方「数据存哪」），SSE 实时推给打开的驾驶舱页面。
 
 **AI 花费存哪**：每次点评员/分析员跑完，token 用量和成本落一条记录进 SQLite，总览页和 `/api/overview/usage` 读这里。

@@ -1,10 +1,26 @@
 import type { CredentialsApi } from "../../contract/credentials.js";
-import { getLastCredentialError } from "../../services/credentials/credentialStatus.js";
-import { getCredentialProvider } from "../../services/credentials/registry.js";
+import { locateLongbridgeCli } from "../../services/longbridgeCli.js";
+import { readLongbridgeToken, LongbridgeTokenError } from "../../services/longbridgeToken.js";
 
 export const credentialsService: CredentialsApi = {
   async status() {
-    const auth = await getCredentialProvider().getLongbridgeAuth();
-    return { configured: auth !== null, method: auth?.kind ?? null, lastError: getLastCredentialError() };
+    let cliPath: string;
+    try {
+      cliPath = await locateLongbridgeCli();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { configured: false, method: "cli", lastError: message, state: "cli_missing" as const, cliPath: null };
+    }
+    try {
+      await readLongbridgeToken();
+      return { configured: true, method: "cli", lastError: null, state: "ready" as const, cliPath };
+    } catch (error) {
+      const state =
+        error instanceof LongbridgeTokenError && error.code === "NOT_LOGGED_IN"
+          ? ("login_required" as const)
+          : ("token_unreadable" as const);
+      const message = error instanceof Error ? error.message : String(error);
+      return { configured: false, method: "cli", lastError: message, state, cliPath };
+    }
   },
 };

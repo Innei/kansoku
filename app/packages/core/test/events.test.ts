@@ -10,10 +10,10 @@ vi.mock("../src/ai/eventFilter.js", () => ({
   filterMacroForSymbol: (...args: [string, MacroEventItem[]]) => filterMacroForSymbol(...args),
 }));
 
-const execFile = vi.fn();
+const runLongbridgeJson = vi.fn();
 
-vi.mock("node:child_process", () => ({
-  execFile: (...args: unknown[]) => execFile(...args),
+vi.mock("../src/services/longbridgeCli.js", () => ({
+  runLongbridgeJson: (...args: unknown[]) => runLongbridgeJson(...args),
 }));
 
 const { getEventRisk } = await import("../src/services/events.js");
@@ -30,6 +30,7 @@ function macroPayload(now: Date) {
             content: "CPI",
             datetime: String(Math.floor(now.getTime() / 1000) + 3600),
             data_kv: [],
+            star: 3,
           },
         ],
       },
@@ -42,9 +43,8 @@ describe("getEventRisk relevance cache", () => {
 
   beforeEach(() => {
     filterMacroForSymbol.mockClear();
-    execFile.mockImplementation((_cmd: string, args: string[], _opts: unknown, cb: (err: unknown, stdout: string) => void) => {
-      const payload = args.includes("macrodata") ? macroPayload(now) : { list: [] };
-      cb(null, JSON.stringify(payload));
+    runLongbridgeJson.mockImplementation((args: string[]) => {
+      return Promise.resolve(args.includes("macrodata") ? macroPayload(now) : { list: [] });
     });
   });
 

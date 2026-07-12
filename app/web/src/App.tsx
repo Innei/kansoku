@@ -34,7 +34,7 @@ export function App() {
   }
 
   if (gate.status === "onboarding" && gate.bridge) {
-    return <Onboarding bridge={gate.bridge} onDone={gate.recheck} onSkip={gate.skip} />;
+    return <Onboarding status={gate.details} onRecheck={gate.recheck} />;
   }
 
   if (isDesktopRealtime()) {
