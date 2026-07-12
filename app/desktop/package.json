@@ -19,7 +19,6 @@
     "package": "tsdown && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64"
   },
   "dependencies": {
-    "@hono/node-server": "1.19.14",
     "better-sqlite3": "^12.11.1",
     "electron-ipc-decorator": "^1.0.1",
     "electron-window-state": "5.0.3"

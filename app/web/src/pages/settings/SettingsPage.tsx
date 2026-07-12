@@ -6,7 +6,6 @@ import { navigate } from "../../router";
 import { Button, ErrorBox } from "../../ui";
 import { useTitle } from "../../useTitle";
 import { CredentialsSettingsCard } from "./CredentialsSettingsCard";
-import { ExternalApiCard } from "./ExternalApiCard";
 import { ProviderCredentialsCard } from "./ProviderCredentialsCard";
 import { RoleModelsCard } from "./RoleModelsCard";
 import { SettingsIssuesPanel } from "./SettingsIssuesPanel";
@@ -81,7 +80,6 @@ function SettingsWorkspace({
             lobehubCreditsError={lobehubCreditsError}
           />
           <SettingsIssuesPanel issues={view.issues} />
-          <ExternalApiCard />
         </div>
       </div>
       <div className="settings-footer-note">

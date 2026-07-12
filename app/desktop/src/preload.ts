@@ -6,9 +6,8 @@ import { TABS_COMMAND_CHANNEL, type TabsCommand } from "./tabs/channels.js";
 // main.ts boots one embedded kernel regardless of dev or packaged mode, so
 // both the packaged app:// page and the dev renderer (ELECTRON_DEV=1, served
 // from the Vite dev server at DEV_WEB_URL) talk to that same kernel over this
-// same privileged IPC surface (MessagePort kernel bridge, rpc, credentials,
-// external API controls) — there is no longer a second, divergent kernel to
-// guard against.
+// same privileged IPC surface (MessagePort kernel bridge, rpc, credentials)
+// — there is no longer a second, divergent kernel to guard against.
 const isPrivilegedOrigin =
   location.protocol === "app:" ||
   (process.env.ELECTRON_DEV === "1" && location.origin === "http://localhost:5199");
@@ -46,13 +45,6 @@ if (isPrivilegedOrigin) {
 
   desktopApi.credentials = {
     get: () => ipcRenderer.invoke(CREDENTIALS_CHANNELS.get),
-  };
-
-  desktopApi.externalApi = {
-    getState: () => ipcRenderer.invoke("desktop:external-api:get-state"),
-    enable: () => ipcRenderer.invoke("desktop:external-api:enable"),
-    disable: () => ipcRenderer.invoke("desktop:external-api:disable"),
-    resetToken: () => ipcRenderer.invoke("desktop:external-api:reset-token"),
   };
 
   desktopApi.onboarding = {
