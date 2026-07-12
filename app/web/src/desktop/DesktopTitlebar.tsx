@@ -1,6 +1,6 @@
 import { ChartCandlestick, Circle, House, Plus, Settings, TrendingUp, X } from "lucide-react";
 import { openNewChartDialog } from "../newChart/NewChartDialog";
-import { showContextMenu, type ContextMenuItem } from "../ui";
+import { ScrollArea, showContextMenu, type ContextMenuItem } from "../ui";
 import { tabKind, type TabState } from "./tabsStore";
 import type { TabsController } from "./tabsController";
 
@@ -84,7 +84,12 @@ export function DesktopTitlebar({ controller }: { controller: TabsController }) 
   return (
     <div className="desktop-titlebar">
       <div className="desktop-titlebar-traffic-spacer" />
-      <div className="desktop-tabstrip">
+      <ScrollArea
+        className="desktop-tabstrip"
+        viewportClassName="desktop-tabstrip-viewport"
+        contentClassName="desktop-tabstrip-content"
+        orientation="horizontal"
+      >
         {snapshot.tabs.map((tab, index) => (
           <Tab
             key={tab.id}
@@ -99,7 +104,7 @@ export function DesktopTitlebar({ controller }: { controller: TabsController }) 
         <button type="button" className="desktop-tab-new" aria-label="新建标签页" onClick={openHomeTab}>
           <Plus size={13} />
         </button>
-      </div>
+      </ScrollArea>
       <div className="desktop-titlebar-actions">
         <button className="global-new-chart" type="button" onClick={openNewChartDialog}>
           <ChartCandlestick size={16} />
