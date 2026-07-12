@@ -14,7 +14,7 @@
 
 去 [Releases](https://github.com/Innei/kansoku/releases) 下载最新 `desktop-v*` 版本的 `Kansoku-x.y.z-arm64.dmg`（macOS · Apple Silicon），拖进「应用程序」即可。应用内置 Sparkle 自动更新（EdDSA 签名 + 增量包），装一次就不用再回来手动下载。
 
-前置依赖：本机安装并登录 [longbridge CLI](https://longportapp.github.io/openapi/)（行情和账户数据都走它）。应用当前没有付费开发者签名，首次打开需要右键 →「打开」，详见 [`app/desktop/README.md`](./app/desktop/README.md)。
+前置依赖：本机安装并登录 [longbridge CLI](https://open.longbridge.com/docs/cli/install)（行情和账户数据都走它）。应用当前没有付费开发者签名，首次打开需要右键 →「打开」，详见 [`app/desktop/README.md`](./app/desktop/README.md)。
 
 首次启动有引导：连上长桥数据，再选一个 AI 接入方式（本机 codex 登录态 / LobeHub Cloud / 自带 API key），也可以先跳过。
 
