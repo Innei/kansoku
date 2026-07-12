@@ -1,7 +1,10 @@
 appId: dev.innei.trade-charts
 productName: TradeCharts
+# Brand asset: app/web/public/brand/kansoku-icon.svg — rebuild with scripts/generate-icon.sh
+icon: build/icon.icns
 directories:
   output: release
+  buildResources: build
 afterPack: scripts/afterPack.cjs
 files:
   - dist-main/**
@@ -19,9 +22,9 @@ extraFiles:
     to: Frameworks/Sparkle.framework
 asarUnpack:
   - "**/node_modules/better-sqlite3/**"
-  - "**/node_modules/longbridge*/**"
   - "**/native/sparkle-bridge/build/**"
 mac:
+  icon: build/icon.icns
   target:
     - target: dmg
       arch: [arm64]

@@ -1,15 +1,19 @@
-import { QuoteContext, SubType, TradeContext, TradeSession } from "longbridge";
-import type { Config, PushQuote, PushQuoteEvent, PushCandlestickEvent } from "longbridge";
 import type { QuoteCell } from "../../../../../shared/types.js";
-import { getCredentialProvider } from "../credentials/registry.js";
-import { CandlestickLedger, periodToCandlePeriod, type CandleBar, type CandlePeriod } from "./candlestickLedger.js";
-import { resolveLongbridgeConfig } from "./longbridgeConfig.js";
+import { getProvider } from "./registry.js";
+import { CandleAggregator, type CandleBar, type CandlePeriod } from "./candleAggregator.js";
+import {
+  SUB_TYPE_QUOTE,
+  SUB_TYPE_TRADE,
+  TRADE_SESSION_OVERNIGHT,
+  TRADE_SESSION_POST,
+  TRADE_SESSION_PRE,
+  type ProtocolQuote,
+} from "./longbridgeProtocol.js";
+import { LongbridgeQuoteSocket } from "./longbridgeSocket.js";
 
 export type { CandleBar, CandlePeriod };
 
 const PREV_CLOSE_TTL_MS = 30 * 60_000;
-const RECONNECT_BASE_MS = 1_000;
-const RECONNECT_MAX_MS = 60_000;
 
 type PrevCloseCache = {
   regular: number;
@@ -20,229 +24,99 @@ type PrevCloseCache = {
 };
 
 type StreamListener = (cell: QuoteCell) => void;
+type CandleListener = (bar: CandleBar) => void;
 
-function sessionLabel(s: TradeSession): string {
-  switch (s) {
-    case TradeSession.Pre:
-      return "盘前";
-    case TradeSession.Post:
-      return "盘后";
-    case TradeSession.Overnight:
-      return "隔夜";
-    default:
-      return "日盘";
-  }
+function sessionLabel(session: number): string {
+  if (session === TRADE_SESSION_PRE) return "盘前";
+  if (session === TRADE_SESSION_POST) return "盘后";
+  if (session === TRADE_SESSION_OVERNIGHT) return "隔夜";
+  return "日盘";
 }
 
 function pctOf(last: number, prev: number): number {
   return prev ? (last / prev - 1) * 100 : 0;
 }
 
-class LongbridgeStream {
-  private ctx: QuoteContext | null = null;
-  private connectPromise: Promise<QuoteContext> | null = null;
-  private reconnectAttempt = 0;
+function candleKey(symbol: string, period: CandlePeriod): string {
+  return `${symbol}\0${period}`;
+}
 
-  private tradeCtx: TradeContext | null = null;
-  private tradeConnectPromise: Promise<TradeContext> | null = null;
+function extendedLast(value: { last?: string; prev_close?: string } | undefined, fallback: number): number {
+  return value?.prev_close ? Number(value.prev_close) : fallback;
+}
 
+export interface LongbridgeStreamDeps {
+  socket?: LongbridgeQuoteSocket;
+}
+
+export class LongbridgeStream {
+  private readonly socket: LongbridgeQuoteSocket;
+  private readonly aggregator: CandleAggregator;
   private snapshots = new Map<string, QuoteCell>();
   private prevCloseCache = new Map<string, PrevCloseCache>();
   private lastRegular = new Map<string, { last: number; pct: number }>();
-  private refCounts = new Map<string, number>();
-  private subscribed = new Set<string>();
+  private quoteRefs = new Map<string, number>();
   private listeners = new Set<StreamListener>();
+  private candleRefs = new Map<string, number>();
+  private candleListeners = new Map<string, Set<CandleListener>>();
   private prevCloseTimer: ReturnType<typeof setInterval> | null = null;
-  private candlestickLedger = new CandlestickLedger(() => this.connect());
 
-  constructor() {
-    // Binds to the provider INSTANCE active right now, not "whatever the
-    // registry holds later" — swapping in a new provider object via
-    // initCredentialProvider() after this point orphans this subscription.
-    // Hosts that need runtime credential updates must keep one long-lived
-    // provider and notify through it (its own onChange callback), not
-    // replace the provider object.
-    getCredentialProvider().onChange(() => this.resetClients());
+  constructor(deps: LongbridgeStreamDeps = {}) {
+    this.socket = deps.socket ?? new LongbridgeQuoteSocket();
+    this.aggregator = new CandleAggregator((bar) => this.dispatchCandle(bar));
+    this.socket.onQuote((quote) => {
+      this.handleQuotePush(quote);
+      this.aggregator.handleQuote(quote);
+    });
+    this.socket.onTrade((trade) => this.aggregator.handleTrades(trade));
   }
 
-  private buildConfig(): Promise<Config> {
-    return resolveLongbridgeConfig();
-  }
-
-  private resetClients(): void {
-    this.ctx = null;
-    this.connectPromise = null;
-    this.tradeCtx = null;
-    this.tradeConnectPromise = null;
-  }
-
-  private async connect(): Promise<QuoteContext> {
-    if (this.ctx) return this.ctx;
-    if (this.connectPromise) return this.connectPromise;
-    this.connectPromise = (async () => {
-      const config = await this.buildConfig();
-      const ctx = await QuoteContext.new(config);
-      ctx.setOnQuote((err, event) => {
-        if (err) {
-          console.warn("[longbridge-stream] onQuote error", err.message);
-          return;
-        }
-        this.handlePush(event);
-      });
-      ctx.setOnCandlestick((err, event) => {
-        if (err) {
-          console.warn("[longbridge-stream] onCandlestick error", err.message);
-          return;
-        }
-        this.handleCandlestickPush(event);
-      });
-      this.ctx = ctx;
-      this.reconnectAttempt = 0;
-      if (!this.prevCloseTimer) {
-        this.prevCloseTimer = setInterval(() => {
-          void this.refreshPrevClose([...this.subscribed]).catch((e) => {
-            console.warn("[longbridge-stream] prev_close refresh failed", e);
-          });
-        }, PREV_CLOSE_TTL_MS);
-      }
-      if (this.subscribed.size) {
-        const syms = [...this.subscribed];
-        await ctx.subscribe(syms, [SubType.Quote]);
-        await this.refreshPrevClose(syms).catch(() => {});
-      }
-      await this.candlestickLedger.resubscribeAll();
-      return ctx;
-    })();
-    try {
-      return await this.connectPromise;
-    } catch (err) {
-      this.connectPromise = null;
-      console.warn("[longbridge-stream] connect failed:", err instanceof Error ? err.message : err);
-      this.scheduleReconnect();
-      throw err;
-    }
-  }
-
-  private scheduleReconnect(): void {
-    const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** this.reconnectAttempt);
-    this.reconnectAttempt += 1;
-    console.warn(`[longbridge-stream] reconnect in ${delay}ms`);
-    setTimeout(() => {
-      this.ctx = null;
-      void this.connect().catch(() => {});
-    }, delay);
-  }
-
-  private handlePush(event: PushQuoteEvent): void {
-    const symbol = event.symbol;
-    const data: PushQuote = event.data;
-    const session = data.tradeSession;
-    const last = data.lastDone.toNumber();
-    const prev = this.prevCloseCache.get(symbol);
-    let prevClose = 0;
-    if (prev) {
-      switch (session) {
-        case TradeSession.Pre:
-          prevClose = prev.pre || prev.regular;
-          break;
-        case TradeSession.Post:
-          prevClose = prev.post || prev.regular;
-          break;
-        case TradeSession.Overnight:
-          prevClose = prev.overnight || prev.regular;
-          break;
-        default:
-          prevClose = prev.regular;
-      }
-    }
-    const pct = pctOf(last, prevClose);
-    if (session === TradeSession.Intraday) {
-      this.lastRegular.set(symbol, { last, pct });
-    }
-    const regular = this.lastRegular.get(symbol);
+  private handleQuotePush(quote: ProtocolQuote): void {
+    if (quote.tag === 1) return;
+    const prev = this.prevCloseCache.get(quote.symbol);
+    let prevClose = prev?.regular ?? 0;
+    if (quote.tradeSession === TRADE_SESSION_PRE) prevClose = prev?.pre || prevClose;
+    else if (quote.tradeSession === TRADE_SESSION_POST) prevClose = prev?.post || prevClose;
+    else if (quote.tradeSession === TRADE_SESSION_OVERNIGHT) prevClose = prev?.overnight || prevClose;
+    const pct = pctOf(quote.lastDone, prevClose);
+    if (quote.tradeSession === 0) this.lastRegular.set(quote.symbol, { last: quote.lastDone, pct });
+    const regular = this.lastRegular.get(quote.symbol);
     const cell: QuoteCell = {
-      symbol,
-      session: sessionLabel(session),
-      last,
+      symbol: quote.symbol,
+      session: sessionLabel(quote.tradeSession),
+      last: quote.lastDone,
       pct,
-      regularLast: regular?.last ?? last,
+      regularLast: regular?.last ?? quote.lastDone,
       regularPct: regular?.pct ?? pct,
     };
-    this.snapshots.set(symbol, cell);
+    this.snapshots.set(quote.symbol, cell);
     for (const listener of this.listeners) listener(cell);
   }
 
-  private handleCandlestickPush(event: PushCandlestickEvent): void {
-    const period = periodToCandlePeriod(event.data.period);
-    if (!period) return;
-    const c = event.data.candlestick;
-    const bar: CandleBar = {
-      symbol: event.symbol,
-      period,
-      ts: c.timestamp.getTime(),
-      open: c.open.toNumber(),
-      high: c.high.toNumber(),
-      low: c.low.toNumber(),
-      close: c.close.toNumber(),
-      volume: c.volume,
-      turnover: c.turnover.toNumber(),
-    };
-    this.candlestickLedger.dispatch(event.symbol, period, bar);
-  }
-
-  subscribeCandlesticks(symbol: string, period: CandlePeriod, cb: (bar: CandleBar) => void): () => void {
-    return this.candlestickLedger.subscribe(symbol, period, cb);
-  }
-
-  async getQuoteContext(): Promise<QuoteContext> {
-    return this.connect();
-  }
-
-  async getTradeContext(): Promise<TradeContext> {
-    if (this.tradeCtx) return this.tradeCtx;
-    if (this.tradeConnectPromise) return this.tradeConnectPromise;
-    this.tradeConnectPromise = (async () => {
-      const config = await this.buildConfig();
-      const ctx = await TradeContext.new(config);
-      this.tradeCtx = ctx;
-      return ctx;
-    })();
-    try {
-      return await this.tradeConnectPromise;
-    } catch (err) {
-      this.tradeConnectPromise = null;
-      console.warn("[longbridge-stream] trade connect failed:", err instanceof Error ? err.message : err);
-      throw err;
-    }
-  }
-
-  private async refreshPrevClose(symbols: string[]): Promise<void> {
-    if (!symbols.length || !this.ctx) return;
-    const rows = await this.ctx.quote(symbols);
+  private async refreshSnapshots(symbols: string[]): Promise<void> {
+    if (!symbols.length) return;
+    const rows = await getProvider().getQuotes(symbols);
     const now = Date.now();
     for (const row of rows) {
-      const regular = row.prevClose.toNumber();
-      const cached: PrevCloseCache = {
+      const regular = Number(row.prev_close);
+      const last = Number(row.last);
+      this.prevCloseCache.set(row.symbol, {
         regular,
-        pre: row.preMarketQuote?.prevClose.toNumber() ?? regular,
-        post: row.postMarketQuote?.prevClose.toNumber() ?? regular,
-        overnight: row.overnightQuote?.prevClose.toNumber() ?? regular,
+        pre: extendedLast(row.pre_market, regular),
+        post: extendedLast(row.post_market, regular),
+        overnight: extendedLast(row.overnight, regular),
         fetchedAt: now,
-      };
-      this.prevCloseCache.set(row.symbol, cached);
-      const last = row.lastDone.toNumber();
-      if (!this.lastRegular.has(row.symbol)) {
-        this.lastRegular.set(row.symbol, { last, pct: pctOf(last, regular) });
-      }
+      });
+      const regularCell = { last, pct: pctOf(last, regular) };
+      this.lastRegular.set(row.symbol, regularCell);
       if (!this.snapshots.has(row.symbol)) {
-        const reg = this.lastRegular.get(row.symbol)!;
         this.snapshots.set(row.symbol, {
           symbol: row.symbol,
           session: "日盘",
           last,
-          pct: pctOf(last, regular),
-          regularLast: reg.last,
-          regularPct: reg.pct,
+          pct: regularCell.pct,
+          regularLast: last,
+          regularPct: regularCell.pct,
         });
       }
     }
@@ -250,47 +124,99 @@ class LongbridgeStream {
 
   async retain(symbols: string[]): Promise<void> {
     const fresh: string[] = [];
-    for (const s of symbols) {
-      const n = (this.refCounts.get(s) ?? 0) + 1;
-      this.refCounts.set(s, n);
-      if (!this.subscribed.has(s)) fresh.push(s);
+    for (const symbol of symbols) {
+      const count = (this.quoteRefs.get(symbol) ?? 0) + 1;
+      this.quoteRefs.set(symbol, count);
+      if (count === 1) fresh.push(symbol);
     }
     if (!fresh.length) return;
-    for (const s of fresh) this.subscribed.add(s);
-    const ctx = await this.connect();
-    await ctx.subscribe(fresh, [SubType.Quote]);
-    await this.refreshPrevClose(fresh);
+    await Promise.all([this.socket.subscribe(fresh, [SUB_TYPE_QUOTE]), this.refreshSnapshots(fresh)]);
+    if (!this.prevCloseTimer) {
+      this.prevCloseTimer = setInterval(() => void this.refreshSnapshots([...this.quoteRefs.keys()]).catch(() => {}), PREV_CLOSE_TTL_MS);
+    }
   }
 
   async release(symbols: string[]): Promise<void> {
     const drop: string[] = [];
-    for (const s of symbols) {
-      const n = (this.refCounts.get(s) ?? 0) - 1;
-      if (n <= 0) {
-        this.refCounts.delete(s);
-        if (this.subscribed.delete(s)) drop.push(s);
+    for (const symbol of symbols) {
+      const count = (this.quoteRefs.get(symbol) ?? 0) - 1;
+      if (count <= 0) {
+        this.quoteRefs.delete(symbol);
+        if (!this.hasCandleForSymbol(symbol)) drop.push(symbol);
       } else {
-        this.refCounts.set(s, n);
+        this.quoteRefs.set(symbol, count);
       }
     }
-    if (!drop.length || !this.ctx) return;
-    try {
-      await this.ctx.unsubscribe(drop, [SubType.Quote]);
-    } catch (err) {
-      console.warn("[longbridge-stream] unsubscribe failed", err);
+    if (drop.length) await this.socket.unsubscribe(drop, [SUB_TYPE_QUOTE]);
+    for (const symbol of drop) {
+      this.snapshots.delete(symbol);
+      this.prevCloseCache.delete(symbol);
+      this.lastRegular.delete(symbol);
     }
-    for (const s of drop) {
-      this.snapshots.delete(s);
-      this.prevCloseCache.delete(s);
-      this.lastRegular.delete(s);
+    if (this.quoteRefs.size === 0 && this.prevCloseTimer) {
+      clearInterval(this.prevCloseTimer);
+      this.prevCloseTimer = null;
+    }
+  }
+
+  subscribeCandlesticks(symbol: string, period: CandlePeriod, cb: CandleListener): () => void {
+    const key = candleKey(symbol, period);
+    const count = (this.candleRefs.get(key) ?? 0) + 1;
+    this.candleRefs.set(key, count);
+    const listeners = this.candleListeners.get(key) ?? new Set<CandleListener>();
+    listeners.add(cb);
+    this.candleListeners.set(key, listeners);
+    if (count === 1) void this.activateCandle(symbol, period);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      listeners.delete(cb);
+      const next = (this.candleRefs.get(key) ?? 0) - 1;
+      if (next <= 0) {
+        this.candleRefs.delete(key);
+        this.candleListeners.delete(key);
+        this.aggregator.remove(symbol, period);
+        if (!this.hasCandleForSymbol(symbol)) {
+          const types = this.quoteRefs.has(symbol) ? [SUB_TYPE_TRADE] : [SUB_TYPE_QUOTE, SUB_TYPE_TRADE];
+          void this.socket.unsubscribe([symbol], types).catch(() => {});
+        }
+      } else {
+        this.candleRefs.set(key, next);
+      }
+    };
+  }
+
+  private async activateCandle(symbol: string, period: CandlePeriod): Promise<void> {
+    try {
+      const cliPeriod = period === "60m" ? "1h" : period;
+      const rows = await getProvider().getKline(symbol, cliPeriod, 2, "all");
+      const last = rows[rows.length - 1];
+      if (last) this.aggregator.seed(symbol, period, last);
+      await this.socket.subscribe([symbol], [SUB_TYPE_QUOTE, SUB_TYPE_TRADE]);
+    } catch (error) {
+      console.warn("[longbridge-stream] candlestick subscribe failed", symbol, period, error);
+    }
+  }
+
+  private hasCandleForSymbol(symbol: string): boolean {
+    for (const key of this.candleRefs.keys()) if (key.startsWith(`${symbol}\0`)) return true;
+    return false;
+  }
+
+  private dispatchCandle(bar: CandleBar): void {
+    for (const listener of this.candleListeners.get(candleKey(bar.symbol, bar.period)) ?? []) {
+      try {
+        listener(bar);
+      } catch (error) {
+        console.warn("[longbridge-stream] candlestick listener failed", error);
+      }
     }
   }
 
   onUpdate(listener: StreamListener): () => void {
     this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return () => this.listeners.delete(listener);
   }
 
   getSnapshot(symbol: string): QuoteCell | undefined {
@@ -298,12 +224,10 @@ class LongbridgeStream {
   }
 
   getSnapshots(symbols: string[]): QuoteCell[] {
-    const out: QuoteCell[] = [];
-    for (const s of symbols) {
-      const cell = this.snapshots.get(s);
-      if (cell) out.push(cell);
-    }
-    return out;
+    return symbols.flatMap((symbol) => {
+      const snapshot = this.snapshots.get(symbol);
+      return snapshot ? [snapshot] : [];
+    });
   }
 }
 
@@ -314,4 +238,3 @@ export function getLongbridgeStream(): LongbridgeStream {
   return instance;
 }
 
-export { LongbridgeStream };

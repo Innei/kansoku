@@ -13,14 +13,10 @@ import { createAppMenuManager } from "./menu/appMenuManager.js";
 import { createServices } from "electron-ipc-decorator";
 import windowStateKeeper from "electron-window-state";
 import { createCredentialsBridgeHandlers, registerCredentialsIpc } from "./credentialsBridge.js";
-import { testLongbridgeCredentials } from "./credentialsTest.js";
-import { createCredentialStore } from "./credentialStore.js";
 import { buildImportManifest, copyImportManifest, validateImportSource } from "./dataImport.js";
-import { createDesktopCredentialProvider, selectCredentialProvider } from "./desktopCredentialProvider.js";
 import { createDesktopSecretBox } from "./desktopSecretBox.js";
 import { createExternalApiController, type ExternalApiController } from "./externalApi.js";
 import { isAllowedNavigationUrl, isExternalHttpUrl } from "./navigationGuard.js";
-import { DEFAULT_LONGBRIDGE_OAUTH_CLIENT_ID, performOAuthLogin } from "./oauthLogin.js";
 import { registerAppProtocolHandler, registerAppScheme } from "./protocolHost.js";
 import { resolveRepoRoot } from "./repoRoot.js";
 import { TABS_COMMAND_CHANNEL, type TabsCommand } from "./tabsChannels.js";
@@ -48,22 +44,7 @@ async function bootKernel() {
   const { initServerRuntime } = await import("../../server/src/runtimeInit.js");
   const { createKernel } = await import("../../server/src/bootstrap.js");
   const { attachRealtimeBridge } = await import("./realtimeBridge.js");
-  const { envCredentialProvider } = await import("../../packages/core/src/services/credentials/envCredentialProvider.js");
   const { CHART_DATA_DIR } = await import("../../packages/core/src/env.js");
-
-  const credentialStore = createCredentialStore({
-    safeStorage,
-    filePath: join(app.getPath("userData"), "credentials.json"),
-  });
-  // One long-lived provider instance, created once and never replaced — see
-  // the invariant documented on LongbridgeStream's constructor. set()/clear()
-  // notify runtime consumers through this same instance's onChange.
-  const desktopProvider = createDesktopCredentialProvider(credentialStore);
-  const credentialProvider = selectCredentialProvider({
-    isDev: IS_DEV,
-    desktopProvider,
-    envProvider: envCredentialProvider,
-  });
 
   // Dev keeps the pre-P3 plaintext keyfile so ELECTRON_DEV workflows are
   // unaffected; packaged builds move the AI master key into safeStorage.
@@ -76,7 +57,6 @@ async function bootKernel() {
       });
 
   initServerRuntime({
-    credentialProvider,
     secretBox,
     openAuthUrl: (url) => {
       shell.openExternal(url).catch(() => {});
@@ -85,23 +65,7 @@ async function bootKernel() {
   const kernel = await createKernel();
   const apiApp = kernel.app.getInstance();
   attachRealtimeBridge();
-  registerCredentialsIpc(
-    ipcMain,
-    createCredentialsBridgeHandlers({
-      provider: desktopProvider,
-      testCredentials: testLongbridgeCredentials,
-      oauthLogin: async () => {
-        const result = await performOAuthLogin(DEFAULT_LONGBRIDGE_OAUTH_CLIENT_ID, {
-          openUrl: (url) => {
-            shell.openExternal(url).catch(() => {});
-          },
-        });
-        if (!result.ok) return result;
-        const persisted = desktopProvider.setOAuth(DEFAULT_LONGBRIDGE_OAUTH_CLIENT_ID);
-        return persisted.ok ? result : persisted;
-      },
-    }),
-  );
+  registerCredentialsIpc(ipcMain, createCredentialsBridgeHandlers());
 
   const health = await apiApp.fetch(new Request("http://localhost/api/health"));
   console.log(`[desktop] kernel self-test /api/health -> ${health.status}`, await health.text());

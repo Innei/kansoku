@@ -4,6 +4,8 @@ export interface CredentialsStatus {
   configured: boolean;
   method: string | null;
   lastError: string | null;
+  state: "ready" | "cli_missing" | "login_required" | "token_unreadable";
+  cliPath: string | null;
 }
 
 export interface CredentialsApi {

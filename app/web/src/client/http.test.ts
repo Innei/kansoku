@@ -47,6 +47,18 @@ describe("createHttpClient", () => {
     expect(JSON.parse(init?.body as string)).toEqual({ type: "sepa", symbol: "MRVL.US" });
   });
 
+  it("routes LobeHub provider operations outside the settings namespace", async () => {
+    const fetchMock = vi.fn(async (_url?: string, _init?: RequestInit) =>
+      jsonResponse({ ok: true, data: { status: "disconnected" } }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createHttpClient(allRoutes);
+
+    await client.lobehub.getAccount();
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/ai/providers/lobehub/account");
+  });
+
   it("reassembles {data, meta} for withMeta routes", async () => {
     const fetchMock = vi.fn(async (_url?: string, _init?: RequestInit) => jsonResponse({ ok: true, data: { id: "x" }, meta: { created: true } }));
     vi.stubGlobal("fetch", fetchMock);

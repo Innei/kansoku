@@ -8,6 +8,9 @@ import type { Db } from "../db/index.js";
 import { aiRoleSettings, appMeta, providerCredentials } from "../db/schema.js";
 import { CHART_DATA_DIR } from "../env.js";
 import { type AppCredentialStore, createCredentialStore } from "./credentialStore.js";
+import { WebApiLobeHubCloudGateway } from "./lobehub/gateway.js";
+import { createLobeHubProvider } from "./lobehub/provider.js";
+import type { LobeHubCloudGateway } from "./lobehub/types.js";
 import { initModelsRuntime, SINGLE_KEY_PROVIDERS } from "./modelsRuntime.js";
 import { parseModelRef } from "./models.js";
 import { createSecretBox, type SecretBox } from "./secretBox.js";
@@ -16,6 +19,7 @@ import { type AiTaskRole, createSettingsStore, setActiveSettingsStore } from "./
 export interface AiRuntime {
   secretBox: SecretBox;
   credentials: AppCredentialStore;
+  lobehub: LobeHubCloudGateway;
 }
 
 let runtime: AiRuntime | null = null;
@@ -151,7 +155,7 @@ export function runPrimaryModelMigration(db: Db): void {
 
 export function initAiSettings(
   db: Db,
-  opts?: { env?: NodeJS.ProcessEnv; secretBox?: SecretBox; codexAuthPath?: string },
+  opts?: { env?: NodeJS.ProcessEnv; secretBox?: SecretBox; codexAuthPath?: string; fetch?: typeof globalThis.fetch },
 ): { models: MutableModels } {
   const box = opts?.secretBox ?? createSecretBox(join(CHART_DATA_DIR, "ai-secret.key"));
   runEnvImport(db, box, opts?.env ?? process.env);
@@ -159,6 +163,19 @@ export function initAiSettings(
   setActiveSettingsStore(createSettingsStore(db));
   const credentials = createCredentialStore(db, box, { codexAuthPath: opts?.codexAuthPath });
   const models = initModelsRuntime(credentials);
-  runtime = { secretBox: box, credentials };
+  const env = opts?.env ?? process.env;
+  const lobehub = new WebApiLobeHubCloudGateway({
+    baseUrl: env.LOBEHUB_CLOUD_URL || "https://app.lobehub.com",
+    clientId: env.LOBEHUB_OAUTH_CLIENT_ID,
+    credentials,
+    fetch: opts?.fetch,
+  });
+  models.setProvider(createLobeHubProvider(lobehub));
+  if (opts?.fetch || process.env.NODE_ENV !== "test") {
+    void models.refresh("lobehub").catch((error) => {
+      console.warn(`initAiSettings: failed to load LobeHub Cloud models: ${String(error)}`);
+    });
+  }
+  runtime = { secretBox: box, credentials, lobehub };
   return { models };
 }

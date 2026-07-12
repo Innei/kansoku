@@ -1,18 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "../apiHooks";
 import { client } from "../client";
 import { getDesktopCredentialsBridge, type CredentialsGetResult } from "../pages/settings/desktopCredentials";
-import { clearRestricted, markRestricted } from "../restrictedMode";
+import { clearRestricted } from "../restrictedMode";
 import { computeGateStatus, type GateStatus } from "./gateStatus";
 
 export function useCredentialsGate(): {
   status: GateStatus;
   bridge: ReturnType<typeof getDesktopCredentialsBridge>;
-  skip: () => void;
+  details: CredentialsGetResult | null;
   recheck: () => void;
 } {
   const bridge = getDesktopCredentialsBridge();
-  const [skipped, setSkipped] = useState(false);
   const { data, loading, reload } = useQuery<CredentialsGetResult>(
     bridge ? "credentials.status" : null,
     () => client.credentials.status() as Promise<CredentialsGetResult>,
@@ -26,13 +25,7 @@ export function useCredentialsGate(): {
     hasDesktopBridge: bridge !== null,
     statusLoading: loading,
     configured: data ? data.configured : null,
-    skipped,
   });
 
-  const skip = () => {
-    markRestricted();
-    setSkipped(true);
-  };
-
-  return { status, bridge, skip, recheck: reload };
+  return { status, bridge, details: data ?? null, recheck: reload };
 }

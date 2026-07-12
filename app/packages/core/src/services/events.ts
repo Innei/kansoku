@@ -1,10 +1,9 @@
-import { execFile } from "node:child_process";
 import type { IntradayEventRisk, MacroEventItem } from "../../../../shared/types.js";
 import { filterMacroForSymbol } from "../ai/eventFilter.js";
 import { activeSettingsRevision } from "../ai/settingsStore.js";
+import { runLongbridgeJson } from "./longbridgeCli.js";
 import { easternDate } from "./session.js";
 
-const CLI_TIMEOUT_MS = 20_000;
 const EARNINGS_TTL_MS = 6 * 60 * 60_000;
 const MACRO_TTL_MS = 60 * 60_000;
 const MACRO_WINDOW_DAYS = 3;
@@ -15,37 +14,23 @@ let macroCache: { at: number; val: MacroEventItem[] } | null = null;
 const relevanceCache = new Map<string, { at: number; fingerprint: string; val: MacroEventItem[] }>();
 
 interface CalendarInfo {
+  counter_id?: string;
   content?: string;
   datetime?: string;
-  data_kv?: { type?: string; value?: string }[];
+  star?: number;
+  data_kv?: Array<{ type?: string; value?: string }>;
 }
 
 interface CalendarPayload {
-  list?: { date?: string; infos?: CalendarInfo[] }[];
+  list?: Array<{ date?: string; infos?: CalendarInfo[] }>;
 }
 
 function execCalendar(args: string[]): Promise<CalendarPayload> {
-  return new Promise((resolve, reject) => {
-    execFile(
-      "longbridge",
-      ["finance-calendar", ...args, "--format", "json"],
-      { maxBuffer: 32 * 1024 * 1024, timeout: CLI_TIMEOUT_MS },
-      (err, stdout) => {
-        if (err) reject(err);
-        else {
-          try {
-            resolve(JSON.parse(stdout) as CalendarPayload);
-          } catch (e) {
-            reject(e);
-          }
-        }
-      },
-    );
-  });
+  return runLongbridgeJson<CalendarPayload>(["finance-calendar", ...args]);
 }
 
 function kv(info: CalendarInfo, type: string): string | null {
-  const v = info.data_kv?.find((d) => d.type === type)?.value;
+  const v = info.data_kv?.find((item) => item.type === type)?.value;
   return v && v !== "--" ? v : null;
 }
 
@@ -54,11 +39,11 @@ async function nextEarnings(symbol: string, now: Date): Promise<IntradayEventRis
   if (hit && Date.now() - hit.at < EARNINGS_TTL_MS) return hit.val;
   let val: IntradayEventRisk["next_earnings"] = null;
   try {
-    const payload = await execCalendar(["report", "--symbol", symbol]);
     const today = easternDate(now);
+    const payload = await execCalendar(["report", "--symbol", symbol]);
     for (const day of payload.list ?? []) {
       if (!day.date || day.date < today) continue;
-      const info = day.infos?.[0];
+      const info = day.infos?.find((item) => !item.counter_id || item.counter_id === symbol) ?? day.infos?.[0];
       if (info?.content) {
         val = { date: day.date, title: info.content };
         break;
@@ -81,7 +66,7 @@ async function macroReleases(now: Date): Promise<MacroEventItem[]> {
     for (const day of payload.list ?? []) {
       for (const info of day.infos ?? []) {
         const epoch = Number(info.datetime);
-        if (!info.content || !Number.isFinite(epoch)) continue;
+        if (!info.content || !Number.isFinite(epoch) || (info.star ?? 0) < 3) continue;
         val.push({
           ts: new Date(epoch * 1000).toISOString(),
           title: info.content,

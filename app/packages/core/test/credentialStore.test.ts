@@ -80,7 +80,9 @@ describe("credentialStore", () => {
     errorSpy.mockRestore();
 
     const entries = store.list();
-    expect(entries).toEqual([{ provider: "mistral", masked: null, ok: false, updatedAt: expect.any(String) }]);
+    expect(entries).toEqual([
+      { provider: "mistral", kind: "api_key", masked: null, ok: false, updatedAt: expect.any(String) },
+    ]);
   });
 
   it("serializes concurrent modify calls per provider so the second sees the first's write", async () => {

@@ -1137,6 +1137,41 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   overflow-wrap: anywhere; margin-top: 3px; color: var(--text-muted);
   font-family: var(--font-mono); font-size: var(--fs-xs);
 }
+
+.settings-device-login {
+  display: grid;
+  gap: 14px;
+  min-width: min(420px, 80vw);
+}
+
+.settings-device-login p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.settings-device-code {
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-align: center;
+  user-select: all;
+}
+
+.settings-lobehub-credits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
 .settings-provider-actions, .settings-provider-editor {
   display: flex; align-items: center; gap: 6px; margin-top: 8px;
 }
@@ -1225,6 +1260,7 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .onboarding-card h1 { font-size: var(--fs-xl); font-weight: 600; color: var(--text-primary); margin-bottom: 10px; }
 .onboarding-explainer { font-size: var(--fs-base); color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
 .onboarding-explainer a { color: var(--accent); }
+.onboarding-cli-command { margin: 0 0 14px; padding: 12px 14px; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-element); color: var(--text-primary); font-size: var(--fs-sm); }
 .onboarding-skip-row { display: flex; justify-content: center; margin-top: 14px; }
 
 .restricted-banner {

@@ -4,7 +4,15 @@ import { errorMessage } from "../../api";
 import { client } from "../../client";
 import { Button, Select, Spinner } from "../../ui";
 import { RoleModeControl } from "./RoleModeControl";
-import { defaultCustom, firstModelId, providerKeyReady, providerLabel, saveRole, selectableProviders } from "./roleShared";
+import {
+  defaultCustom,
+  defaultThinkingLevel,
+  firstModelId,
+  providerKeyReady,
+  providerLabel,
+  saveRole,
+  selectableProviders,
+} from "./roleShared";
 import type { RoleView } from "./settingsViewModel";
 import {
   ROLE_LABEL,
@@ -69,11 +77,22 @@ export function RoleRow({
   };
 
   const setProvider = (provider: string) => {
-    push({ mode: "custom", provider, modelId: firstModelId(catalog, provider), thinkingLevel: "off", stale: false });
+    const modelId = firstModelId(catalog, provider);
+    push({
+      mode: "custom",
+      provider,
+      modelId,
+      thinkingLevel: defaultThinkingLevel(catalog, provider, modelId),
+      stale: false,
+    });
   };
 
   const setModelId = (modelId: string) => {
-    push({ ...draft, modelId, thinkingLevel: "off" });
+    push({
+      ...draft,
+      modelId,
+      thinkingLevel: defaultThinkingLevel(catalog, draft.provider ?? "", modelId),
+    });
   };
 
   const setThinkingLevel = (thinkingLevel: string) => {

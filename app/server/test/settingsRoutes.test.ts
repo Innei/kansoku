@@ -249,11 +249,11 @@ describe("PUT/DELETE /ai/credentials/:provider", () => {
 });
 
 describe("GET /ai/catalog", () => {
-  it("only lists the allowlisted providers plus openai-codex", async () => {
+  it("only lists the allowlisted providers plus OAuth providers", async () => {
     const res = await get("/ai/catalog");
     expect(res.status).toBe(200);
     const ids = (await res.json()).data.providers.map((p: { id: string }) => p.id).sort();
-    const expected = [...SINGLE_KEY_PROVIDERS, "openai-codex"].sort();
+    const expected = [...SINGLE_KEY_PROVIDERS, "openai-codex", "lobehub"].sort();
     expect(ids).toEqual(expected);
   });
 
