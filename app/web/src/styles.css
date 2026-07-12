@@ -827,6 +827,19 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 }
 .global-new-chart:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--bg-hover); }
 
+.scroll-area { position: relative; min-width: 0; min-height: 0; }
+.scroll-area-viewport { width: 100%; height: 100%; outline: none; }
+.scroll-area[data-orientation="horizontal"] > .scroll-area-viewport { overflow-x: auto; overflow-y: hidden; }
+.scroll-area[data-orientation="vertical"] > .scroll-area-viewport { overflow-y: auto; overflow-x: hidden; }
+.scroll-area-scrollbar { opacity: 0; transition: opacity 0.15s ease; }
+.scroll-area-scrollbar[data-orientation="horizontal"] { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; }
+.scroll-area-scrollbar[data-orientation="vertical"] { position: absolute; top: 0; bottom: 0; right: 0; width: 3px; }
+.scroll-area-scrollbar[data-hovering], .scroll-area-scrollbar[data-scrolling] { opacity: 1; }
+.scroll-area-thumb {
+  width: var(--scroll-area-thumb-width); height: var(--scroll-area-thumb-height);
+  background: var(--border-strong); border-radius: 999px;
+}
+
 .desktop-titlebar {
   position: fixed; top: 0; left: 0; right: 0; height: 40px; z-index: 80;
   display: flex; align-items: stretch; gap: 8px;
@@ -834,17 +847,47 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   -webkit-app-region: drag;
 }
 .desktop-titlebar-traffic-spacer { flex: 0 0 78px; }
-.desktop-tabstrip {
-  flex: 1; min-width: 0; height: 100%;
-  display: flex; align-items: center; gap: 4px; padding: 0 4px; overflow-x: auto;
+.desktop-tabstrip { flex: 1; height: 100%; }
+@property --tabstrip-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --tabstrip-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+/* mask 边缘随滚动位置淡入淡出：scroll timeline 驱动，贴边一侧不遮内容 */
+@keyframes tabstrip-fade-start {
+  0% { --tabstrip-fade-start: 0px; }
+  6%, 100% { --tabstrip-fade-start: 14px; }
+}
+@keyframes tabstrip-fade-end {
+  0%, 94% { --tabstrip-fade-end: 14px; }
+  100% { --tabstrip-fade-end: 0px; }
+}
+.desktop-tabstrip-viewport {
   -webkit-app-region: drag;
-  mask-image: linear-gradient(to right, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--tabstrip-fade-start),
+    black calc(100% - var(--tabstrip-fade-end)),
+    transparent 100%
+  );
+  animation-name: tabstrip-fade-start, tabstrip-fade-end;
+  animation-timing-function: linear;
+  animation-timeline: scroll(self inline);
+}
+.desktop-tabstrip-content {
+  display: flex; align-items: center; gap: 4px; padding: 0 4px;
+  height: 100%; min-width: 100%; width: max-content;
 }
 .desktop-tab {
   position: relative;
   display: inline-flex; align-items: center; gap: 6px;
-  flex: 0 1 auto; max-width: 170px; min-width: 0;
+  flex: 0 0 auto; max-width: 170px; min-width: 0;
   padding: 0 10px; height: 28px; align-self: center;
   color: var(--text-muted); font-size: var(--fs-sm);
   background: transparent; border: none; border-radius: 6px; cursor: pointer;
@@ -873,7 +916,7 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .desktop-tab-new {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; flex: 0 0 auto; align-self: center; margin-left: 4px;
-  color: var(--text-muted); background: transparent; border: none; border-radius: var(--radius); cursor: pointer;
+  color: var(--text-muted); background: transparent; border: none; border-radius: 6px; cursor: pointer;
   -webkit-app-region: no-drag;
   transition: color 0.12s ease, background 0.12s ease;
 }
