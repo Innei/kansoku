@@ -5,6 +5,9 @@ icon: build/icon.icns
 directories:
   output: release
   buildResources: build
+electronLanguages:
+  - en
+  - zh_CN
 afterPack: scripts/afterPack.cjs
 files:
   - dist-main/**
