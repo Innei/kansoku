@@ -8,6 +8,7 @@ import { getLongbridgeStream, type CandlePeriod } from "../services/marketdata/l
 import { classifySession, isCurrentSessionId } from "../services/session.js";
 import { predictionStale } from "../services/staleness.js";
 import { loadChart } from "../services/store.js";
+import { normalizeSymbol } from "../services/symbol.utils.js";
 import { mergeCandleBar, mergeFreshBars, type PushBar } from "./candleMerge.js";
 import { createPoller, type PollerHandle } from "./poller.js";
 import { isPushFresh, pollIntervalMs } from "./pushFallback.js";
@@ -39,8 +40,13 @@ function predictionFields(doc: ChartDoc) {
   return { prediction_updated_at: doc.prediction_updated_at, prediction_stale: predictionStale(doc, new Date()) };
 }
 
+interface LatestDoc {
+  title: string;
+  input: Record<string, unknown>;
+  prediction?: { prediction_updated_at: string | undefined; prediction_stale: boolean };
+}
+
 interface CandleState {
-  id: string;
   viewCount: number | undefined;
   timeframes: Partial<Record<TimeframeKey, RawBar[]>>;
   lastPushAt: number | null;
@@ -48,6 +54,7 @@ interface CandleState {
   pushMode: boolean;
   debounceTimer: ReturnType<typeof setTimeout> | null;
   unsubs: Array<() => void>;
+  loadDoc: () => Promise<LatestDoc | null>;
 }
 
 const candleStates = new Map<string, CandleState>();
@@ -71,8 +78,8 @@ function scheduleDebouncedRebuild(key: string): void {
 // analysis snapshot plus whatever bars push/poller have merged in). Both the
 // streaming push path and the poller safety net funnel through here so the two
 // never diverge on the same series.
-async function buildFromState(state: CandleState, latest: ChartDoc): Promise<Record<string, unknown>> {
-  const latestInput = latest.input as Record<string, unknown>;
+async function buildFromState(state: CandleState, latest: LatestDoc): Promise<Record<string, unknown>> {
+  const latestInput = latest.input;
   const timeframes = state.timeframes;
   const lastM5 = timeframes.m5?.[timeframes.m5.length - 1];
   // Docs persisted before options/event support have no such input fields, and
@@ -91,32 +98,19 @@ async function buildFromState(state: CandleState, latest: ChartDoc): Promise<Rec
     event_risk: eventRisk ?? latestInput.event_risk ?? null,
   };
   const result = rebuild("intraday", input, latest.title);
-  return { built: result.built, ...predictionFields({ ...latest, built: result.built }) };
+  return latest.prediction ? { built: result.built, ...latest.prediction } : { built: result.built };
 }
 
 async function runPushRebuild(key: string): Promise<void> {
   const state = candleStates.get(key);
   const handle = chartPollers.get(key);
   if (!state || !handle) return;
-  const latest = await loadChart(state.id);
+  const latest = await state.loadDoc();
   if (!latest) return;
   handle.pushData(await buildFromState(state, latest));
 }
 
-function setupCandleState(key: string, id: string, viewCount: number | undefined, doc: ChartDoc): void {
-  if (candleStates.has(key)) return;
-  const symbol = (doc.input as Record<string, unknown>).symbol;
-  if (typeof symbol !== "string" || !symbol) return;
-  const state: CandleState = {
-    id,
-    viewCount,
-    timeframes: { ...((doc.input as Record<string, unknown>).timeframes as Partial<Record<TimeframeKey, RawBar[]>>) },
-    lastPushAt: null,
-    lastRebuildAt: 0,
-    pushMode: false,
-    debounceTimer: null,
-    unsubs: [],
-  };
+function wireCandleState(key: string, symbol: string, state: CandleState): void {
   candleStates.set(key, state);
   const stream = getLongbridgeStream();
   for (const tf of TIMEFRAME_ORDER) {
@@ -132,6 +126,42 @@ function setupCandleState(key: string, id: string, viewCount: number | undefined
     });
     state.unsubs.push(unsub);
   }
+}
+
+function setupCandleState(key: string, id: string, viewCount: number | undefined, doc: ChartDoc): void {
+  if (candleStates.has(key)) return;
+  const symbol = (doc.input as Record<string, unknown>).symbol;
+  if (typeof symbol !== "string" || !symbol) return;
+  const state: CandleState = {
+    viewCount,
+    timeframes: { ...((doc.input as Record<string, unknown>).timeframes as Partial<Record<TimeframeKey, RawBar[]>>) },
+    lastPushAt: null,
+    lastRebuildAt: 0,
+    pushMode: false,
+    debounceTimer: null,
+    unsubs: [],
+    loadDoc: async () => {
+      const fresh = await loadChart(id);
+      if (!fresh) return null;
+      return { title: fresh.title, input: fresh.input as Record<string, unknown>, prediction: predictionFields(fresh) };
+    },
+  };
+  wireCandleState(key, symbol, state);
+}
+
+function setupPreviewCandleState(key: string, symbol: string, input: Record<string, unknown>, title: string): void {
+  if (candleStates.has(key)) return;
+  const state: CandleState = {
+    viewCount: undefined,
+    timeframes: { ...(input.timeframes as Partial<Record<TimeframeKey, RawBar[]>>) },
+    lastPushAt: null,
+    lastRebuildAt: 0,
+    pushMode: false,
+    debounceTimer: null,
+    unsubs: [],
+    loadDoc: async () => ({ title, input }),
+  };
+  wireCandleState(key, symbol, state);
 }
 
 function teardownCandleState(key: string): void {
@@ -177,7 +207,7 @@ export async function subscribeChart(id: string, push: (envelope: string) => voi
               const incoming = freshTf[tf];
               if (incoming) state.timeframes[tf] = mergeFreshBars(state.timeframes[tf] ?? [], incoming);
             }
-            return await buildFromState(state, latest);
+            return await buildFromState(state, { title: latest.title, input: latest.input as Record<string, unknown>, prediction: predictionFields(latest) });
           }
         }
         return { built: result.built, ...predictionFields(latest) };
@@ -189,5 +219,48 @@ export async function subscribeChart(id: string, push: (envelope: string) => voi
     });
     chartPollers.set(key, handle);
   }
+  return handle.subscribe(push);
+}
+
+const previewInitialBuilt = new Map<string, unknown>();
+
+export async function subscribePreview(symbol: string, push: (envelope: string) => void): Promise<() => void> {
+  const normalized = normalizeSymbol(symbol);
+  const key = `preview:${normalized}`;
+
+  let handle = chartPollers.get(key);
+  if (!handle) {
+    const result = await buildChart({ type: "intraday", symbol: normalized, session: "intraday" });
+    previewInitialBuilt.set(key, result.built);
+    setupPreviewCandleState(key, normalized, result.input, result.title);
+    handle = createPoller({
+      intervalMs: () => chartIntervalMs(key),
+      task: async () => {
+        const state = candleStates.get(key);
+        if (!state) return { built: result.built };
+        const latest = await state.loadDoc();
+        if (!latest) return { built: result.built };
+        const body = refreshBody("intraday", latest.input);
+        if (body) {
+          const fresh = await buildChart(body);
+          const freshTf = (fresh.input.timeframes ?? {}) as Partial<Record<TimeframeKey, RawBar[]>>;
+          for (const tf of TIMEFRAME_ORDER) {
+            const incoming = freshTf[tf];
+            if (incoming) state.timeframes[tf] = mergeFreshBars(state.timeframes[tf] ?? [], incoming);
+          }
+        }
+        return await buildFromState(state, latest);
+      },
+      onStop: () => {
+        chartPollers.delete(key);
+        teardownCandleState(key);
+        previewInitialBuilt.delete(key);
+      },
+    });
+    chartPollers.set(key, handle);
+  }
+
+  const built = previewInitialBuilt.get(key);
+  if (built !== undefined) push(JSON.stringify({ type: "data", data: { built } }));
   return handle.subscribe(push);
 }
