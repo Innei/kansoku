@@ -1,18 +1,62 @@
 import type { IChartApiBase, ISeriesApi, Logical, Time } from "lightweight-charts";
-import type { AnnotationKind, AnnotationPoint } from "../../../../shared/types";
-import { fibLevels, measureStats, timeToLogical } from "../../../../shared/drawings";
+import type { Annotation, AnnotationKind, AnnotationPoint } from "../../../../shared/types";
+import { ANNOTATION_PALETTE, fibLevels, measureStats, timeToLogical } from "../../../../shared/drawings";
 import { theme } from "../../theme";
-import type { DrawingsState, MeasureShape } from "./drawingsPrimitive";
+import type { DrawingsState, HoverLabel, MeasureShape } from "./drawingsPrimitive";
 
 const KIND_COLORS: Record<AnnotationKind, string> = {
   trendline: theme.accent,
   hline: theme.up,
   rect: theme.down,
   fib: theme.textPrimary,
+  polyline: theme.accent,
 };
+
+const KIND_WIDTHS: Record<AnnotationKind, number> = {
+  trendline: 2,
+  hline: 1,
+  rect: 1.5,
+  fib: 1,
+  polyline: 2,
+};
+
+export const AI_DEFAULT_COLOR = ANNOTATION_PALETTE[4];
+
+const ARROW_SIZE_FACTOR = 3;
+
+export interface ResolvedStyle {
+  color: string;
+  width: number;
+  dash: boolean;
+  arrow: boolean;
+}
+
+export function resolveAnnotationStyle(ann: Pick<Annotation, "kind" | "source" | "style">): ResolvedStyle {
+  const isAiDefault = ann.source === "ai" && !ann.style;
+  return {
+    color: ann.style?.color ?? (isAiDefault ? AI_DEFAULT_COLOR : KIND_COLORS[ann.kind]),
+    width: ann.style?.width ?? KIND_WIDTHS[ann.kind],
+    dash: ann.style?.dash ?? isAiDefault,
+    arrow: ann.style?.arrow ?? false,
+  };
+}
 
 const MEASURE_LABEL_W = 150;
 const MEASURE_LABEL_H = 34;
+
+const HOVER_LABEL_W = 220;
+const HOVER_LABEL_CHARS_PER_LINE = 16;
+const HOVER_LABEL_LINE_H = 14;
+const HOVER_LABEL_PAD = 12;
+const HOVER_LABEL_OFFSET = 14;
+
+function wrapLabel(text: string): string[] {
+  const lines: string[] = [];
+  for (let i = 0; i < text.length; i += HOVER_LABEL_CHARS_PER_LINE) {
+    lines.push(text.slice(i, i + HOVER_LABEL_CHARS_PER_LINE));
+  }
+  return lines.length > 0 ? lines : [""];
+}
 
 export type DrawCmd =
   | { type: "segment"; x1: number; y1: number; x2: number; y2: number; color: string; width: number; dashed: boolean }
@@ -29,9 +73,11 @@ export type DrawCmd =
       dashed: boolean;
     }
   | { type: "fib"; x1: number; x2: number; color: string; dashed: boolean; levels: FibLevelPx[] }
+  | { type: "arrow"; x: number; y: number; angle: number; size: number; color: string }
   | { type: "handles"; color: string; points: Pt[] }
   | { type: "measureRect"; x1: number; y1: number; x2: number; y2: number; fill: string }
-  | { type: "measureLabel"; x: number; y: number; w: number; h: number; lines: string[] };
+  | { type: "measureLabel"; x: number; y: number; w: number; h: number; lines: string[] }
+  | { type: "label"; x: number; y: number; w: number; h: number; lines: string[] };
 
 interface Pt {
   x: number;
@@ -74,6 +120,10 @@ function humanizeDuration(seconds: number): string {
   return `${(abs / 86400).toFixed(1)}d`;
 }
 
+function buildArrowCmd(from: Pt, to: Pt, color: string, width: number): DrawCmd {
+  return { type: "arrow", x: to.x, y: to.y, angle: Math.atan2(to.y - from.y, to.x - from.x), size: width * ARROW_SIZE_FACTOR, color };
+}
+
 function toPixel(
   chart: IChartApiBase<Time>,
   series: ISeriesApi<"Candlestick">,
@@ -95,16 +145,36 @@ function buildShape(
   series: ISeriesApi<"Candlestick">,
   barTimes: number[],
   paneWidth: number,
-  dashed: boolean,
+  style: ResolvedStyle,
 ): { cmds: DrawCmd[]; axisLabels: AxisLabel[] } {
-  const color = KIND_COLORS[kind];
+  const { color, width, dash: dashed } = style;
 
   if (kind === "trendline") {
     if (points.length < 2) return EMPTY_SHAPE;
     const a = toPixel(chart, series, barTimes, points[0]);
     const b = toPixel(chart, series, barTimes, points[1]);
     if (!a || !b) return EMPTY_SHAPE;
-    return { cmds: [{ type: "segment", x1: a.x, y1: a.y, x2: b.x, y2: b.y, color, width: 2, dashed }], axisLabels: [] };
+    const cmds: DrawCmd[] = [{ type: "segment", x1: a.x, y1: a.y, x2: b.x, y2: b.y, color, width, dashed }];
+    if (style.arrow) cmds.push(buildArrowCmd(a, b, color, width));
+    return { cmds, axisLabels: [] };
+  }
+
+  if (kind === "polyline") {
+    if (points.length < 2) return EMPTY_SHAPE;
+    const pixels: Pt[] = [];
+    for (const point of points) {
+      const px = toPixel(chart, series, barTimes, point);
+      if (!px) return EMPTY_SHAPE;
+      pixels.push(px);
+    }
+    const cmds: DrawCmd[] = [];
+    for (let i = 0; i < pixels.length - 1; i++) {
+      const a = pixels[i];
+      const b = pixels[i + 1];
+      cmds.push({ type: "segment", x1: a.x, y1: a.y, x2: b.x, y2: b.y, color, width, dashed });
+    }
+    if (style.arrow) cmds.push(buildArrowCmd(pixels[pixels.length - 2], pixels[pixels.length - 1], color, width));
+    return { cmds, axisLabels: [] };
   }
 
   if (kind === "hline") {
@@ -112,7 +182,7 @@ function buildShape(
     const a = toPixel(chart, series, barTimes, points[0]);
     if (!a) return EMPTY_SHAPE;
     return {
-      cmds: [{ type: "hline", y: a.y, x1: 0, x2: paneWidth, color, width: 1, dashed }],
+      cmds: [{ type: "hline", y: a.y, x1: 0, x2: paneWidth, color, width, dashed }],
       axisLabels: [{ y: a.y, text: formatPrice(points[0].price), color }],
     };
   }
@@ -132,7 +202,7 @@ function buildShape(
           y2: Math.max(a.y, b.y),
           stroke: color,
           fill: hexToRgba(color, 0.08),
-          width: 1.5,
+          width,
           dashed,
         },
       ],
@@ -161,8 +231,8 @@ function buildShape(
 }
 
 function buildHandles(
-  kind: AnnotationKind,
   points: AnnotationPoint[],
+  color: string,
   chart: IChartApiBase<Time>,
   series: ISeriesApi<"Candlestick">,
   barTimes: number[],
@@ -173,7 +243,7 @@ function buildHandles(
     if (px) pixels.push(px);
   }
   if (pixels.length === 0) return null;
-  return { type: "handles", color: KIND_COLORS[kind], points: pixels };
+  return { type: "handles", color, points: pixels };
 }
 
 function buildMeasure(
@@ -222,17 +292,24 @@ export function buildFrame(state: DrawingsState, chart: IChartApiBase<Time>, ser
   const axisLabels: AxisLabel[] = [];
 
   for (const ann of state.annotations) {
-    const built = buildShape(ann.kind, ann.points, chart, series, barTimes, paneWidth, false);
+    const style = resolveAnnotationStyle(ann);
+    const built = buildShape(ann.kind, ann.points, chart, series, barTimes, paneWidth, style);
     cmds.push(...built.cmds);
     axisLabels.push(...built.axisLabels);
     if (ann.id === state.selectedId) {
-      const handles = buildHandles(ann.kind, ann.points, chart, series, barTimes);
+      const handles = buildHandles(ann.points, style.color, chart, series, barTimes);
       if (handles) cmds.push(handles);
     }
   }
 
   if (state.preview) {
-    const built = buildShape(state.preview.kind, state.preview.points, chart, series, barTimes, paneWidth, true);
+    const previewStyle: ResolvedStyle = {
+      color: KIND_COLORS[state.preview.kind],
+      width: KIND_WIDTHS[state.preview.kind],
+      dash: true,
+      arrow: false,
+    };
+    const built = buildShape(state.preview.kind, state.preview.points, chart, series, barTimes, paneWidth, previewStyle);
     cmds.push(...built.cmds);
     axisLabels.push(...built.axisLabels);
   }
@@ -241,5 +318,22 @@ export function buildFrame(state: DrawingsState, chart: IChartApiBase<Time>, ser
     cmds.push(...buildMeasure(state.measure, chart, series, barTimes));
   }
 
+  if (state.hoverLabel) {
+    cmds.push(buildHoverLabel(state.hoverLabel));
+  }
+
   return { cmds, axisLabels };
+}
+
+function buildHoverLabel(hover: HoverLabel): DrawCmd {
+  const lines = wrapLabel(hover.text);
+  const h = lines.length * HOVER_LABEL_LINE_H + HOVER_LABEL_PAD;
+  return {
+    type: "label",
+    x: hover.x + HOVER_LABEL_OFFSET,
+    y: hover.y + HOVER_LABEL_OFFSET,
+    w: HOVER_LABEL_W,
+    h,
+    lines,
+  };
 }

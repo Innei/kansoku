@@ -15,7 +15,12 @@ export class AnnotationsController {
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
       throw new ClientError("request body must be JSON", 'e.g. {"annotations": []}');
     }
-    const data = await annotationsService.replace({ symbol, annotations: (body as Record<string, unknown>).annotations });
+    const record = body as Record<string, unknown>;
+    const data = await annotationsService.replace({
+      symbol,
+      annotations: record.annotations,
+      clientId: typeof record.clientId === "string" ? record.clientId : undefined,
+    });
     return { ok: true, data };
   }
 }

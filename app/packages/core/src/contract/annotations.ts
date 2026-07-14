@@ -3,7 +3,7 @@ import { defineRoutes } from "./defineRoutes.js";
 
 export interface AnnotationsApi {
   list(input: { symbol: string }): Promise<Annotation[]>;
-  replace(input: { symbol: string; annotations: unknown }): Promise<{ count: number }>;
+  replace(input: { symbol: string; annotations: unknown; clientId?: string }): Promise<{ count: number }>;
 }
 
 export const annotationsRoutes = defineRoutes<AnnotationsApi>("annotations", {

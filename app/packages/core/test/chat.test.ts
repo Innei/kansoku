@@ -191,7 +191,7 @@ describe("runChatTurn gating", () => {
 });
 
 describe("runChatTurn tools", () => {
-  it("wires exactly read_data_pack/fetch_kline/fetch_news to the agent factory, no submit_prediction or append_comment", async () => {
+  it("wires exactly read_data_pack/fetch_kline/fetch_news/read_drawings/draw_annotations to the agent factory, no submit_prediction or append_comment", async () => {
     const chartId = "tools-1";
     let capturedTools: AgentTool[] | undefined;
     const factory: AiAgentFactory = (config) => {
@@ -207,7 +207,13 @@ describe("runChatTurn tools", () => {
     expect(result.started).toBe(true);
     if (result.started) await result.done;
 
-    expect(capturedTools?.map((tool) => tool.name)).toEqual(["read_data_pack", "fetch_kline", "fetch_news"]);
+    expect(capturedTools?.map((tool) => tool.name)).toEqual([
+      "read_data_pack",
+      "fetch_kline",
+      "fetch_news",
+      "read_drawings",
+      "draw_annotations",
+    ]);
   });
 });
 

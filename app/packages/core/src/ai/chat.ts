@@ -1,7 +1,16 @@
+import { randomUUID } from "node:crypto";
 import type { AgentEvent, AgentMessage, AgentTool } from "@earendil-works/pi-agent-core";
 import { Type } from "typebox";
-import type { ChartDoc, CockpitComment, IntradayPrediction, NewsItem, RawBar } from "../../../../shared/types.js";
+import type {
+  Annotation,
+  ChartDoc,
+  CockpitComment,
+  IntradayPrediction,
+  NewsItem,
+  RawBar,
+} from "../../../../shared/types.js";
 import { PROJECT_ROOT } from "../env.js";
+import { annotationsService } from "../modules/annotations/annotations.service.js";
 import { getProvider } from "../services/marketdata/registry.js";
 import { easternDate } from "../services/session.js";
 import { loadChart as defaultLoadChart } from "../services/store.js";
@@ -15,7 +24,14 @@ import {
   titleFromText,
 } from "./chatStore.js";
 import { listComments as defaultListComments } from "./comments.js";
-import { buildDataPackTool, buildKlineTool, buildNewsTool, textResult } from "./dataTools.js";
+import {
+  buildDataPackTool,
+  buildDrawAnnotationsTool,
+  buildKlineTool,
+  buildNewsTool,
+  buildReadDrawingsTool,
+  textResult,
+} from "./dataTools.js";
 import { buildReassessPack as defaultBuildReassessPack, type ReassessPack } from "./datapack.js";
 import type { AiModel } from "./models.js";
 import { CHAT_DIALOG_RULES, CHAT_GATED_RETRY_INSTRUCTION, CHAT_GATED_TURN_INSTRUCTION } from "./prompts.js";
@@ -58,6 +74,9 @@ export interface ChatDeps {
   buildPack?: (symbol: string) => Promise<ReassessPack>;
   fetchKline?: (symbol: string, period: string, count: number) => Promise<RawBar[]>;
   fetchNews?: (symbol: string) => Promise<NewsItem[]>;
+  readAnnotations?: (symbol: string) => Promise<Annotation[]>;
+  writeAnnotations?: (symbol: string, annotations: Annotation[]) => Promise<void>;
+  genId?: () => string;
   agentFactory?: AiAgentFactory;
   timeoutMs?: number;
   now?: () => number;
@@ -357,7 +376,10 @@ function buildTools(
     buildPack: (symbol: string) => Promise<ReassessPack>;
     fetchKline: (symbol: string, period: string, count: number) => Promise<RawBar[]>;
     fetchNews: (symbol: string) => Promise<NewsItem[]>;
+    readAnnotations: (symbol: string) => Promise<Annotation[]>;
+    writeAnnotations: (symbol: string, annotations: Annotation[]) => Promise<void>;
     now: () => number;
+    genId: () => string;
   },
   verifyCtx: VerifyCtx | null,
 ): AgentTool[] {
@@ -365,6 +387,13 @@ function buildTools(
     buildDataPackTool(symbol, { buildPack: deps.buildPack }),
     buildKlineTool(symbol, deps.fetchKline),
     buildNewsTool(symbol, deps.fetchNews),
+    buildReadDrawingsTool(symbol, deps.readAnnotations),
+    buildDrawAnnotationsTool(symbol, {
+      readAnnotations: deps.readAnnotations,
+      writeAnnotations: deps.writeAnnotations,
+      now: deps.now,
+      genId: deps.genId,
+    }),
   ];
   // The verification pair only exists on turns where the user actually made a directional claim.
   // Handing it to every turn would train the model to route ordinary questions through a gate
@@ -449,6 +478,13 @@ async function executeChatTurn(
     const buildPackFn = deps.buildPack ?? defaultBuildReassessPack;
     const fetchKlineFn = deps.fetchKline ?? ((sym, period, count) => getProvider().getKline(sym, period, count));
     const fetchNewsFn = deps.fetchNews ?? ((sym) => getProvider().getNews(sym));
+    const readAnnotationsFn = deps.readAnnotations ?? ((sym) => annotationsService.list({ symbol: sym }));
+    const writeAnnotationsFn =
+      deps.writeAnnotations ??
+      (async (sym: string, annotations: Annotation[]) => {
+        await annotationsService.replace({ symbol: sym, annotations });
+      });
+    const genIdFn = deps.genId ?? randomUUID;
 
     let chatSession = await getSessionByChartId(chartId);
     if (!chatSession) {
@@ -476,7 +512,10 @@ async function executeChatTurn(
         buildPack: buildPackFn,
         fetchKline: fetchKlineFn,
         fetchNews: fetchNewsFn,
+        readAnnotations: readAnnotationsFn,
+        writeAnnotations: writeAnnotationsFn,
         now: () => (deps.now ? deps.now() : Date.now()),
+        genId: genIdFn,
       },
       verifyCtx,
     );

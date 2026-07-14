@@ -64,6 +64,22 @@ function paintCmd(ctx: CanvasRenderingContext2D, cmd: DrawCmd): void {
       }
       return;
     }
+    case "arrow": {
+      setDash(ctx, false);
+      const wing = Math.PI / 7;
+      const p1x = cmd.x - cmd.size * Math.cos(cmd.angle - wing);
+      const p1y = cmd.y - cmd.size * Math.sin(cmd.angle - wing);
+      const p2x = cmd.x - cmd.size * Math.cos(cmd.angle + wing);
+      const p2y = cmd.y - cmd.size * Math.sin(cmd.angle + wing);
+      ctx.beginPath();
+      ctx.moveTo(cmd.x, cmd.y);
+      ctx.lineTo(p1x, p1y);
+      ctx.lineTo(p2x, p2y);
+      ctx.closePath();
+      ctx.fillStyle = cmd.color;
+      ctx.fill();
+      return;
+    }
     case "handles": {
       setDash(ctx, false);
       for (const p of cmd.points) {
@@ -83,7 +99,8 @@ function paintCmd(ctx: CanvasRenderingContext2D, cmd: DrawCmd): void {
       ctx.fillRect(cmd.x1, cmd.y1, cmd.x2 - cmd.x1, cmd.y2 - cmd.y1);
       return;
     }
-    case "measureLabel": {
+    case "measureLabel":
+    case "label": {
       setDash(ctx, false);
       ctx.fillStyle = "rgba(10, 10, 10, 0.85)";
       drawRoundedRect(ctx, cmd.x, cmd.y, cmd.w, cmd.h, 4);

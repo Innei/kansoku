@@ -802,11 +802,18 @@ export interface Notice {
   at: string;
 }
 
-export type AnnotationKind = "trendline" | "hline" | "rect" | "fib";
+export type AnnotationKind = "trendline" | "hline" | "rect" | "fib" | "polyline";
 
 export interface AnnotationPoint {
   time: number;
   price: number;
+}
+
+export interface AnnotationStyle {
+  color?: string;
+  width?: 1 | 2 | 3;
+  dash?: boolean;
+  arrow?: boolean;
 }
 
 export interface Annotation {
@@ -814,4 +821,7 @@ export interface Annotation {
   kind: AnnotationKind;
   points: AnnotationPoint[];
   createdAt: number;
+  source?: "user" | "ai";
+  label?: string;
+  style?: AnnotationStyle;
 }
