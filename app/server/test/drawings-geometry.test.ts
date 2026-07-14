@@ -143,6 +143,42 @@ describe("hitTest", () => {
     expect(hitTest(shape, { x: 150, y: 0 }, { fibXRange: [0, 200] })).toEqual({ type: "body" });
   });
 
+  it("polyline: body hit on a middle segment", () => {
+    const shape: ShapeGeom = {
+      kind: "polyline",
+      pixels: [
+        { x: 0, y: 0 },
+        { x: 50, y: 0 },
+        { x: 100, y: 50 },
+      ],
+    };
+    expect(hitTest(shape, { x: 75, y: 25 })).toEqual({ type: "body" });
+  });
+
+  it("polyline: handle takes precedence over body", () => {
+    const shape: ShapeGeom = {
+      kind: "polyline",
+      pixels: [
+        { x: 0, y: 0 },
+        { x: 50, y: 0 },
+        { x: 100, y: 50 },
+      ],
+    };
+    expect(hitTest(shape, { x: 51, y: 1 })).toEqual({ type: "point", index: 1 });
+  });
+
+  it("polyline: miss far from every segment and handle", () => {
+    const shape: ShapeGeom = {
+      kind: "polyline",
+      pixels: [
+        { x: 0, y: 0 },
+        { x: 50, y: 0 },
+        { x: 100, y: 50 },
+      ],
+    };
+    expect(hitTest(shape, { x: 500, y: 500 })).toBeNull();
+  });
+
   it("returns null when nothing hit", () => {
     const shape: ShapeGeom = { kind: "trendline", pixels: [{ x: 0, y: 0 }, { x: 100, y: 0 }] };
     expect(hitTest(shape, { x: 500, y: 500 })).toBeNull();

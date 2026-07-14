@@ -1,18 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { IChartApi, ISeriesApi, Logical } from "lightweight-charts";
-import type { Annotation, AnnotationKind, AnnotationPoint } from "../../../../shared/types";
-import { logicalToTime, timeToLogical, type HitRegion, type Pt } from "../../../../shared/drawings";
+import type { IChartApi, ISeriesApi } from "lightweight-charts";
+import type { Annotation, AnnotationKind, AnnotationPoint, AnnotationStyle } from "../../../../shared/types";
+import type { HitRegion, Pt } from "../../../../shared/drawings";
 import { client } from "../../client";
-import { DrawingsPrimitive, type MeasureShape, type PreviewShape } from "./drawingsPrimitive";
-import {
-  dragPoints,
-  isTwoPointTool,
-  makeAnnotation,
-  pickHit,
-  pixelDistance,
-  type DrawingTool,
-  type TwoPointTool,
-} from "./drawingsMachine";
+import { subscribeChannel } from "../../wsHub";
+import { DrawingsPrimitive, type HoverLabel, type MeasureShape, type PreviewShape } from "./drawingsPrimitive";
+import { type DrawingTool, type MultiPointTool } from "./drawingsMachine";
+import { useDrawingsInteraction } from "./useDrawingsInteraction";
+
+export function decodeAnnotationsFrame(payload: unknown, ownClientId: string): Annotation[] | null {
+  if (typeof payload !== "object" || payload === null) return null;
+  const frame = payload as { type?: unknown; annotations?: unknown; clientId?: unknown };
+  if (frame.type !== "init" && frame.type !== "update") return null;
+  if (!Array.isArray(frame.annotations)) return null;
+  if (frame.type === "update" && frame.clientId === ownClientId) return null;
+  return frame.annotations as Annotation[];
+}
+
+export function mergePendingRemote(remote: Annotation[], local: Annotation[]): Annotation[] {
+  const remoteIds = new Set(remote.map((a) => a.id));
+  return [...remote, ...local.filter((a) => !remoteIds.has(a.id))];
+}
 
 export type { DrawingTool } from "./drawingsMachine";
 
@@ -26,8 +34,17 @@ export interface DrawingsApi {
   activeTool: DrawingTool;
   setActiveTool: (t: DrawingTool) => void;
   clearAll: () => void;
+  clearAi: () => void;
+  hasAi: boolean;
   count: number;
+  selected: Annotation | null;
+  updateStyle: (id: string, patch: Partial<AnnotationStyle>) => void;
+  draftStyle: AnnotationStyle;
+  updateDraftStyle: (patch: Partial<AnnotationStyle>) => void;
 }
+
+const toolMemory = new Map<string, DrawingTool>();
+const draftStyleMemory = new Map<string, AnnotationStyle>();
 
 interface DragState {
   id: string;
@@ -40,8 +57,8 @@ interface DragState {
 }
 
 interface InProgress {
-  tool: TwoPointTool;
-  p1: AnnotationPoint;
+  tool: MultiPointTool;
+  points: AnnotationPoint[];
 }
 
 interface PendingSave {
@@ -49,18 +66,13 @@ interface PendingSave {
   annotations: Annotation[];
 }
 
-const DRAG_THRESHOLD_PX = 3;
 const SAVE_DEBOUNCE_MS = 1000;
-
-const isEditableTarget = (target: EventTarget | null): boolean => {
-  if (!(target instanceof HTMLElement)) return false;
-  const tag = target.tagName;
-  return tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable;
-};
 
 export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTimes: number[]): DrawingsApi {
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
-  const [activeTool, setActiveToolState] = useState<DrawingTool>("cursor");
+  const [activeTool, setActiveToolState] = useState<DrawingTool>(() => toolMemory.get(symbol) ?? "cursor");
+  const [selectedId, setSelectedIdState] = useState<string | null>(null);
+  const [draftStyle, setDraftStyle] = useState<AnnotationStyle>(() => draftStyleMemory.get(symbol) ?? {});
 
   const handleRef = useRef<DrawingsHandle | null>(handle);
   handleRef.current = handle;
@@ -70,16 +82,24 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
   barTimesRef.current = barTimes;
 
   const annotationsRef = useRef<Annotation[]>([]);
-  const toolRef = useRef<DrawingTool>("cursor");
+  const toolRef = useRef<DrawingTool>(toolMemory.get(symbol) ?? "cursor");
+  const draftStyleRef = useRef<AnnotationStyle>(draftStyleMemory.get(symbol) ?? {});
   const selectedIdRef = useRef<string | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const drawingRef = useRef<InProgress | null>(null);
   const hoverRef = useRef<AnnotationPoint | null>(null);
+  const hoverLabelRef = useRef<HoverLabel | null>(null);
   const measureRef = useRef<MeasureShape | null>(null);
 
   const primitiveRef = useRef<DrawingsPrimitive | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveRef = useRef<PendingSave | null>(null);
+  const pendingRemoteRef = useRef<Annotation[] | null>(null);
+
+  const clientIdRef = useRef<string | null>(null);
+  if (clientIdRef.current === null) clientIdRef.current = crypto.randomUUID();
+
+  const isInteracting = useCallback(() => drawingRef.current !== null || dragRef.current !== null, []);
 
   const pushState = useCallback(() => {
     const primitive = primitiveRef.current;
@@ -90,9 +110,9 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
     let measure: MeasureShape | null = measureRef.current;
     if (drawing && hover) {
       if (drawing.tool === "measure") {
-        measure = { p1: drawing.p1, p2: hover };
+        measure = { p1: drawing.points[0], p2: hover };
       } else {
-        preview = { kind: drawing.tool as AnnotationKind, points: [drawing.p1, hover] };
+        preview = { kind: drawing.tool as AnnotationKind, points: [...drawing.points, hover] };
       }
     }
     primitive.setState({
@@ -100,8 +120,14 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
       selectedId: selectedIdRef.current,
       preview,
       measure,
+      hoverLabel: hoverLabelRef.current,
       barTimes: barTimesRef.current,
     });
+  }, []);
+
+  const setSelected = useCallback((id: string | null) => {
+    selectedIdRef.current = id;
+    setSelectedIdState(id);
   }, []);
 
   const updateScrollLock = useCallback(() => {
@@ -124,7 +150,7 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
     if (!pending) return;
     pendingSaveRef.current = null;
     void client.annotations
-      .replace({ symbol: pending.symbol, annotations: pending.annotations })
+      .replace({ symbol: pending.symbol, annotations: pending.annotations, clientId: clientIdRef.current ?? undefined })
       .catch((err: unknown) => {
         console.error("failed to save annotations", err);
       });
@@ -152,12 +178,61 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
     [pushState, scheduleSave],
   );
 
+  const replaceFromRemote = useCallback(
+    (next: Annotation[]) => {
+      if (selectedIdRef.current && !next.some((a) => a.id === selectedIdRef.current)) {
+        setSelected(null);
+      }
+      annotationsRef.current = next;
+      setAnnotations(next);
+      pushState();
+    },
+    [pushState, setSelected],
+  );
+
+  const applyRemoteWithMerge = useCallback(
+    (next: Annotation[]) => {
+      if (!pendingSaveRef.current) {
+        replaceFromRemote(next);
+        return;
+      }
+      const merged = mergePendingRemote(next, annotationsRef.current);
+      replaceFromRemote(merged);
+      pendingSaveRef.current = { symbol: pendingSaveRef.current.symbol, annotations: merged };
+    },
+    [replaceFromRemote],
+  );
+
+  const flushPendingRemote = useCallback(() => {
+    if (isInteracting()) return;
+    const pending = pendingRemoteRef.current;
+    if (!pending) return;
+    pendingRemoteRef.current = null;
+    applyRemoteWithMerge(pending);
+  }, [isInteracting, applyRemoteWithMerge]);
+
+  const handleAnnotationsFrame = useCallback(
+    (payload: unknown) => {
+      const next = decodeAnnotationsFrame(payload, clientIdRef.current ?? "");
+      if (!next) return;
+      if (isInteracting()) {
+        pendingRemoteRef.current = next;
+        return;
+      }
+      pendingRemoteRef.current = null;
+      applyRemoteWithMerge(next);
+    },
+    [isInteracting, applyRemoteWithMerge],
+  );
+
   const applyTool = useCallback(
     (next: DrawingTool, keepMeasure: boolean) => {
       toolRef.current = next;
+      toolMemory.set(symbolRef.current, next);
       setActiveToolState(next);
       drawingRef.current = null;
       hoverRef.current = null;
+      hoverLabelRef.current = null;
       if (!keepMeasure) measureRef.current = null;
       updateScrollLock();
       pushState();
@@ -168,210 +243,88 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
   const setActiveTool = useCallback((t: DrawingTool) => applyTool(t, false), [applyTool]);
 
   const clearAll = useCallback(() => {
-    selectedIdRef.current = null;
+    setSelected(null);
     measureRef.current = null;
     drawingRef.current = null;
     hoverRef.current = null;
+    hoverLabelRef.current = null;
     commitAnnotations([], true);
-  }, [commitAnnotations]);
+  }, [commitAnnotations, setSelected]);
 
-  useEffect(() => {
-    if (!handle) return;
-    const { chart, series, container } = handle;
+  const clearAi = useCallback(() => {
+    const next = annotationsRef.current.filter((a) => a.source !== "ai");
+    if (selectedIdRef.current && !next.some((a) => a.id === selectedIdRef.current)) {
+      setSelected(null);
+    }
+    commitAnnotations(next, true);
+  }, [commitAnnotations, setSelected]);
 
-    const primitive = new DrawingsPrimitive();
-    series.attachPrimitive(primitive);
-    primitiveRef.current = primitive;
+  const updateStyle = useCallback(
+    (id: string, patch: Partial<AnnotationStyle>) => {
+      const next = annotationsRef.current.map((a) => (a.id === id ? { ...a, style: { ...a.style, ...patch } } : a));
+      commitAnnotations(next, true);
+    },
+    [commitAnnotations],
+  );
 
-    const pointerPx = (e: PointerEvent): Pt => {
-      const rect = container.getBoundingClientRect();
-      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    };
-    const toPoint = (e: PointerEvent): AnnotationPoint | null => {
-      const { x, y } = pointerPx(e);
-      const logical = chart.timeScale().coordinateToLogical(x);
-      if (logical === null) return null;
-      const price = series.coordinateToPrice(y);
-      if (price === null) return null;
-      const time = logicalToTime(barTimesRef.current, logical);
-      if (!Number.isFinite(time)) return null;
-      return { time, price };
-    };
-    const toPx = (point: AnnotationPoint): Pt | null => {
-      const logical = timeToLogical(barTimesRef.current, point.time);
-      if (!Number.isFinite(logical)) return null;
-      const x = chart.timeScale().logicalToCoordinate(logical as Logical);
-      const y = series.priceToCoordinate(point.price);
-      if (x === null || y === null) return null;
-      return { x, y };
-    };
+  const updateDraftStyle = useCallback((patch: Partial<AnnotationStyle>) => {
+    const next = { ...draftStyleRef.current, ...patch };
+    draftStyleRef.current = next;
+    draftStyleMemory.set(symbolRef.current, next);
+    setDraftStyle(next);
+  }, []);
 
-    const onPointerDown = (e: PointerEvent) => {
-      const pt = toPoint(e);
-      if (!pt) return;
-      if (measureRef.current) measureRef.current = null;
-      const tool = toolRef.current;
-
-      if (tool === "cursor") {
-        const hit = pickHit(annotationsRef.current, toPx, pointerPx(e));
-        if (hit) {
-          selectedIdRef.current = hit.id;
-          const ann = annotationsRef.current.find((a) => a.id === hit.id);
-          if (ann) {
-            dragRef.current = {
-              id: hit.id,
-              region: hit.region,
-              origPoints: ann.points,
-              startTime: pt.time,
-              startPrice: pt.price,
-              startPx: pointerPx(e),
-              moved: false,
-            };
-            updateScrollLock();
-          }
-        } else {
-          selectedIdRef.current = null;
-        }
-        pushState();
-        return;
-      }
-
-      if (tool === "hline") {
-        const ann = makeAnnotation("hline", [pt], crypto.randomUUID(), Date.now());
-        selectedIdRef.current = ann.id;
-        commitAnnotations([...annotationsRef.current, ann], true);
-        applyTool("cursor", false);
-        return;
-      }
-
-      if (!isTwoPointTool(tool)) return;
-
-      const drawing = drawingRef.current;
-      if (!drawing) {
-        drawingRef.current = { tool, p1: pt };
-        hoverRef.current = pt;
-        pushState();
-        return;
-      }
-
-      const { tool: startedTool, p1 } = drawing;
-      drawingRef.current = null;
-      hoverRef.current = null;
-      if (startedTool === "measure") {
-        measureRef.current = { p1, p2: pt };
-        applyTool("cursor", true);
-        return;
-      }
-      const ann = makeAnnotation(startedTool, [p1, pt], crypto.randomUUID(), Date.now());
-      selectedIdRef.current = ann.id;
-      commitAnnotations([...annotationsRef.current, ann], true);
-      applyTool("cursor", false);
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      const drag = dragRef.current;
-      if (drag) {
-        const pt = toPoint(e);
-        if (!pt) return;
-        if (!drag.moved) {
-          if (pixelDistance(pointerPx(e), drag.startPx) <= DRAG_THRESHOLD_PX) return;
-          drag.moved = true;
-        }
-        const nextPoints = dragPoints(drag.origPoints, drag.region, drag.startTime, drag.startPrice, pt);
-        annotationsRef.current = annotationsRef.current.map((a) =>
-          a.id === drag.id ? { ...a, points: nextPoints } : a,
-        );
-        pushState();
-        return;
-      }
-      const drawing = drawingRef.current;
-      if (drawing) {
-        const pt = toPoint(e);
-        if (!pt) return;
-        hoverRef.current = pt;
-        pushState();
-      }
-    };
-
-    const onPointerUp = () => {
-      const drag = dragRef.current;
-      if (!drag) return;
-      dragRef.current = null;
-      updateScrollLock();
-      if (drag.moved) {
-        setAnnotations(annotationsRef.current);
-        scheduleSave(annotationsRef.current);
-      }
-      pushState();
-    };
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        const drag = dragRef.current;
-        if (drag && drag.moved) {
-          annotationsRef.current = annotationsRef.current.map((a) =>
-            a.id === drag.id ? { ...a, points: drag.origPoints } : a,
-          );
-          setAnnotations(annotationsRef.current);
-        }
-        selectedIdRef.current = null;
-        dragRef.current = null;
-        applyTool("cursor", false);
-        return;
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (isEditableTarget(e.target)) return;
-        const id = selectedIdRef.current;
-        if (!id) return;
-        e.preventDefault();
-        selectedIdRef.current = null;
-        commitAnnotations(
-          annotationsRef.current.filter((a) => a.id !== id),
-          true,
-        );
-      }
-    };
-
-    container.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("keydown", onKeyDown);
-
-    updateScrollLock();
-    pushState();
-
-    return () => {
-      container.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("keydown", onKeyDown);
-      // The chart owner detaches primitives during chart.remove(); calling chart APIs here can race that disposal.
-      primitiveRef.current = null;
-    };
-  }, [handle, applyTool, commitAnnotations, pushState, scheduleSave, updateScrollLock]);
+  useDrawingsInteraction(handle, {
+    primitiveRef,
+    barTimesRef,
+    toolRef,
+    draftStyleRef,
+    dragRef,
+    drawingRef,
+    hoverRef,
+    hoverLabelRef,
+    measureRef,
+    annotationsRef,
+    selectedIdRef,
+    setAnnotations,
+    setSelected,
+    updateScrollLock,
+    pushState,
+    commitAnnotations,
+    flushPendingRemote,
+    scheduleSave,
+    applyTool,
+  });
 
   useEffect(() => {
     if (!handle) return;
     let active = true;
     const target = symbol;
 
-    selectedIdRef.current = null;
+    setSelected(null);
     dragRef.current = null;
     drawingRef.current = null;
     hoverRef.current = null;
+    hoverLabelRef.current = null;
     measureRef.current = null;
+    pendingRemoteRef.current = null;
     annotationsRef.current = [];
     setAnnotations([]);
+    const rememberedDraft = draftStyleMemory.get(symbol) ?? {};
+    draftStyleRef.current = rememberedDraft;
+    setDraftStyle(rememberedDraft);
+    applyTool(toolMemory.get(symbol) ?? "cursor", false);
     pushState();
 
     client.annotations
       .list({ symbol })
       .then((loaded) => {
         if (!active || target !== symbolRef.current) return;
-        selectedIdRef.current = null;
+        setSelected(null);
         dragRef.current = null;
         drawingRef.current = null;
         hoverRef.current = null;
+        hoverLabelRef.current = null;
         measureRef.current = null;
         annotationsRef.current = loaded;
         setAnnotations(loaded);
@@ -382,11 +335,14 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
         console.error("failed to load annotations", err);
       });
 
+    const unsubscribe = subscribeChannel({ kind: "annotations", symbol }, handleAnnotationsFrame, () => {});
+
     return () => {
       active = false;
+      unsubscribe();
       flushSave();
     };
-  }, [handle, symbol, flushSave, pushState]);
+  }, [handle, symbol, applyTool, flushSave, handleAnnotationsFrame, pushState, setSelected]);
 
   useEffect(() => {
     pushState();
@@ -398,5 +354,19 @@ export function useDrawings(handle: DrawingsHandle | null, symbol: string, barTi
     };
   }, [flushSave]);
 
-  return { activeTool, setActiveTool, clearAll, count: annotations.length };
+  const selected = selectedId ? (annotations.find((a) => a.id === selectedId) ?? null) : null;
+  const hasAi = annotations.some((a) => a.source === "ai");
+
+  return {
+    activeTool,
+    setActiveTool,
+    clearAll,
+    clearAi,
+    hasAi,
+    count: annotations.length,
+    selected,
+    updateStyle,
+    draftStyle,
+    updateDraftStyle,
+  };
 }

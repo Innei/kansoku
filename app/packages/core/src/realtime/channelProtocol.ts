@@ -3,6 +3,7 @@ import { chatTurnState, onChatEvent } from "../ai/chat.js";
 import { listComments, onComment } from "../ai/comments.js";
 import { acquireLease, releaseLease } from "../ai/leases.js";
 import { onNotice } from "../ai/notices.js";
+import { type AnnotationsChangedEvent, loadAnnotations, onAnnotationsChanged } from "../services/annotations.js";
 import { clampViewCount } from "../services/history.js";
 import { easternDate } from "../services/session.js";
 import { normalizeSymbol } from "../services/symbol.utils.js";
@@ -41,7 +42,17 @@ const MAX_CHANNELS_PER_SOCKET = 16;
 export interface WsSub {
   op: "sub";
   key: string;
-  kind: "quotes" | "chart" | "comments" | "analyses" | "position" | "benchmark" | "board" | "chat" | "preview";
+  kind:
+    | "quotes"
+    | "chart"
+    | "comments"
+    | "analyses"
+    | "position"
+    | "benchmark"
+    | "board"
+    | "chat"
+    | "preview"
+    | "annotations";
   extra?: string[];
   id?: string;
   count?: number;
@@ -97,6 +108,10 @@ export function parseWsMessage(raw: unknown): WsClientMessage | null {
     if (typeof msg.id !== "string" || !msg.id) return null;
     return { op: "sub", key: msg.key, kind: "chat", id: msg.id };
   }
+  if (msg.kind === "annotations") {
+    if (typeof msg.symbol !== "string" || !msg.symbol) return null;
+    return { op: "sub", key: msg.key, kind: "annotations", symbol: msg.symbol };
+  }
   return null;
 }
 
@@ -104,6 +119,30 @@ function attachChat(chartId: string, push: (envelope: string) => void): () => vo
   const unsub = onChatEvent(chartId, (event) => push(JSON.stringify({ type: "event", event })));
   const { busy, partial } = chatTurnState(chartId);
   push(JSON.stringify({ type: "init", busy, partial }));
+  return unsub;
+}
+
+function pushAnnotationsUpdate(push: (envelope: string) => void, event: AnnotationsChangedEvent): void {
+  push(
+    JSON.stringify({
+      type: "update",
+      annotations: event.annotations,
+      ...(event.clientId !== undefined ? { clientId: event.clientId } : {}),
+    }),
+  );
+}
+
+async function attachAnnotations(symbol: string, push: (envelope: string) => void): Promise<() => void> {
+  const buffered: AnnotationsChangedEvent[] = [];
+  let ready = false;
+  const unsub = onAnnotationsChanged(symbol, (event) => {
+    if (ready) pushAnnotationsUpdate(push, event);
+    else buffered.push(event);
+  });
+  const annotations = await loadAnnotations(symbol);
+  push(JSON.stringify({ type: "init", annotations }));
+  ready = true;
+  for (const event of buffered) pushAnnotationsUpdate(push, event);
   return unsub;
 }
 
@@ -131,6 +170,7 @@ async function attachChannel(msg: WsSub, push: (envelope: string) => void): Prom
   if (msg.kind === "benchmark") return subscribeBenchmark(normalizeSymbol(msg.symbol as string), push);
   if (msg.kind === "preview") return subscribePreview(msg.symbol as string, push);
   if (msg.kind === "chat") return attachChat(msg.id as string, push);
+  if (msg.kind === "annotations") return attachAnnotations(msg.symbol as string, push);
   return subscribeBoard(push);
 }
 

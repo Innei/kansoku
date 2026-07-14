@@ -19,3 +19,22 @@ describe("parseWsMessage preview kind", () => {
     expect(parseWsMessage({ op: "sub", key: "k1", kind: "preview", symbol: "" })).toBeNull();
   });
 });
+
+describe("parseWsMessage annotations kind", () => {
+  it("parses a valid annotations subscription", () => {
+    expect(parseWsMessage({ op: "sub", key: "k1", kind: "annotations", symbol: "NVDA.US" })).toEqual({
+      op: "sub",
+      key: "k1",
+      kind: "annotations",
+      symbol: "NVDA.US",
+    });
+  });
+
+  it("rejects a missing symbol", () => {
+    expect(parseWsMessage({ op: "sub", key: "k1", kind: "annotations" })).toBeNull();
+  });
+
+  it("rejects an empty symbol", () => {
+    expect(parseWsMessage({ op: "sub", key: "k1", kind: "annotations", symbol: "" })).toBeNull();
+  });
+});

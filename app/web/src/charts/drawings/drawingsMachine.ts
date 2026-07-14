@@ -1,14 +1,22 @@
 import type { Annotation, AnnotationKind, AnnotationPoint } from "../../../../shared/types";
 import { hitTest, type HitRegion, type Pt } from "../../../../shared/drawings";
 
-export type DrawingTool = "cursor" | "measure" | "trendline" | "hline" | "rect" | "fib";
+export type DrawingTool = "cursor" | "measure" | "trendline" | "hline" | "rect" | "fib" | "polyline";
 
 export type TwoPointTool = "measure" | "trendline" | "rect" | "fib";
 
+export type MultiPointTool = TwoPointTool | "polyline";
+
 export const TWO_POINT_TOOLS: TwoPointTool[] = ["measure", "trendline", "rect", "fib"];
+
+export const MAX_POLYLINE_POINTS = 20;
 
 export function isTwoPointTool(tool: DrawingTool): tool is TwoPointTool {
   return tool === "measure" || tool === "trendline" || tool === "rect" || tool === "fib";
+}
+
+export function isMultiPointTool(tool: DrawingTool): tool is MultiPointTool {
+  return isTwoPointTool(tool) || tool === "polyline";
 }
 
 export function pixelDistance(a: Pt, b: Pt): number {

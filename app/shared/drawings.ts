@@ -2,6 +2,17 @@ import type { AnnotationKind, AnnotationPoint } from "./types.js";
 
 export const FIB_RATIOS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1] as const;
 
+export const ANNOTATION_PALETTE: readonly string[] = [
+  "#3B82F6",
+  "#EF4444",
+  "#22C55E",
+  "#F59E0B",
+  "#A855F7",
+  "#14B8A6",
+  "#EC4899",
+  "#64748B",
+];
+
 export interface FibLevel {
   ratio: number;
   price: number;
@@ -118,6 +129,13 @@ export function hitTest(
       const c1 = corners[i];
       const c2 = corners[(i + 1) % corners.length];
       if (distToSegment(p, c1, c2) <= tolerance) return { type: "body" };
+    }
+    return null;
+  }
+
+  if (kind === "polyline") {
+    for (let i = 0; i < pixels.length - 1; i++) {
+      if (distToSegment(p, pixels[i], pixels[i + 1]) <= tolerance) return { type: "body" };
     }
     return null;
   }

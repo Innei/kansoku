@@ -9,7 +9,8 @@ export type ChannelSpec =
   | { kind: "benchmark"; symbol: string }
   | { kind: "preview"; symbol: string }
   | { kind: "board" }
-  | { kind: "chat"; id: string };
+  | { kind: "chat"; id: string }
+  | { kind: "annotations"; symbol: string };
 
 interface ChannelSub {
   spec: ChannelSpec;

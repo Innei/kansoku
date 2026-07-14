@@ -23,15 +23,29 @@ export interface MeasureShape {
   p2: AnnotationPoint;
 }
 
+export interface HoverLabel {
+  x: number;
+  y: number;
+  text: string;
+}
+
 export interface DrawingsState {
   annotations: Annotation[];
   selectedId: string | null;
   preview: PreviewShape | null;
   measure: MeasureShape | null;
+  hoverLabel: HoverLabel | null;
   barTimes: number[];
 }
 
-const EMPTY_STATE: DrawingsState = { annotations: [], selectedId: null, preview: null, measure: null, barTimes: [] };
+const EMPTY_STATE: DrawingsState = {
+  annotations: [],
+  selectedId: null,
+  preview: null,
+  measure: null,
+  hoverLabel: null,
+  barTimes: [],
+};
 const EMPTY_FRAME: DrawFrame = { cmds: [], axisLabels: [] };
 
 type DrawTarget = Parameters<IPrimitivePaneRenderer["draw"]>[0];
