@@ -66,6 +66,24 @@ function readLegacyTabs(): TabState[] | null {
   }
 }
 
+function sameTab(a: TabState, b: TabState): boolean {
+  return a.id === b.id && a.route === b.route && a.title === b.title && a.scrollY === b.scrollY;
+}
+
+function reconcileTabs(prevTabs: TabState[], nextTabs: TabState[]): TabState[] {
+  let allReused = prevTabs.length === nextTabs.length;
+  const tabs = nextTabs.map((tab, index) => {
+    const prev = prevTabs[index]?.id === tab.id ? prevTabs[index] : prevTabs.find((item) => item.id === tab.id);
+    if (prev && sameTab(prev, tab)) {
+      if (prev !== prevTabs[index]) allReused = false;
+      return prev;
+    }
+    allReused = false;
+    return tab;
+  });
+  return allReused ? prevTabs : tabs;
+}
+
 function reselectActiveTabId(prevTabs: TabState[], nextTabs: TabState[], activeTabId: string): string {
   if (nextTabs.length === 0) return activeTabId;
   if (nextTabs.some((tab) => tab.id === activeTabId)) return activeTabId;
@@ -92,16 +110,16 @@ export function useTabsController(): TabsController {
     if (next.revision <= lastRevisionRef.current) return;
     lastRevisionRef.current = next.revision;
     setSnapshot((prev) => {
+      const tabs = reconcileTabs(prev.tabs, next.tabs);
       if (prev.tabs.length === 0) {
-        const activeTabId = next.tabs.some((tab) => tab.id === prev.activeTabId)
+        const activeTabId = tabs.some((tab) => tab.id === prev.activeTabId)
           ? prev.activeTabId
-          : next.tabs[0]?.id ?? "";
-        return { tabs: next.tabs, activeTabId };
+          : tabs[0]?.id ?? "";
+        return { tabs, activeTabId };
       }
-      return {
-        tabs: next.tabs,
-        activeTabId: reselectActiveTabId(prev.tabs, next.tabs, prev.activeTabId),
-      };
+      const activeTabId = reselectActiveTabId(prev.tabs, tabs, prev.activeTabId);
+      if (tabs === prev.tabs && activeTabId === prev.activeTabId) return prev;
+      return { tabs, activeTabId };
     });
   }, []);
 
