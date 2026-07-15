@@ -7,14 +7,16 @@ import {
   MessagesEngine,
   type MessagesEngineResult,
 } from "./messageEngine.js";
+import {
+  ActivatedSkillsProvider,
+  escapeXml,
+  RunMetadataProvider,
+  safeJson,
+  SkillCatalogProvider,
+  type SkillContext,
+} from "./sharedProviders.js";
 
-export interface AnalystSkillContext {
-  activated: boolean;
-  content?: string;
-  description: string;
-  location?: string;
-  name: string;
-}
+export type AnalystSkillContext = SkillContext;
 
 export interface AnalystInitialContext {
   dataPack: ReassessPack;
@@ -36,110 +38,6 @@ export interface AnalystStepContext {
 export interface AnalystMessagesEngineConfig {
   initialContext: AnalystInitialContext;
   stepContext: () => AnalystStepContext;
-}
-
-const escapeXml = (value: string): string =>
-  value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
-
-const safeJson = (value: unknown): string =>
-  (JSON.stringify(value) ?? "null").replaceAll("<", "\\u003c").replaceAll(">", "\\u003e");
-
-class SkillCatalogProvider extends BaseFirstUserContentProvider {
-  readonly name = "SkillCatalogProvider";
-
-  constructor(private readonly skills: AnalystSkillContext[]) {
-    super();
-  }
-
-  protected buildContent(): string | null {
-    if (this.skills.length === 0) return null;
-    const lines = [
-      "<available_skills>",
-      "以下列出项目中的全部技能；description 说明技能的用途与适用时机。",
-    ];
-    for (const skill of this.skills) {
-      const attrs = [
-        `name=\"${escapeXml(skill.name)}\"`,
-        `status=\"${skill.activated ? "activated" : "available"}\"`,
-        skill.location ? `location=\"${escapeXml(skill.location)}\"` : undefined,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      const invoke = skill.activated
-        ? "技能说明已在下方加载"
-        : `read_skill(name=\"${escapeXml(skill.name)}\")`;
-      lines.push(
-        `  <skill ${attrs}>`,
-        `    <description>${escapeXml(skill.description)}</description>`,
-        `    <invoke>${invoke}</invoke>`,
-        "  </skill>",
-      );
-    }
-    lines.push("</available_skills>");
-    return lines.join("\n");
-  }
-}
-
-class ActivatedSkillsProvider extends BaseFirstUserContentProvider {
-  readonly name = "ActivatedSkillsProvider";
-
-  constructor(
-    private readonly skills: AnalystSkillContext[],
-    private readonly runtimeAdapter: string,
-  ) {
-    super();
-  }
-
-  protected buildContent(): string | null {
-    const activated = this.skills.filter((skill) => skill.activated && skill.content);
-    if (activated.length === 0) return null;
-
-    const lines = [
-      "<activated_skills>",
-      "以下技能已为本次运行激活；直接遵循其说明，无需再次调用 read_skill。",
-    ];
-    for (const skill of activated) {
-      lines.push(
-        `  <skill name=\"${escapeXml(skill.name)}\">`,
-        skill.content!,
-        "  </skill>",
-      );
-    }
-    lines.push(
-      "</activated_skills>",
-      "<runtime_adapter>",
-      this.runtimeAdapter,
-      "</runtime_adapter>",
-    );
-    return lines.join("\n");
-  }
-}
-
-class RunMetadataProvider extends BaseFirstUserContentProvider {
-  readonly name = "RunMetadataProvider";
-
-  constructor(private readonly initialContext: AnalystInitialContext) {
-    super();
-  }
-
-  protected buildContent(): string {
-    const context = this.initialContext;
-    return [
-      "<run_metadata>",
-      `  <agent>analyst</agent>`,
-      `  <symbol>${escapeXml(context.symbol)}</symbol>`,
-      `  <origin>${escapeXml(context.origin ?? "manual")}</origin>`,
-      `  <started_at>${escapeXml(context.startedAt)}</started_at>`,
-      `  <market_date>${escapeXml(context.marketDate)}</market_date>`,
-      `  <data_as_of>${escapeXml(context.dataPack.as_of)}</data_as_of>`,
-      "</run_metadata>",
-    ].join("\n");
-  }
 }
 
 class DataPackProvider extends BaseFirstUserContentProvider {
@@ -189,7 +87,14 @@ export class AnalystMessagesEngine {
         config.initialContext.skills,
         config.initialContext.runtimeAdapter,
       ),
-      new RunMetadataProvider(config.initialContext),
+      new RunMetadataProvider({
+        agent: "analyst",
+        symbol: config.initialContext.symbol,
+        origin: config.initialContext.origin,
+        startedAt: config.initialContext.startedAt,
+        marketDate: config.initialContext.marketDate,
+        dataAsOf: config.initialContext.dataPack.as_of,
+      }),
       new DataPackProvider(config.initialContext.dataPack),
       new AnalystRunStateProvider(config.stepContext),
     ]);
