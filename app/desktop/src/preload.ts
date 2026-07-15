@@ -2,8 +2,11 @@ import { contextBridge, ipcRenderer } from "electron";
 import { CONTEXT_MENU_CHANNELS } from "./contextMenu/channels.js";
 import { CREDENTIALS_CHANNELS } from "./credentials/channels.js";
 import { IPC_GROUPS } from "./ipc/groups.js";
-import { TABS_COMMAND_CHANNEL, type TabsCommand } from "./tabs/channels.js";
+import { TABS_COMMAND_CHANNEL, TABS_GET_CHANNEL, TABS_MUTATE_CHANNEL, TABS_SNAPSHOT_CHANNEL, type TabsCommand } from "./tabs/channels.js";
+import type { MutateOp, TabsState } from "./tabs/store.js";
 import { UPDATER_CHANNELS } from "./updater/channels.js";
+import { WINDOWS_ACTIVE_TAB_CHANNEL, WINDOWS_CONTEXT_CHANNEL, WINDOWS_POPOUT_CHANNEL } from "./window/channels.js";
+import type { WindowsContext } from "./window/ipc.js";
 
 // main.ts boots one embedded kernel regardless of dev or packaged mode, so
 // both the packaged app:// page and the dev renderer (ELECTRON_DEV=1, served
@@ -60,6 +63,21 @@ if (isPrivilegedOrigin) {
       ipcRenderer.on(TABS_COMMAND_CHANNEL, listener);
       return () => ipcRenderer.removeListener(TABS_COMMAND_CHANNEL, listener);
     },
+    getSnapshot: (): Promise<TabsState> => ipcRenderer.invoke(TABS_GET_CHANNEL),
+    mutate: (op: MutateOp): Promise<TabsState> => ipcRenderer.invoke(TABS_MUTATE_CHANNEL, op),
+    onSnapshot: (cb: (snapshot: TabsState) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, snapshot: TabsState) => cb(snapshot);
+      ipcRenderer.on(TABS_SNAPSHOT_CHANNEL, listener);
+      return () => ipcRenderer.removeListener(TABS_SNAPSHOT_CHANNEL, listener);
+    },
+  };
+
+  desktopApi.windows = {
+    getContext: (): Promise<WindowsContext | undefined> => ipcRenderer.invoke(WINDOWS_CONTEXT_CHANNEL),
+    reportActiveTab: (activeTabId: string): void => {
+      ipcRenderer.send(WINDOWS_ACTIVE_TAB_CHANNEL, activeTabId);
+    },
+    openPopout: (symbol: string): Promise<void> => ipcRenderer.invoke(WINDOWS_POPOUT_CHANNEL, symbol),
   };
 
   desktopApi.dataRoot = {
