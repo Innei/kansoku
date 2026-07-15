@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createMemoryRouteStore, __setActiveRouteStore, type RouteStore } from "../router";
 import { __setActiveTitleSink } from "../useTitle";
-import { getDesktopTabsBridge } from "./desktopTabsBridge";
+import { getDesktopTabsBridge, getSharedTabsBridge, type SharedTabsBridge, type TabsSnapshot as SharedSnapshot } from "./desktopTabsBridge";
 import * as tabsStore from "./tabsStore";
 import { loadTabsSnapshot, saveTabsSnapshot, type TabsSnapshot, type TabState } from "./tabsStore";
+
+const ACTIVE_TAB_STORAGE_KEY = "desktop-active-tab-v1";
 
 export interface TabsController {
   snapshot: TabsSnapshot;
@@ -21,16 +23,92 @@ export interface TabsController {
   focusOrOpenChat(): void;
 }
 
+function readActiveTabId(): string {
+  try {
+    return sessionStorage.getItem(ACTIVE_TAB_STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function writeActiveTabId(id: string): void {
+  try {
+    sessionStorage.setItem(ACTIVE_TAB_STORAGE_KEY, id);
+  } catch {
+    return;
+  }
+}
+
+function reselectActiveTabId(prevTabs: TabState[], nextTabs: TabState[], activeTabId: string): string {
+  if (nextTabs.length === 0) return activeTabId;
+  if (nextTabs.some((tab) => tab.id === activeTabId)) return activeTabId;
+  const idx = prevTabs.findIndex((tab) => tab.id === activeTabId);
+  const clamped = Math.min(Math.max(idx, 0), nextTabs.length - 1);
+  return nextTabs[clamped].id;
+}
+
 function withCurrentScrollCaptured(snapshot: TabsSnapshot): TabsSnapshot {
   return tabsStore.updateTabScroll(snapshot, snapshot.activeTabId, window.scrollY);
 }
 
+function initialSharedSnapshot(): TabsSnapshot {
+  const placeholder = loadTabsSnapshot();
+  const stored = readActiveTabId();
+  const activeTabId = placeholder.tabs.some((tab) => tab.id === stored) ? stored : placeholder.activeTabId;
+  return { tabs: placeholder.tabs, activeTabId };
+}
+
 export function useTabsController(): TabsController {
-  const [snapshot, setSnapshot] = useState<TabsSnapshot>(() => loadTabsSnapshot());
+  const [bridge] = useState<SharedTabsBridge | null>(() => getSharedTabsBridge());
+
+  const [snapshot, setSnapshot] = useState<TabsSnapshot>(() => (bridge ? initialSharedSnapshot() : loadTabsSnapshot()));
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
+
+  const applyIncoming = useCallback((next: SharedSnapshot) => {
+    setSnapshot((prev) => ({
+      tabs: next.tabs,
+      activeTabId: reselectActiveTabId(prev.tabs, next.tabs, prev.activeTabId),
+    }));
+  }, []);
 
   useEffect(() => {
+    if (!bridge) return;
+    let cancelled = false;
+    let lastRevision = -1;
+
+    const guarded = (next: SharedSnapshot) => {
+      if (cancelled || next.revision < lastRevision) return;
+      lastRevision = next.revision;
+      applyIncoming(next);
+    };
+
+    const unsubscribe = bridge.onSnapshot(guarded);
+
+    void bridge.getSnapshot().then(async (initial) => {
+      if (cancelled) return;
+      if (initial.tabs.length > 0) {
+        guarded(initial);
+        return;
+      }
+      const legacy = loadTabsSnapshot();
+      const adopted = await bridge.mutate({ op: "adopt", tabs: legacy.tabs });
+      if (!cancelled) guarded(adopted);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [bridge, applyIncoming]);
+
+  useEffect(() => {
+    if (bridge) {
+      writeActiveTabId(snapshot.activeTabId);
+      return;
+    }
     saveTabsSnapshot(snapshot);
-  }, [snapshot]);
+  }, [snapshot, bridge]);
 
   const activeTab = snapshot.tabs.find((tab) => tab.id === snapshot.activeTabId) ?? snapshot.tabs[0];
 
@@ -39,78 +117,189 @@ export function useTabsController(): TabsController {
     storeRef.current = {
       tabId: activeTab.id,
       store: createMemoryRouteStore(activeTab.route, {
-        onChange: (route) => setSnapshot((prev) => tabsStore.updateTabRoute(prev, activeTab.id, route)),
+        onChange: (route) => {
+          if (bridge) {
+            void bridge.mutate({ op: "updateRoute", id: activeTab.id, route }).then(applyIncoming);
+            return;
+          }
+          setSnapshot((prev) => tabsStore.updateTabRoute(prev, activeTab.id, route));
+        },
       }),
     };
   }
   __setActiveRouteStore(storeRef.current.store);
-  __setActiveTitleSink((title) => setSnapshot((prev) => tabsStore.updateTabTitle(prev, activeTab.id, title)));
+  __setActiveTitleSink((title) => {
+    if (bridge) {
+      void bridge.mutate({ op: "updateTitle", id: activeTab.id, title }).then(applyIncoming);
+      return;
+    }
+    setSnapshot((prev) => tabsStore.updateTabTitle(prev, activeTab.id, title));
+  });
 
   const activeTabId = activeTab.id;
   useEffect(() => {
     window.scrollTo(0, activeTab.scrollY);
   }, [activeTabId]);
 
-  const activateTab = useCallback((id: string) => {
-    setSnapshot((prev) => tabsStore.activateTab(withCurrentScrollCaptured(prev), id));
-  }, []);
+  const captureScroll = useCallback((): Promise<unknown> => {
+    if (!bridge) return Promise.resolve();
+    return bridge.mutate({ op: "updateScroll", id: snapshotRef.current.activeTabId, scrollY: window.scrollY }).then(applyIncoming);
+  }, [bridge, applyIncoming]);
 
-  const closeTabById = useCallback((id: string) => {
-    setSnapshot((prev) => tabsStore.closeTab(prev, id));
-  }, []);
+  const activateTab = useCallback(
+    (id: string) => {
+      if (!snapshotRef.current.tabs.some((tab) => tab.id === id)) return;
+      if (!bridge) {
+        setSnapshot((prev) => tabsStore.activateTab(withCurrentScrollCaptured(prev), id));
+        return;
+      }
+      void captureScroll();
+      setSnapshot((prev) => ({ ...prev, activeTabId: id }));
+    },
+    [bridge, captureScroll],
+  );
 
-  const closeOtherTabs = useCallback((id: string) => {
-    setSnapshot((prev) => tabsStore.closeOtherTabs(withCurrentScrollCaptured(prev), id));
-  }, []);
+  const closeTabById = useCallback(
+    (id: string) => {
+      if (!bridge) {
+        setSnapshot((prev) => tabsStore.closeTab(prev, id));
+        return;
+      }
+      void bridge.mutate({ op: "close", id }).then(applyIncoming);
+    },
+    [bridge, applyIncoming],
+  );
 
-  const closeTabsToRight = useCallback((id: string) => {
-    setSnapshot((prev) => tabsStore.closeTabsToRight(withCurrentScrollCaptured(prev), id));
-  }, []);
+  const closeOtherTabs = useCallback(
+    (id: string) => {
+      if (!bridge) {
+        setSnapshot((prev) => tabsStore.closeOtherTabs(withCurrentScrollCaptured(prev), id));
+        return;
+      }
+      void captureScroll().then(() => bridge.mutate({ op: "closeOthers", id }).then(applyIncoming));
+    },
+    [bridge, captureScroll, applyIncoming],
+  );
 
-  const openTab = useCallback((route: string) => {
-    setSnapshot((prev) => tabsStore.openTab(withCurrentScrollCaptured(prev), route));
-  }, []);
+  const closeTabsToRight = useCallback(
+    (id: string) => {
+      if (!bridge) {
+        setSnapshot((prev) => tabsStore.closeTabsToRight(withCurrentScrollCaptured(prev), id));
+        return;
+      }
+      void captureScroll().then(() => bridge.mutate({ op: "closeToRight", id }).then(applyIncoming));
+    },
+    [bridge, captureScroll, applyIncoming],
+  );
+
+  const openTab = useCallback(
+    (route: string) => {
+      if (!bridge) {
+        setSnapshot((prev) => tabsStore.openTab(withCurrentScrollCaptured(prev), route));
+        return;
+      }
+      void captureScroll().then(() => {
+        const prevIds = new Set(snapshotRef.current.tabs.map((tab) => tab.id));
+        return bridge.mutate({ op: "open", route }).then((result) => {
+          applyIncoming(result);
+          const created = result.tabs.find((tab) => !prevIds.has(tab.id));
+          if (created) setSnapshot((prev) => ({ ...prev, activeTabId: created.id }));
+        });
+      });
+    },
+    [bridge, captureScroll, applyIncoming],
+  );
 
   const openHomeTab = useCallback(() => openTab("/"), [openTab]);
 
-  const focusOrOpenHome = useCallback(() => {
-    setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/"));
-  }, []);
-
   const focusOrOpenSettings = useCallback(() => {
-    setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/settings"));
-  }, []);
-
-  const focusOrOpenResearch = useCallback(() => {
-    setSnapshot((prev) =>
-      tabsStore.focusOrOpenRoutePrefix(withCurrentScrollCaptured(prev), "/research", "/research?view=journal"),
-    );
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/settings"));
+      return;
+    }
+    const existing = snapshotRef.current.tabs.find((tab) => tab.route === "/settings");
+    if (existing) activateTab(existing.id);
+    else openTab("/settings");
+  }, [bridge, activateTab, openTab]);
 
   const focusOrOpenLogs = useCallback(() => {
-    setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/logs"));
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/logs"));
+      return;
+    }
+    const existing = snapshotRef.current.tabs.find((tab) => tab.route === "/logs");
+    if (existing) activateTab(existing.id);
+    else openTab("/logs");
+  }, [bridge, activateTab, openTab]);
 
   const focusOrOpenChat = useCallback(() => {
-    setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/chat"));
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/chat"));
+      return;
+    }
+    const existing = snapshotRef.current.tabs.find((tab) => tab.route === "/chat");
+    if (existing) activateTab(existing.id);
+    else openTab("/chat");
+  }, [bridge, activateTab, openTab]);
+
+  const focusOrOpenHome = useCallback(() => {
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.focusOrOpenRoute(withCurrentScrollCaptured(prev), "/"));
+      return;
+    }
+    const existing = snapshotRef.current.tabs.find((tab) => tab.route === "/");
+    if (existing) activateTab(existing.id);
+    else openTab("/");
+  }, [bridge, activateTab, openTab]);
+
+  const focusOrOpenResearch = useCallback(() => {
+    if (!bridge) {
+      setSnapshot((prev) =>
+        tabsStore.focusOrOpenRoutePrefix(withCurrentScrollCaptured(prev), "/research", "/research?view=journal"),
+      );
+      return;
+    }
+    const existing = snapshotRef.current.tabs.find(
+      (tab) => tab.route === "/research" || tab.route.startsWith("/research?"),
+    );
+    if (existing) activateTab(existing.id);
+    else openTab("/research?view=journal");
+  }, [bridge, activateTab, openTab]);
 
   const closeActiveTab = useCallback(() => {
-    setSnapshot((prev) => tabsStore.closeActiveTab(prev));
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.closeActiveTab(prev));
+      return;
+    }
+    closeTabById(snapshotRef.current.activeTabId);
+  }, [bridge, closeTabById]);
 
   const goToNextTab = useCallback(() => {
-    setSnapshot((prev) => tabsStore.nextTab(prev));
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.nextTab(prev));
+      return;
+    }
+    const { tabs, activeTabId: currentId } = snapshotRef.current;
+    if (tabs.length < 2) return;
+    const idx = tabs.findIndex((tab) => tab.id === currentId);
+    activateTab(tabs[(idx + 1) % tabs.length].id);
+  }, [bridge, activateTab]);
 
   const goToPrevTab = useCallback(() => {
-    setSnapshot((prev) => tabsStore.prevTab(prev));
-  }, []);
+    if (!bridge) {
+      setSnapshot((prev) => tabsStore.prevTab(prev));
+      return;
+    }
+    const { tabs, activeTabId: currentId } = snapshotRef.current;
+    if (tabs.length < 2) return;
+    const idx = tabs.findIndex((tab) => tab.id === currentId);
+    activateTab(tabs[(idx - 1 + tabs.length) % tabs.length].id);
+  }, [bridge, activateTab]);
 
   useEffect(() => {
-    const bridge = getDesktopTabsBridge();
-    if (!bridge) return;
-    return bridge.onCommand((command) => {
+    const commandBridge = getDesktopTabsBridge();
+    if (!commandBridge) return;
+    return commandBridge.onCommand((command) => {
       if (command === "new-tab") openHomeTab();
       else if (command === "close-tab") closeActiveTab();
       else if (command === "next-tab") goToNextTab();
