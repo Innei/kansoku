@@ -62,7 +62,10 @@ export function closeTabsToRight(state: TabsState, id: string): TabsState {
 }
 
 function patchTab(state: TabsState, id: string, patch: Partial<Omit<TabState, "id">>): TabsState {
-  if (!state.tabs.some((tab) => tab.id === id)) return state;
+  const current = state.tabs.find((tab) => tab.id === id);
+  if (!current) return state;
+  const entries = Object.entries(patch) as Array<[keyof TabState, TabState[keyof TabState]]>;
+  if (entries.every(([key, value]) => current[key] === value)) return state;
   return withTabs(state, state.tabs.map((tab) => (tab.id === id ? { ...tab, ...patch } : tab)));
 }
 

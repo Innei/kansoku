@@ -209,6 +209,33 @@ describe("useTabsController with shared bridge", () => {
     expect(getController().snapshot.tabs.map((t) => t.id)).toEqual(["a", "b"]);
   });
 
+  it("keeps snapshot and tab object identity when a newer broadcast carries identical content", async () => {
+    bridge.seed([makeTab("/", "a"), makeTab("/settings", "b")]);
+    const getController = renderController();
+    await waitFor(() => expect(getController().snapshot.tabs).toHaveLength(2));
+
+    const before = getController().snapshot;
+    act(() => bridge.emit({ revision: 99, tabs: [makeTab("/", "a"), makeTab("/settings", "b")] }));
+
+    expect(getController().snapshot).toBe(before);
+    expect(getController().snapshot.tabs).toBe(before.tabs);
+  });
+
+  it("reuses unchanged tab objects when a broadcast changes only one tab", async () => {
+    bridge.seed([makeTab("/", "a"), makeTab("/settings", "b")]);
+    const getController = renderController();
+    await waitFor(() => expect(getController().snapshot.tabs).toHaveLength(2));
+
+    const before = getController().snapshot.tabs;
+    const changed = { ...makeTab("/settings", "b"), scrollY: 120 };
+    act(() => bridge.emit({ revision: 99, tabs: [makeTab("/", "a"), changed] }));
+
+    const after = getController().snapshot.tabs;
+    expect(after).not.toBe(before);
+    expect(after[0]).toBe(before[0]);
+    expect(after[1].scrollY).toBe(120);
+  });
+
   it("restores the sessionStorage active tab on the first snapshot when it still exists", async () => {
     sessionStorage.setItem("desktop-active-tab-v1", "b");
     bridge.seed([makeTab("/", "a"), makeTab("/settings", "b")]);

@@ -156,6 +156,16 @@ describe("updateTabRoute / updateTabTitle / updateTabScroll", () => {
     expect(updateTabTitle(state, "missing-id", "x")).toBe(state);
     expect(updateTabScroll(state, "missing-id", 1)).toBe(state);
   });
+
+  it("is a no-op when the patched value is unchanged", () => {
+    const state = homeState();
+    const id = state.tabs[0].id;
+    const patched = updateTabScroll(updateTabTitle(updateTabRoute(state, id, "/x"), id, "T"), id, 50);
+
+    expect(updateTabRoute(patched, id, "/x")).toBe(patched);
+    expect(updateTabTitle(patched, id, "T")).toBe(patched);
+    expect(updateTabScroll(patched, id, 50)).toBe(patched);
+  });
 });
 
 describe("adoptTabs", () => {
