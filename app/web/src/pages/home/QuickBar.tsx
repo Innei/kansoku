@@ -5,7 +5,13 @@ import { navigate } from "../../router";
 import { listRecentSymbols } from "../../recentCharts";
 import { Chip, Input } from "../../ui";
 
-export function QuickBar({ shortcuts }: { shortcuts: string[] }) {
+export function QuickBar({
+  shortcuts,
+  showGlobalActions = true,
+}: {
+  shortcuts: string[];
+  showGlobalActions?: boolean;
+}) {
   const [input, setInput] = useState("");
   const shortcutSet = new Set(shortcuts);
   const recent = listRecentSymbols().filter((s) => !shortcutSet.has(s.symbol));
@@ -43,17 +49,19 @@ export function QuickBar({ shortcuts }: { shortcuts: string[] }) {
           ))}
         </span>
       )}
-      <span className="quickbar-actions">
-        <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
-          <Library size={16} />
-        </a>
-        <a className="icon-action" href="/chat" aria-label="AI 对话" title="AI 对话">
-          <MessageCircle size={16} />
-        </a>
-        <a className="icon-action" href="/settings" aria-label="设置" title="设置">
-          <Settings size={16} />
-        </a>
-      </span>
+      {showGlobalActions ? (
+        <span className="quickbar-actions">
+          <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
+            <Library size={16} />
+          </a>
+          <a className="icon-action" href="/chat" aria-label="AI 对话" title="AI 对话">
+            <MessageCircle size={16} />
+          </a>
+          <a className="icon-action" href="/settings" aria-label="设置" title="设置">
+            <Settings size={16} />
+          </a>
+        </span>
+      ) : null}
     </div>
   );
 }

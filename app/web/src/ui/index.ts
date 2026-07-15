@@ -3,6 +3,8 @@ export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Chip } from "./Chip";
 export { Input } from "./Input";
+export { Kbd } from "./Kbd";
+export type { KbdKey } from "./Kbd";
 export { Select } from "./Select";
 export type { SelectOption } from "./Select";
 export { Switch } from "./Switch";

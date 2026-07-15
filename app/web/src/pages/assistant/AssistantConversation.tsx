@@ -2,7 +2,7 @@ import { gsap } from "gsap";
 import { AtSign } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { SyntheticEvent } from "react";
-import { Select } from "../../ui";
+import { Kbd, Select } from "../../ui";
 import { ChatComposer } from "../cockpit/chat/ChatComposer";
 import { ConversationTranscript } from "../cockpit/chat/ConversationTranscript";
 import { useAssistantChatSession } from "../cockpit/chat/useChatSession";
@@ -304,7 +304,7 @@ export function AssistantConversation({
                     </span>
                   ) : null}
                   <span className="assistant-composer-shortcut">
-                    <kbd>Enter</kbd> 发送 · <kbd>Shift Enter</kbd> 换行
+                    <Kbd keys={["enter"]} /> 发送 · <Kbd keys={["shift", "enter"]} /> 换行
                   </span>
                 </div>
               </div>

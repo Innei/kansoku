@@ -5,13 +5,11 @@ import {
   House,
   Library,
   MessageCircle,
-  Plus,
   ScrollText,
   Settings,
   TrendingUp,
   X,
 } from 'lucide-react'
-import { openSymbolDialog } from '../OpenSymbolDialog'
 import { useHubStatus } from '../useHubStatus'
 import type { HubStatus } from '../wsHub'
 import { Dot, ScrollArea, showContextMenu, Tooltip, type ContextMenuItem } from '../ui'
@@ -22,6 +20,7 @@ import {
 } from './desktopUpdater'
 import { tabKind, type TabState } from './tabsStore'
 import type { TabsController } from './tabsController'
+import { NewTabLauncher } from './NewTabLauncher'
 
 const TAB_ICONS: Record<ReturnType<typeof tabKind>, typeof House> = {
   home: House,
@@ -39,20 +38,6 @@ function TabIcon({ route }: { route: string }) {
     <span className="desktop-tab-icon-wrap">
       <Icon className="desktop-tab-icon" size={12} />
     </span>
-  )
-}
-
-function AddTab({ onOpenRoute }: { onOpenRoute: (route: string) => void }) {
-  return (
-    <button
-      type="button"
-      className="desktop-tab-new"
-      aria-label="打开个股"
-      title="打开个股"
-      onClick={() => openSymbolDialog(onOpenRoute)}
-    >
-      <Plus size={13} />
-    </button>
   )
 }
 
@@ -154,6 +139,10 @@ export function DesktopTitlebar({
     closeTabsToRight,
     openHomeTab,
     openTab,
+    focusOrOpenHome,
+    focusOrOpenResearch,
+    focusOrOpenSettings,
+    focusOrOpenChat,
   } = controller
   const updaterStatus = useUpdaterStatus()
   const showUpdateBadge = isAvailableStatus(updaterStatus)
@@ -212,7 +201,12 @@ export function DesktopTitlebar({
             onContextMenu={() => openTabMenu(tab.id, index)}
           />
         ))}
-        <AddTab onOpenRoute={openTab} />
+        <NewTabLauncher
+          onOpenHome={focusOrOpenHome}
+          onOpenChat={focusOrOpenChat}
+          onOpenResearch={focusOrOpenResearch}
+          onOpenSymbol={openTab}
+        />
       </ScrollArea>
       <div className="desktop-titlebar-actions">
         {showUpdateBadge && (
@@ -228,6 +222,17 @@ export function DesktopTitlebar({
             <ArrowUpCircle size={16} />
           </button>
         )}
+        <button
+          className={`desktop-titlebar-settings${tabKind(controller.activeTab.route) === 'settings' ? ' desktop-titlebar-settings--active' : ''}`}
+          type="button"
+          aria-label="设置"
+          title="设置（⌘,）"
+          onClick={focusOrOpenSettings}
+        >
+          <span className="desktop-titlebar-action-visual">
+            <Settings size={14} />
+          </span>
+        </button>
         <HubStatusDot />
       </div>
     </div>

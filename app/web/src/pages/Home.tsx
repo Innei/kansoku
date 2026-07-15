@@ -5,6 +5,7 @@ import { useQuery } from "../apiHooks";
 import { client } from "../client";
 import { navigate, useQueryParam } from "../router";
 import { QuoteBar } from "../QuoteBar";
+import { isDesktopRealtime } from "../portTransport";
 import { Badge, ErrorBox, SectionTitle } from "../ui";
 import { useTitle } from "../useTitle";
 import { useSSE } from "../useSSE";
@@ -67,7 +68,7 @@ export function Home() {
       </div>
       {notice && NOTICE_LABEL[notice] && <ErrorBox>{NOTICE_LABEL[notice]}</ErrorBox>}
       <QuoteBar />
-      <QuickBar shortcuts={shortcuts} />
+      <QuickBar shortcuts={shortcuts} showGlobalActions={!isDesktopRealtime()} />
       <DateTimeline dates={timelineDates} selected={date} onSelect={(d) => navigate(`/?date=${d}`, { replace: true })} />
       {isToday && !board && !boardError && <div className="note-block">盘面加载中…</div>}
       {isToday && boardError && !board && <ErrorBox>{boardError}</ErrorBox>}
