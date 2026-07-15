@@ -16,13 +16,7 @@ import { AgentTimeoutError, type AiAgentFactory, createAgentSession } from "./ag
 import { AnalystMessagesEngine, type AnalystSkillContext } from "./messages/analystMessagesEngine.js";
 import { ANALYST_ADAPTER_PROMPT, ANALYST_RETRY_PROMPT, ANALYST_SYSTEM_PROMPT } from "./prompts.js";
 import { appendWatchedMarketsLine, DISCIPLINE_SKILL, DisciplineMissingError } from "./promptPolicy.js";
-import {
-  buildBashTool,
-  buildReadFileTool,
-  buildReadSkillTool,
-  createDefaultExec,
-  type ExecFn,
-} from "./agentTools.js";
+import { buildResearchTools, createDefaultExec, type ExecFn } from "./agentTools.js";
 import { appendComment as defaultAppendComment } from "./comments.js";
 import { buildDataPackTool, buildKlineTool, buildNewsTool, textResult } from "./dataTools.js";
 import { buildReassessPack as defaultBuildReassessPack, type ReassessPack } from "./datapack.js";
@@ -346,18 +340,23 @@ function buildTools(
     },
   };
 
+  const researchTools = buildResearchTools({
+    repoRoot: deps.repoRoot,
+    exec: (command) => {
+      reportProgress("researching", "正在补充外部资料与风险信息");
+      return deps.exec(command);
+    },
+    skillIndex: deps.skillIndex,
+    onSkillRead: (name) => state.loadedSkillIds.add(name),
+  }).tools;
+
   return [
     readDataPack,
     fetchNewsTool,
     fetchKlineTool,
     appendCommentTool,
     submitPrediction,
-    buildBashTool((command) => {
-      reportProgress("researching", "正在补充外部资料与风险信息");
-      return deps.exec(command);
-    }),
-    buildReadSkillTool(deps.skillIndex, (name) => state.loadedSkillIds.add(name)),
-    buildReadFileTool(deps.repoRoot),
+    ...researchTools,
     buildJournalTool(symbol, deps.journalDir, deps.now, () => {
       state.journalWritten = true;
       reportProgress("writing", "正在写入本次复盘日志");
