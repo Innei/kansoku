@@ -7,11 +7,12 @@
 // where env.ts captures an empty/wrong project root in the bundled output.
 import "./boot/env.js";
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { app, BrowserWindow } from "electron";
 import { createServices } from "electron-ipc-decorator";
 import { createAppMenuManager } from "./menu/appMenuManager.js";
 import { bootKernel } from "./boot/kernel.js";
-import { createWindow } from "./window/mainWindow.js";
+import { createWindowManager } from "./window/windowManager.js";
 import { showFatalErrorWindow } from "./window/fatalErrorWindow.js";
 import { applyDevDockIcon } from "./window/dockIcon.js";
 import { registerAppProtocolHandler, registerAppScheme, resolveWebDistRoot } from "./protocol/protocol.js";
@@ -29,8 +30,11 @@ import { installDefaultContextMenu } from "./contextMenu/defaultMenu.js";
 import { registerContextMenuIpc } from "./contextMenu/ipc.js";
 import { registerLogsIpc } from "./logging/ipc.js";
 import { sendTabsCommand } from "./tabs/commands.js";
+import { createTabsFileStore, type TabsFileStore } from "./tabs/store.js";
+import { registerTabsIpc } from "./tabs/ipc.js";
 import { initUpdater } from "./updater/updater.js";
 import { registerUpdaterIpc } from "./updater/ipc.js";
+import { isPopoutWindow } from "./window/popoutWindow.js";
 
 const fileLogger = createFileLogger({
   logFilePath: resolveMainLogPath(app.getPath("logs")),
@@ -44,7 +48,7 @@ console.log(`[desktop] logging to ${fileLogger.path}`);
 // grows into.
 registerAppScheme();
 
-function installAppMenu(checkForUpdates: () => void): void {
+function installAppMenu(checkForUpdates: () => void, openWindow: () => void): void {
   createAppMenuManager({
     appName: app.name,
     deps: {
@@ -63,8 +67,16 @@ function installAppMenu(checkForUpdates: () => void): void {
       openResearch: () => sendTabsCommand("open-research"),
       openChat: () => sendTabsCommand("open-chat"),
       checkForUpdates,
+      newWindow: openWindow,
       newTab: () => sendTabsCommand("new-tab"),
-      closeTab: () => sendTabsCommand("close-tab"),
+      closeTab: () => {
+        const focused = BrowserWindow.getFocusedWindow();
+        if (focused && isPopoutWindow(focused)) {
+          focused.close();
+          return;
+        }
+        sendTabsCommand("close-tab");
+      },
       nextTab: () => sendTabsCommand("next-tab"),
       prevTab: () => sendTabsCommand("prev-tab"),
     },
@@ -86,21 +98,41 @@ app.whenReady().then(async () => {
 
     registerOnboardingIpc(createOnboardingStore());
     registerDataRootIpc();
+    const tabsFileStore: TabsFileStore = createTabsFileStore(join(app.getPath("userData"), "tabs.json"));
+    registerTabsIpc(tabsFileStore);
     registerLogsIpc(fileLogger);
     registerContextMenuIpc();
     await installDefaultContextMenu();
 
     const updater = initUpdater();
     registerUpdaterIpc(updater);
-    installAppMenu(() => updater.checkNow());
-    const openMainWindow = () =>
-      createWindow({
-        onFocus: () => updater.silentCheckOnActivate(),
-      });
-    openMainWindow();
+
+    const windowManager = await createWindowManager({
+      userDataDir: app.getPath("userData"),
+      onWindowFocus: () => updater.silentCheckOnActivate(),
+    });
+    installAppMenu(
+      () => updater.checkNow(),
+      () => windowManager.openWindow(),
+    );
+    windowManager.restoreWindows();
 
     app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) openMainWindow();
+      if (windowManager.windowCount() === 0) windowManager.restoreWindows();
+    });
+
+    let quitFlushed = false;
+    app.on("will-quit", (event) => {
+      if (quitFlushed) return;
+      event.preventDefault();
+      Promise.all([tabsFileStore.flush(), windowManager.flush()])
+        .catch((error: unknown) => {
+          console.error("[desktop] flush on quit failed", error);
+        })
+        .finally(() => {
+          quitFlushed = true;
+          app.quit();
+        });
     });
   } catch (error) {
     showFatalErrorWindow(error);
