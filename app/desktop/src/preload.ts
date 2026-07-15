@@ -2,7 +2,8 @@ import { contextBridge, ipcRenderer } from "electron";
 import { CONTEXT_MENU_CHANNELS } from "./contextMenu/channels.js";
 import { CREDENTIALS_CHANNELS } from "./credentials/channels.js";
 import { IPC_GROUPS } from "./ipc/groups.js";
-import { TABS_COMMAND_CHANNEL, type TabsCommand } from "./tabs/channels.js";
+import { TABS_COMMAND_CHANNEL, TABS_GET_CHANNEL, TABS_MUTATE_CHANNEL, TABS_SNAPSHOT_CHANNEL, type TabsCommand } from "./tabs/channels.js";
+import type { MutateOp, TabsState } from "./tabs/store.js";
 import { UPDATER_CHANNELS } from "./updater/channels.js";
 
 // main.ts boots one embedded kernel regardless of dev or packaged mode, so
@@ -59,6 +60,13 @@ if (isPrivilegedOrigin) {
       const listener = (_event: Electron.IpcRendererEvent, command: TabsCommand) => cb(command);
       ipcRenderer.on(TABS_COMMAND_CHANNEL, listener);
       return () => ipcRenderer.removeListener(TABS_COMMAND_CHANNEL, listener);
+    },
+    getSnapshot: (): Promise<TabsState> => ipcRenderer.invoke(TABS_GET_CHANNEL),
+    mutate: (op: MutateOp): Promise<TabsState> => ipcRenderer.invoke(TABS_MUTATE_CHANNEL, op),
+    onSnapshot: (cb: (snapshot: TabsState) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, snapshot: TabsState) => cb(snapshot);
+      ipcRenderer.on(TABS_SNAPSHOT_CHANNEL, listener);
+      return () => ipcRenderer.removeListener(TABS_SNAPSHOT_CHANNEL, listener);
     },
   };
 
