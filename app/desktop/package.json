@@ -28,10 +28,10 @@
     "@electron/rebuild": "^4.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
-    "electron": "43.1.0",
+    "electron": "43.1.1",
     "electron-builder": "^26.15.3",
-    "tsdown": "^0.22.5",
-    "typescript": "^6.0.3",
+    "tsdown": "^0.22.8",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
   "license": "SEE LICENSE IN LICENSE"
