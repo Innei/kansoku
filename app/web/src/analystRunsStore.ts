@@ -14,6 +14,7 @@ const listeners = new Set<() => void>();
 
 let activeSymbolProvider: (() => string | null) | null = null;
 let unsubscribeChannel: (() => void) | null = null;
+let pendingSinceDisconnect = new Set<string>();
 
 function emit(): void {
   snapshot = { runs, unseen };
@@ -26,6 +27,13 @@ function isReassessStatus(value: unknown): value is ReassessStatus {
   return typeof status.running === "boolean";
 }
 
+function markUnseenIfInactive(symbol: string): void {
+  if (activeSymbolProvider && activeSymbolProvider() !== symbol) {
+    unseen = new Set(unseen);
+    unseen.add(symbol);
+  }
+}
+
 function handleInit(payload: { runs?: unknown }): void {
   if (!Array.isArray(payload.runs)) return;
   const next = new Map<string, ReassessStatus>();
@@ -35,6 +43,14 @@ function handleInit(payload: { runs?: unknown }): void {
     if (typeof symbol !== "string" || !isReassessStatus(status)) continue;
     next.set(symbol, status);
   }
+
+  const staleCandidates = new Set(runs.keys());
+  for (const symbol of pendingSinceDisconnect) staleCandidates.add(symbol);
+  for (const symbol of staleCandidates) {
+    if (!next.has(symbol)) markUnseenIfInactive(symbol);
+  }
+  pendingSinceDisconnect = new Set();
+
   runs = next;
   emit();
 }
@@ -52,10 +68,14 @@ function handleUpdate(payload: { symbol?: unknown; status?: unknown }): void {
 
   runs = new Map(runs);
   runs.delete(symbol);
-  if (activeSymbolProvider && activeSymbolProvider() !== symbol) {
-    unseen = new Set(unseen);
-    unseen.add(symbol);
-  }
+  markUnseenIfInactive(symbol);
+  emit();
+}
+
+function handleConnected(connected: boolean): void {
+  if (connected) return;
+  for (const symbol of runs.keys()) pendingSinceDisconnect.add(symbol);
+  runs = new Map();
   emit();
 }
 
@@ -69,7 +89,7 @@ function onPayload(payload: unknown): void {
 export function subscribeAnalystRuns(listener: () => void): () => void {
   listeners.add(listener);
   if (listeners.size === 1) {
-    unsubscribeChannel = subscribeChannel({ kind: "analyst-runs" }, onPayload, () => {});
+    unsubscribeChannel = subscribeChannel({ kind: "analyst-runs" }, onPayload, handleConnected);
   }
   return () => {
     listeners.delete(listener);
@@ -116,6 +136,7 @@ export function useAnalystRuns(): AnalystRunsSnapshot {
 export function resetAnalystRunsStoreForTests(): void {
   runs = new Map();
   unseen = new Set();
+  pendingSinceDisconnect = new Set();
   snapshot = { runs, unseen };
   listeners.clear();
   activeSymbolProvider = null;
