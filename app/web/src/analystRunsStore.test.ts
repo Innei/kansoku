@@ -141,6 +141,82 @@ describe("analystRunsStore", () => {
     expect(subs[0].unsub).toHaveBeenCalledTimes(1);
   });
 
+  it("marks unseen for a run that ended during a disconnect window, on next init", () => {
+    store.setActiveSymbolProvider(() => "MU");
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "init", runs: [{ symbol: "NVDA", status: running("preparing") }] });
+    expect(store.isRunning("NVDA")).toBe(true);
+
+    subs[0].onPayload({ type: "init", runs: [] });
+
+    expect(store.isRunning("NVDA")).toBe(false);
+    expect(store.hasUnseen("NVDA")).toBe(true);
+    off();
+  });
+
+  it("does not mark unseen on init-diff when the active symbol matches the vanished run", () => {
+    store.setActiveSymbolProvider(() => "NVDA");
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "init", runs: [{ symbol: "NVDA", status: running("preparing") }] });
+
+    subs[0].onPayload({ type: "init", runs: [] });
+
+    expect(store.hasUnseen("NVDA")).toBe(false);
+    off();
+  });
+
+  it("does not mark unseen on init-diff when no active-symbol provider is set", () => {
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "init", runs: [{ symbol: "NVDA", status: running("preparing") }] });
+
+    subs[0].onPayload({ type: "init", runs: [] });
+
+    expect(store.hasUnseen("NVDA")).toBe(false);
+    off();
+  });
+
+  it("clears runs without fabricating unseen when the channel disconnects", () => {
+    store.setActiveSymbolProvider(() => "MU");
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "update", symbol: "NVDA", status: running("preparing") });
+    expect(store.isRunning("NVDA")).toBe(true);
+
+    subs[0].onConnected(false);
+
+    expect(store.isRunning("NVDA")).toBe(false);
+    expect(store.hasUnseen("NVDA")).toBe(false);
+    off();
+  });
+
+  it("marks unseen on reconnect init when a disconnected run never comes back", () => {
+    store.setActiveSymbolProvider(() => "MU");
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "update", symbol: "NVDA", status: running("preparing") });
+    subs[0].onConnected(false);
+    expect(store.hasUnseen("NVDA")).toBe(false);
+
+    subs[0].onConnected(true);
+    subs[0].onPayload({ type: "init", runs: [] });
+
+    expect(store.isRunning("NVDA")).toBe(false);
+    expect(store.hasUnseen("NVDA")).toBe(true);
+    off();
+  });
+
+  it("re-adds a still-running symbol on reconnect init without marking it unseen", () => {
+    store.setActiveSymbolProvider(() => "MU");
+    const off = store.subscribeAnalystRuns(vi.fn());
+    subs[0].onPayload({ type: "update", symbol: "NVDA", status: running("preparing") });
+    subs[0].onConnected(false);
+
+    subs[0].onConnected(true);
+    subs[0].onPayload({ type: "init", runs: [{ symbol: "NVDA", status: running("writing") }] });
+
+    expect(store.isRunning("NVDA")).toBe(true);
+    expect(store.hasUnseen("NVDA")).toBe(false);
+    off();
+  });
+
   it("clears runs (but keeps unseen) when the last listener detaches", () => {
     store.setActiveSymbolProvider(() => "MU");
     const off = store.subscribeAnalystRuns(vi.fn());
