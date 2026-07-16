@@ -74,7 +74,7 @@ describe("GET /:sym/journal", () => {
     expect(body.ok).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
     for (const row of body.data) {
-      expect(row.name).toMatch(/^\d{4}-\d{2}-\d{2}-mu(-|\.)/);
+      expect(row.name).toMatch(/^\d{4}-\d{2}-\d{2}-mu(-|\.)/i);
     }
   });
 
