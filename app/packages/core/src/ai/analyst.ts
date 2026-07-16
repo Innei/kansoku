@@ -4,6 +4,7 @@ import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { type Static, Type } from "typebox";
 import { Check } from "typebox/value";
 import { type CockpitComment, type CommentLevel, type NewsItem, type RawBar } from "../../../../shared/types.js";
+import type { ReassessPhase, ReassessStatus } from "../contract/symbols.js";
 import { chartUrl } from "../chartUrl.js";
 import { JOURNAL_DIR, PROJECT_ROOT, skillSearchDirs } from "../env.js";
 import { buildChart } from "../services/build.js";
@@ -150,23 +151,34 @@ export interface StartResult {
 const analystRunLock = createRunLock();
 const analystRunStates = new Map<string, Extract<AnalystRunStatus, { running: true }>>();
 const lastEscalationStart = new Map<string, number>();
+const analystRunListeners = new Set<(symbol: string, status: AnalystRunStatus) => void>();
 
-export type AnalystRunPhase = "preparing" | "researching" | "writing" | "finalizing";
+export type AnalystRunPhase = ReassessPhase;
 
-export type AnalystRunStatus =
-  | { running: false }
-  | {
-      running: true;
-      origin: AnalystOrigin;
-      phase: AnalystRunPhase;
-      activity: string;
-      startedAt: string;
-      updatedAt: string;
-    };
+export type AnalystRunStatus = ReassessStatus;
 
 export function analystRunStatus(symbol: string): AnalystRunStatus {
   if (!analystRunLock.isLocked(symbol)) return { running: false };
   return analystRunStates.get(symbol) ?? { running: false };
+}
+
+export function listAnalystRuns(): Array<{ symbol: string; status: AnalystRunStatus }> {
+  return [...analystRunStates.entries()].map(([symbol, status]) => ({ symbol, status }));
+}
+
+export function onAnalystRunChange(listener: (symbol: string, status: AnalystRunStatus) => void): () => void {
+  analystRunListeners.add(listener);
+  return () => analystRunListeners.delete(listener);
+}
+
+function emitAnalystRunChange(symbol: string, status: AnalystRunStatus): void {
+  for (const listener of analystRunListeners) {
+    try {
+      listener(symbol, status);
+    } catch {
+      continue;
+    }
+  }
 }
 
 function updateAnalystRunStatus(
@@ -177,12 +189,14 @@ function updateAnalystRunStatus(
 ): void {
   const current = analystRunStates.get(symbol);
   if (!current) return;
-  analystRunStates.set(symbol, {
+  const next: Extract<AnalystRunStatus, { running: true }> = {
     ...current,
     phase,
     activity,
     updatedAt: new Date(now()).toISOString(),
-  });
+  };
+  analystRunStates.set(symbol, next);
+  emitAnalystRunChange(symbol, next);
 }
 
 export function escalationOnCooldown(symbol: string, now: number): boolean {
@@ -495,18 +509,21 @@ export function runAnalyst({ symbol, origin, deps }: RunAnalystInput): StartResu
   if (origin === "escalation") lastEscalationStart.set(symbol, now);
 
   const startedAt = new Date(now).toISOString();
-  analystRunStates.set(symbol, {
+  const initialStatus: Extract<AnalystRunStatus, { running: true }> = {
     running: true,
     origin,
     phase: "preparing",
     activity: "正在准备分析环境",
     startedAt,
     updatedAt: startedAt,
-  });
+  };
+  analystRunStates.set(symbol, initialStatus);
+  emitAnalystRunChange(symbol, initialStatus);
 
   const done = executeAnalystRun(symbol, { ...deps, origin }).finally(() => {
     analystRunStates.delete(symbol);
     analystRunLock.release(symbol);
+    emitAnalystRunChange(symbol, { running: false });
   });
   return { started: true, done };
 }
