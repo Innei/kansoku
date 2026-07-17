@@ -203,10 +203,9 @@ export function SettingsPage() {
   };
 
   useEffect(() => {
-    if (window.location.hash === "#license-section") {
-      document.getElementById("license-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
+    if (window.location.hash !== "#license-section") return;
+    document.getElementById("license-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [pro, licensed, settings, catalog]);
 
   if (pro === null) {
     return (

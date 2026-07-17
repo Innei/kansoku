@@ -45,7 +45,7 @@ function DeactivateConfirm({ closeModal }: { closeModal: () => void }) {
   );
 }
 
-function ActivateForm({ invalid }: { invalid: boolean }) {
+function ActivateForm({ notice }: { notice?: "invalid" | "expired" }) {
   const [key, setKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,9 +73,14 @@ function ActivateForm({ invalid }: { invalid: boolean }) {
 
   return (
     <div className="settings-time-preference license-activate-row">
-      {invalid ? (
+      {notice === "invalid" ? (
         <div className="settings-preference-description license-invalid-notice">
           此授权码已失效（可能是退订或更换了套餐），请重新输入有效的授权码。
+        </div>
+      ) : null}
+      {notice === "expired" ? (
+        <div className="settings-preference-description license-expired-notice">
+          授权已过期：超过 14 天未能联网验证。请检查网络连接——恢复联网后会自动重新验证；若订阅已到期，请重新订阅或输入新的授权码。
         </div>
       ) : null}
       <div className="license-input-row">
@@ -153,7 +158,7 @@ export function LicenseSection() {
           graceUntil={license?.graceUntil}
         />
       ) : (
-        <ActivateForm invalid={state === "invalid"} />
+        <ActivateForm notice={state === "invalid" ? "invalid" : state === "expired" ? "expired" : undefined} />
       )}
     </Card>
   );

@@ -1704,6 +1704,7 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .license-input-row { display: flex; gap: 8px; }
 .license-input-row .input { min-width: 0; flex: 1; }
 .license-invalid-notice { color: var(--down); }
+.license-expired-notice { color: var(--accent); }
 .license-subscribe-link { color: var(--accent); font-size: var(--fs-sm); }
 
 .logs-page { display: flex; flex-direction: column; min-height: 0; gap: 10px; }
