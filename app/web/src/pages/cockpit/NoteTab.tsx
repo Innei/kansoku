@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import type { ReactNode } from "react";
-import { Maximize2 } from "lucide-react";
+import { Lock, Maximize2 } from "lucide-react";
 import { Button, Empty, ErrorBox, MarketTime, Spinner, TimeAgo } from "../../ui";
+import { useFeatureGuard } from "../../featureGuard";
 import { marketOfSymbol } from "../../lib/market";
 import { Markdown, openMarkdownModal } from "./markdown";
 import { bareSymbol, useDeepDive } from "./useDeepDive";
@@ -12,6 +13,7 @@ export function NoteTab({ symbol }: { symbol: string }) {
   const { note, error, reload } = useNote(symbol);
   const onNoteReady = useCallback(() => reload(), [reload]);
   const deepDive = useDeepDive(symbol, onNoteReady);
+  const { locked, guard } = useFeatureGuard();
 
   const confirmAndStart = () => {
     const confirmed = window.confirm(
@@ -38,8 +40,9 @@ export function NoteTab({ symbol }: { symbol: string }) {
   }
 
   const button = (
-    <Button onClick={confirmAndStart} disabled={deepDive.pending || deepDive.running || deepDive.disabled}>
+    <Button onClick={() => guard(confirmAndStart)} disabled={deepDive.pending || deepDive.running || deepDive.disabled}>
       {(deepDive.pending || deepDive.running) && <Spinner />}
+      {locked && <Lock size={13} />}
       {buttonLabel}
     </Button>
   );

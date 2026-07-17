@@ -672,6 +672,9 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 }
 .follow-control > svg { color: var(--accent); }
 .follow-control--error, .follow-control--error > svg { color: var(--down); }
+.follow-control--locked { opacity: 0.65; }
+.follow-control--locked:hover { opacity: 1; }
+.follow-control-lock { color: var(--accent); }
 
 .ui-switch {
   position: relative; display: inline-flex; align-items: center;
@@ -1970,6 +1973,8 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .research-related-list small { color: var(--text-muted); font-size: var(--fs-xs); }
 
 .research-assistant { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.research-assistant--locked { justify-content: center; }
+.research-assistant--locked .locked-ai-notice { margin: 0 12px; }
 .research-assistant-header {
   display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;
   min-height: 38px; padding: 4px 8px;

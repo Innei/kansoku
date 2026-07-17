@@ -4,10 +4,12 @@ import { ChevronRight, FileDiff, History, RefreshCw, Square } from "lucide-react
 import type { ResearchDocument, ResearchDocumentMeta, ResearchEditProposal } from "../../../../packages/core/src/contract";
 import { useQuery } from "../../apiHooks";
 import { client } from "../../client";
+import { useFeatureGuard } from "../../featureGuard";
 import { MarketTime, openModal, Spinner } from "../../ui";
 import { ChatComposer } from "../cockpit/chat/ChatComposer";
 import { ConversationTranscript } from "../cockpit/chat/ConversationTranscript";
 import type { TranscriptInsert } from "../cockpit/chat/transcriptTimeline";
+import { LockedAiNotice } from "../LockedAiNotice";
 import { openEditReview, STATUS_LABEL } from "./ResearchEditReview";
 import { ResearchRefreshCard } from "./ResearchRefreshPanel";
 import { researchTypeLabel } from "./researchModel";
@@ -183,6 +185,7 @@ export function ResearchAssistant({
   onSelect: (document: ResearchDocumentMeta) => void;
   onDocumentChanged: (document?: ResearchDocument) => void;
 }) {
+  const { locked } = useFeatureGuard();
   const conversation = useResearchChatSession(document.path);
   const [text, setText] = useState("");
   const previousBusyRef = useRef(false);
@@ -304,6 +307,14 @@ export function ResearchAssistant({
     }
     return list;
   }, [refresh.task, pending, history, handleChanged]);
+
+  if (locked) {
+    return (
+      <div className="research-assistant research-assistant--locked">
+        <LockedAiNotice message="研究库 AI（刷新文档 / 编辑审阅 / 研究对话）需要有效授权" />
+      </div>
+    );
+  }
 
   return (
     <div className="research-assistant">
