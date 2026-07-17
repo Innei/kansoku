@@ -6,8 +6,10 @@ import type {
   ReassessResult,
   ReassessStatus,
 } from "./aiTypes.js";
+import type { LicenseService, LicenseSnapshot } from "./licenseTypes.js";
 
 export * from "./aiTypes.js";
+export * from "./licenseTypes.js";
 
 export interface SymbolFollowState {
   symbol: string;
@@ -43,6 +45,7 @@ export interface ProHostContext {
 export interface ProCapabilities {
   pro: boolean;
   licensed: boolean;
+  license?: LicenseSnapshot;
 }
 
 export interface ProChannel {
@@ -57,6 +60,7 @@ export interface ProChannel {
 export interface ProModule {
   hooks: ProHooks;
   aiSettings?: AiSettingsService;
+  license?: LicenseService;
   tsukiModules?: unknown[];
   ipcServiceClasses?: unknown[];
   channels?: ProChannel[];
