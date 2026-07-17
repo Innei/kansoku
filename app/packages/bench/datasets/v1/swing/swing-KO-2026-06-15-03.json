@@ -3053,7 +3053,78 @@
       "prev_close": 82.091
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-18h8xe0",
+        "title": "Coca Cola 52 Week High",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/coca-cola-52-week-high-132530004.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1wihhsg",
+        "title": "Director Pdmr Shareholding",
+        "published_at": "2026-06-15T19:15:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/coca-cola-hbc-ag-cdi---cch/director-pdmr-shareholding/9619208",
+        "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1oroyyb",
+        "title": "Jim Cramer Coca Cola Quintessential",
+        "published_at": "2026-06-15T09:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/jim-cramer-coca-cola-quintessential-080511628.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1v8ew5b",
+        "title": "Jim Cramer On Coca Cola This Is A Quintessential Defensive Stock",
+        "published_at": "2026-06-15T09:00:00Z",
+        "url": "https://www.insidermonkey.com/blog/jim-cramer-on-coca-cola-this-is-a-quintessential-defensive-stock-1781338/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1vzkyuu",
+        "title": "Coca Cola Company Ko Among",
+        "published_at": "2026-06-15T08:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/coca-cola-company-ko-among-034525261.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1cv17ol",
+        "title": "Difference Between Diet Coke Coca Cola Zero",
+        "published_at": "2026-06-15T06:15:00Z",
+        "url": "https://www.express.co.uk/life-style/food/2217161/difference-between-diet-coke-coca-cola-zero",
+        "source": "gdelt-arch:express.co.uk"
+      },
+      {
+        "id": "gdelt-arch-yd6xl5",
+        "title": "Deltas Choices Over Potential Coca Cola Exit",
+        "published_at": "2026-06-15T01:30:00Z",
+        "url": "https://insiderzim.com/deltas-choices-over-potential-coca-cola-exit/",
+        "source": "gdelt-arch:insiderzim.com"
+      },
+      {
+        "id": "gdelt-arch-6rstp8",
+        "title": "Up 18 In 2026 Is Coca Cola A Buy At An All Time Hi",
+        "published_at": "2026-06-14T20:45:00Z",
+        "url": "https://www.fool.com/investing/2026/06/14/up-18-in-2026-is-coca-cola-a-buy-at-an-all-time-hi/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-thvupp",
+        "title": "18 2026 Coca Cola Buy",
+        "published_at": "2026-06-14T15:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/18-2026-coca-cola-buy-150800924.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-h0plgz",
+        "title": "75 Years After The Beat Goes On For Coca Cola",
+        "published_at": "2026-06-14T14:45:00Z",
+        "url": "https://www.thisdaylive.com/2026/06/14/75-years-after-the-beat-goes-on-for-coca-cola/",
+        "source": "gdelt-arch:thisdaylive.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

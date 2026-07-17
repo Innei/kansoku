@@ -3055,6 +3055,76 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-5x0wc2",
+        "title": "I Dug Into The Windows 11 Insider Builds For June 2026 And These Are The Most Interesting Features",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://www.windowscentral.com/microsoft/windows-11/i-dug-into-the-windows-11-insider-builds-for-june-2026-and-these-are-the-most-interesting-features",
+        "source": "gdelt-arch:windowscentral.com"
+      },
+      {
+        "id": "gdelt-arch-tgfqwa",
+        "title": "Microsoft Reportedly Looking To Reverse Course On Xbox Exclusives",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://www.vice.com/en/article/microsoft-reportedly-looking-to-reverse-course-on-xbox-exclusives/",
+        "source": "gdelt-arch:vice.com"
+      },
+      {
+        "id": "gdelt-arch-otu5vc",
+        "title": "Microsoft Blocks Employees From Using Claude Fable 5 Over Data Retention Fears",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://memeburn.com/microsoft-blocks-employees-from-using-claude-fable-5-over-data-retention-fears/",
+        "source": "gdelt-arch:memeburn.com"
+      },
+      {
+        "id": "gdelt-arch-1nahkhf",
+        "title": "June 15 Microsoft Office Professional 2021 For Windows Lifetime License",
+        "published_at": "2026-06-15T23:30:00Z",
+        "url": "https://mashable.com/tech/june-15-microsoft-office-professional-2021-for-windows-lifetime-license",
+        "source": "gdelt-arch:mashable.com"
+      },
+      {
+        "id": "gdelt-arch-ozgtwg",
+        "title": "Microsoft Faces Shareholder Lawsuit Over Ai Disclosure",
+        "published_at": "2026-06-15T23:00:00Z",
+        "url": "https://www.theepochtimes.com/business/microsoft-faces-shareholder-lawsuit-over-ai-disclosure-6048240",
+        "source": "gdelt-arch:theepochtimes.com"
+      },
+      {
+        "id": "gdelt-arch-4h2eji",
+        "title": "Microsoft Sued By Shareholders For Hiding Azure Cloud Slowdown",
+        "published_at": "2026-06-15T23:00:00Z",
+        "url": "https://www.gdnonline.com:443/Details/1397748/Microsoft-sued-by-shareholders-for-hiding-Azure-cloud-slowdown",
+        "source": "gdelt-arch:gdnonline.com"
+      },
+      {
+        "id": "gdelt-arch-t9cm9i",
+        "title": "Microsoft Advertising Launches Product Explorer",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://www.searchenginejournal.com/microsoft-advertising-launches-product-explorer/579316/",
+        "source": "gdelt-arch:searchenginejournal.com"
+      },
+      {
+        "id": "gdelt-arch-ccya0m",
+        "title": "Microsoft Xbox Game Studios Layoffs Compulsion Shut Down",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://mashable.com/tech/microsoft-xbox-game-studios-layoffs-compulsion-shut-down",
+        "source": "gdelt-arch:mashable.com"
+      },
+      {
+        "id": "gdelt-arch-slureq",
+        "title": "Recover Investment Losses Class Action Initiated Against Microsoft R5191722",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://www.pr-inside.com/recover-investment-losses-class-action-initiated-against-microsoft-r5191722.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
+        "id": "gdelt-arch-1tfw3dm",
+        "title": "Tango Networks And Nuwave Bring Native Mobile Calling To Microsoft R5191727",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://www.pr-inside.com/tango-networks-and-nuwave-bring-native-mobile-calling-to-microsoft-r5191727.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
         "id": "edgar-0001193125-26-258667",
         "title": "8-K filed 2026-06-05 (d26760d8k.htm)",
         "published_at": "2026-06-05T00:00:00Z",

@@ -3053,7 +3053,78 @@
       "prev_close": 481.492
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-jkqnjy",
+        "title": "Microsoft Outlook Quick Steps",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.makeuseof.com/microsoft-outlook-quick-steps/",
+        "source": "gdelt-arch:makeuseof.com"
+      },
+      {
+        "id": "gdelt-arch-1n3i85z",
+        "title": "N82E16888351003",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.newegg.com/microsoft/p/N82E16888351003?Item=N82E16888351003&cm_sp=Homepage_SS-_-P4_88-351-003-_-01022026",
+        "source": "gdelt-arch:newegg.com"
+      },
+      {
+        "id": "gdelt-arch-186dwod",
+        "title": "Why Analyst Prefers Microsoft Over",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://finance.yahoo.com/news/why-analyst-prefers-microsoft-over-223109843.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1gcs3rr",
+        "title": "Scienter Orel Cloud And Microsoft Support Govt With Digital Inventory Control System For Ditwah Relief",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://www.ft.lk/front-page/Scienter-Orel-Cloud-and-Microsoft-support-Govt-with-digital-Inventory-Control-System-for-Ditwah-relief/44-786457",
+        "source": "gdelt-arch:ft.lk"
+      },
+      {
+        "id": "gdelt-arch-1q6v1ve",
+        "title": "Microsoft Killed His Dream Mmo Despite Apparently Loving It Says Former Elder Scrolls Online Head So He Left The Game I Had Waited My Entire Career To Create",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.gamesradar.com/games/mmo/microsoft-killed-his-dream-mmo-despite-apparently-loving-it-says-former-elder-scrolls-online-head-so-he-left-the-game-i-had-waited-my-entire-career-to-create/",
+        "source": "gdelt-arch:gamesradar.com"
+      },
+      {
+        "id": "gdelt-arch-ebun18",
+        "title": "Microsoft Ceo Resorts To Blogging In Defense Of Ai Says We Need To Get Beyond The Arguments Of Slop Exactly What Id Say If I Was Tired Of Losing The Arguments Of Slop",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.gamesradar.com/games/microsoft-ceo-resorts-to-blogging-in-defense-of-ai-says-we-need-to-get-beyond-the-arguments-of-slop-exactly-what-id-say-if-i-was-tired-of-losing-the-arguments-of-slop/",
+        "source": "gdelt-arch:gamesradar.com"
+      },
+      {
+        "id": "gdelt-arch-1bfcn18",
+        "title": "Microsoft Ai Slop Satya Nadella",
+        "published_at": "2026-01-02T21:45:00Z",
+        "url": "https://kotaku.com/microsoft-ai-slop-satya-nadella-2000656473",
+        "source": "gdelt-arch:kotaku.com"
+      },
+      {
+        "id": "gdelt-arch-9z3evr",
+        "title": "Microsoft Msft Named Top Large Cap Software Pick By Morgan Stanley",
+        "published_at": "2026-01-02T20:15:00Z",
+        "url": "https://www.insidermonkey.com/blog/microsoft-msft-named-top-large-cap-software-pick-by-morgan-stanley-1668979/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-16l6znk",
+        "title": "C2x To Deliver 36 Million Metric Tons Of Carbon Removal To Microsoft Over 12 Years",
+        "published_at": "2026-01-02T20:00:00Z",
+        "url": "https://biomassmagazine.com/articles/c2x-to-deliver-36-million-metric-tons-of-carbon-removal-to-microsoft-over-12-years",
+        "source": "gdelt-arch:biomassmagazine.com"
+      },
+      {
+        "id": "gdelt-arch-16crb6i",
+        "title": "Microsoft Ai Ceo Warns Of Existential Risks Urges Global Regulations",
+        "published_at": "2026-01-02T18:45:00Z",
+        "url": "https://www.webpronews.com/microsoft-ai-ceo-warns-of-existential-risks-urges-global-regulations/",
+        "source": "gdelt-arch:webpronews.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

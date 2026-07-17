@@ -3,18 +3,29 @@ import { join } from "node:path";
 import { loadQuestionFile, loadQuestionForScorer } from "../dataset/loader.js";
 import type { BenchNewsItem } from "../schema/newsItem.js";
 import type { Question } from "../schema/question.js";
+import type { FetchArchiveFile, ReadArchiveCsv } from "./archiveSource.js";
 import { cacheFile, readCache, writeCache } from "./cache.js";
+import { archiveCachePeriod, enumerateArchiveGrid } from "./gdeltArchiveWindow.js";
+import { extractArchiveMatches, mapArchiveMatches } from "./gdeltArchiveMapping.js";
+import type { ArchiveMatch, ArchiveWindowRequest } from "./gdeltArchiveMapping.js";
 import { assertNoLeak, mapEdgarFilings, mapGdeltArticles } from "./newsMapping.js";
 import type { EdgarFiling, GdeltArticle } from "./newsMapping.js";
 import type { FetchEdgarFilings, FetchGdeltArticles } from "./newsSource.js";
 import { edgarWindow, gdeltWindow, toGdeltStamp } from "./newsWindow.js";
 import { specForSymbol } from "./symbols.js";
 
+export type NewsSourceMode = "doc" | "archive" | "auto";
+
+export const DEFAULT_ARCHIVE_THROTTLE_MS = 1000;
+
 export interface NewsBackfillDeps {
   datasetsRoot: string;
   fresh: boolean;
   fetchGdelt: FetchGdeltArticles;
   fetchEdgar: FetchEdgarFilings;
+  fetchArchiveFile?: FetchArchiveFile;
+  readArchiveCsv?: ReadArchiveCsv;
+  archiveThrottleMs?: number;
   log: (line: string) => void;
 }
 
@@ -41,9 +52,11 @@ export function recordGdeltOutcome(breaker: GdeltCircuitBreaker, failed: boolean
 export interface QuestionNewsResult {
   news: BenchNewsItem[];
   gdeltCount: number;
+  archiveCount: number;
   edgarCount: number;
   gdeltError: string | null;
   gdeltSkipped: boolean;
+  usedArchive: boolean;
 }
 
 async function loadGdeltArticles(
@@ -75,21 +88,160 @@ async function loadEdgarFilings(symbol: string, cik: string, deps: NewsBackfillD
   return filings;
 }
 
-export async function computeNewsForQuestion(
+async function fileExists(path: string): Promise<boolean> {
+  return fs.stat(path).then(
+    () => true,
+    () => false,
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function filterUncachedArchiveRequests(
+  datasetsRoot: string,
+  cutoffIso: string,
+  requests: ArchiveWindowRequest[],
+): Promise<ArchiveWindowRequest[]> {
+  const pending: ArchiveWindowRequest[] = [];
+  for (const request of requests) {
+    const file = cacheFile(datasetsRoot, request.symbol, archiveCachePeriod(cutoffIso));
+    const cached = await readCache<ArchiveMatch[]>(file);
+    if (cached == null) pending.push(request);
+  }
+  return pending;
+}
+
+async function scanArchiveWindowAndCache(
+  cutoffIso: string,
+  requests: ArchiveWindowRequest[],
+  deps: NewsBackfillDeps,
+): Promise<void> {
+  if (!deps.fetchArchiveFile || !deps.readArchiveCsv) {
+    throw new Error("archive news source selected but fetchArchiveFile/readArchiveCsv were not provided");
+  }
+  const fetchArchiveFile = deps.fetchArchiveFile;
+  const readArchiveCsv = deps.readArchiveCsv;
+  const throttleMs = deps.archiveThrottleMs ?? DEFAULT_ARCHIVE_THROTTLE_MS;
+
+  const zipCacheDir = join(deps.datasetsRoot, ".cache", "gdelt-arch");
+  const stamps = enumerateArchiveGrid(cutoffIso);
+  const bySymbol = new Map<string, ArchiveMatch[]>();
+  for (const request of requests) bySymbol.set(request.symbol, []);
+
+  let downloaded = 0;
+  let gaps = 0;
+
+  for (const stamp of stamps) {
+    const zipPath = join(zipCacheDir, `${stamp}.gkg.csv.zip`);
+    const alreadyCached = await fileExists(zipPath);
+    if (!alreadyCached) {
+      const buf = await fetchArchiveFile(stamp);
+      if (buf == null) {
+        gaps += 1;
+        deps.log(`  gdelt-arch: grid gap at ${stamp} (404, skipping)`);
+        continue;
+      }
+      await fs.mkdir(zipCacheDir, { recursive: true });
+      await fs.writeFile(zipPath, buf);
+      downloaded += 1;
+      await sleep(throttleMs);
+    }
+
+    let csv: string;
+    try {
+      csv = await readArchiveCsv(zipPath);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      deps.log(`  gdelt-arch: failed to unzip ${stamp}: ${message}`);
+      continue;
+    }
+
+    const matches = extractArchiveMatches(csv, requests);
+    for (const [symbol, rows] of matches) {
+      bySymbol.get(symbol)!.push(...rows);
+    }
+  }
+
+  deps.log(
+    `  gdelt-arch window ${cutoffIso}: ${stamps.length} grid points, ${downloaded} downloaded, ${gaps} gaps, ${requests.length} symbols scanned`,
+  );
+
+  for (const [symbol, rows] of bySymbol) {
+    const file = cacheFile(deps.datasetsRoot, symbol, archiveCachePeriod(cutoffIso));
+    await writeCache(file, rows);
+  }
+}
+
+async function ensureArchiveWindowScanned(
+  cutoffIso: string,
+  windowRequests: Map<string, ArchiveWindowRequest[]>,
+  scannedWindows: Set<string>,
+  deps: NewsBackfillDeps,
+): Promise<void> {
+  if (scannedWindows.has(cutoffIso)) return;
+  scannedWindows.add(cutoffIso);
+
+  const requests = windowRequests.get(cutoffIso) ?? [];
+  if (requests.length === 0) return;
+
+  const pending = deps.fresh ? requests : await filterUncachedArchiveRequests(deps.datasetsRoot, cutoffIso, requests);
+  if (pending.length === 0) return;
+
+  await scanArchiveWindowAndCache(cutoffIso, pending, deps);
+}
+
+async function loadArchiveNewsForSymbol(
   symbol: string,
   cutoff: string,
-  companyQuery: string | null,
-  cik: string | null,
+  windowRequests: Map<string, ArchiveWindowRequest[]>,
+  scannedWindows: Set<string>,
   deps: NewsBackfillDeps,
-  breaker?: GdeltCircuitBreaker,
-): Promise<QuestionNewsResult> {
+): Promise<BenchNewsItem[]> {
+  await ensureArchiveWindowScanned(cutoff, windowRequests, scannedWindows, deps);
+  const file = cacheFile(deps.datasetsRoot, symbol, archiveCachePeriod(cutoff));
+  const matches = (await readCache<ArchiveMatch[]>(file)) ?? [];
+  return mapArchiveMatches(matches, cutoff);
+}
+
+export interface ComputeNewsOptions {
+  symbol: string;
+  cutoff: string;
+  companyQuery: string | null;
+  cik: string | null;
+  deps: NewsBackfillDeps;
+  newsSource?: NewsSourceMode;
+  breaker?: GdeltCircuitBreaker;
+  windowRequests?: Map<string, ArchiveWindowRequest[]>;
+  scannedWindows?: Set<string>;
+}
+
+export async function computeNewsForQuestion(options: ComputeNewsOptions): Promise<QuestionNewsResult> {
+  const { symbol, cutoff, companyQuery, cik, deps, breaker } = options;
+  const newsSource = options.newsSource ?? "doc";
+  const windowRequests = options.windowRequests ?? new Map<string, ArchiveWindowRequest[]>();
+  const scannedWindows = options.scannedWindows ?? new Set<string>();
+
   let gdeltItems: BenchNewsItem[] = [];
+  let archiveItems: BenchNewsItem[] = [];
   let gdeltError: string | null = null;
   let gdeltSkipped = false;
+  let usedArchive = false;
+
   if (companyQuery) {
-    if (breaker?.tripped) {
-      gdeltSkipped = true;
-      deps.log(`  gdelt skipped for ${symbol} (circuit breaker tripped: durably rate-limited this run)`);
+    if (newsSource === "archive") {
+      usedArchive = true;
+      archiveItems = await loadArchiveNewsForSymbol(symbol, cutoff, windowRequests, scannedWindows, deps);
+    } else if (breaker?.tripped) {
+      if (newsSource === "auto") {
+        usedArchive = true;
+        deps.log(`  gdelt circuit breaker already tripped: using archive for ${symbol} (cutoff ${cutoff})`);
+        archiveItems = await loadArchiveNewsForSymbol(symbol, cutoff, windowRequests, scannedWindows, deps);
+      } else {
+        gdeltSkipped = true;
+        deps.log(`  gdelt skipped for ${symbol} (circuit breaker tripped: durably rate-limited this run)`);
+      }
     } else {
       try {
         const { startIso, endIso } = gdeltWindow(cutoff);
@@ -100,6 +252,11 @@ export async function computeNewsForQuestion(
         gdeltError = error instanceof Error ? error.message : String(error);
         deps.log(`  gdelt fetch failed for ${symbol} (cutoff ${cutoff}): ${gdeltError}`);
         if (breaker) recordGdeltOutcome(breaker, true);
+        if (newsSource === "auto" && breaker?.tripped) {
+          usedArchive = true;
+          deps.log(`  gdelt circuit breaker just tripped: switching to archive for ${symbol} (cutoff ${cutoff})`);
+          archiveItems = await loadArchiveNewsForSymbol(symbol, cutoff, windowRequests, scannedWindows, deps);
+        }
       }
     }
   }
@@ -111,13 +268,35 @@ export async function computeNewsForQuestion(
     edgarItems = mapEdgarFilings(filings, cutoff, cik, startDate, endDate);
   }
 
-  const news = [...gdeltItems, ...edgarItems];
+  const news = [...gdeltItems, ...archiveItems, ...edgarItems];
   assertNoLeak(news, cutoff);
-  return { news, gdeltCount: gdeltItems.length, edgarCount: edgarItems.length, gdeltError, gdeltSkipped };
+  return {
+    news,
+    gdeltCount: gdeltItems.length,
+    archiveCount: archiveItems.length,
+    edgarCount: edgarItems.length,
+    gdeltError,
+    gdeltSkipped,
+    usedArchive,
+  };
 }
 
 function questionFilePath(datasetsRoot: string, version: string, bank: string, id: string): string {
   return join(datasetsRoot, version, bank, `${id}.json`);
+}
+
+function buildWindowRequests(questions: Question[]): Map<string, ArchiveWindowRequest[]> {
+  const windowRequests = new Map<string, ArchiveWindowRequest[]>();
+  for (const question of questions) {
+    const spec = specForSymbol(question.symbol);
+    if (!spec.archiveOrgTerm) continue;
+    const requests = windowRequests.get(question.cutoff) ?? [];
+    if (!requests.some((request) => request.symbol === question.symbol)) {
+      requests.push({ symbol: question.symbol, matchTerm: spec.archiveOrgTerm });
+    }
+    windowRequests.set(question.cutoff, requests);
+  }
+  return windowRequests;
 }
 
 export interface BackfillNewsOptions {
@@ -128,8 +307,12 @@ export interface BackfillNewsOptions {
   symbols?: string[];
   dryRun: boolean;
   fresh: boolean;
+  newsSource?: NewsSourceMode;
   fetchGdelt: FetchGdeltArticles;
   fetchEdgar: FetchEdgarFilings;
+  fetchArchiveFile?: FetchArchiveFile;
+  readArchiveCsv?: ReadArchiveCsv;
+  archiveThrottleMs?: number;
   log: (line: string) => void;
   listQuestionIds: (datasetsRoot: string, version: string, bank: string) => Promise<string[]>;
 }
@@ -139,6 +322,7 @@ export interface QuestionBackfillOutcome {
   symbol: string;
   gdeltCount: number;
   edgarCount: number;
+  archiveCount?: number;
   gdeltError?: string;
   gdeltSkipped?: boolean;
 }
@@ -183,12 +367,26 @@ export async function runBackfillNews(options: BackfillNewsOptions): Promise<Bac
   const ids = await options.listQuestionIds(options.datasetsRoot, options.version, options.bank);
   const symbolFilter = options.symbols ? new Set(options.symbols) : null;
 
+  const loaded: { id: string; question: Question }[] = [];
+  for (const id of ids) {
+    const file = questionFilePath(options.datasetsRoot, options.version, options.bank, id);
+    const question: Question = await loadQuestionFile(file);
+    if (symbolFilter && !symbolFilter.has(question.symbol)) continue;
+    loaded.push({ id, question });
+  }
+
+  const windowRequests = buildWindowRequests(loaded.map((entry) => entry.question));
+  const scannedWindows = new Set<string>();
+
   const processed: QuestionBackfillOutcome[] = [];
   const deps: NewsBackfillDeps = {
     datasetsRoot: options.datasetsRoot,
     fresh: options.fresh,
     fetchGdelt: options.fetchGdelt,
     fetchEdgar: options.fetchEdgar,
+    fetchArchiveFile: options.fetchArchiveFile,
+    readArchiveCsv: options.readArchiveCsv,
+    archiveThrottleMs: options.archiveThrottleMs,
     log: options.log,
   };
 
@@ -196,29 +394,33 @@ export async function runBackfillNews(options: BackfillNewsOptions): Promise<Bac
   const gdeltFailures: string[] = [];
   const breaker = newGdeltCircuitBreaker();
 
-  for (const id of ids) {
+  for (const { id, question } of loaded) {
     const file = questionFilePath(options.datasetsRoot, options.version, options.bank, id);
-    const question: Question = await loadQuestionFile(file);
-    if (symbolFilter && !symbolFilter.has(question.symbol)) continue;
     const spec = specForSymbol(question.symbol);
 
     try {
-      const result = await computeNewsForQuestion(
-        question.symbol,
-        question.cutoff,
-        spec.companyQuery ?? null,
-        spec.cik ?? null,
+      const result = await computeNewsForQuestion({
+        symbol: question.symbol,
+        cutoff: question.cutoff,
+        companyQuery: spec.companyQuery ?? null,
+        cik: spec.cik ?? null,
         deps,
+        newsSource: options.newsSource,
         breaker,
-      );
+        windowRequests,
+        scannedWindows,
+      });
 
-      options.log(`${id}: gdelt ${result.gdeltCount}, edgar ${result.edgarCount}`);
+      options.log(
+        `${id}: gdelt ${result.gdeltCount}, archive ${result.archiveCount}, edgar ${result.edgarCount}`,
+      );
       const outcome: QuestionBackfillOutcome = {
         id,
         symbol: question.symbol,
         gdeltCount: result.gdeltCount,
         edgarCount: result.edgarCount,
       };
+      if (result.usedArchive) outcome.archiveCount = result.archiveCount;
       if (result.gdeltError) {
         outcome.gdeltError = result.gdeltError;
         gdeltFailures.push(id);

@@ -3053,7 +3053,64 @@
       "prev_close": 325.72
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-11fbuo6",
+        "title": "2025 Top 5 Health Stories From Unitedhealth Tragedy To Excess Mortality",
+        "published_at": "2026-01-02T19:00:00Z",
+        "url": "https://insurancenewsnet.com/innarticle/2025-top-5-health-stories-from-unitedhealth-tragedy-to-excess-mortality",
+        "source": "gdelt-arch:insurancenewsnet.com"
+      },
+      {
+        "id": "gdelt-arch-1dz8aar",
+        "title": "Steelpeak Wealth Llc Acquires 23081 Shares Of Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-01-02T14:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/steelpeak-wealth-llc-acquires-23081-shares-of-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1st8fx7",
+        "title": "Mattern Capital Management Llc Grows Stock Holdings In Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-01-02T12:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/mattern-capital-management-llc-grows-stock-holdings-in-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-nv6jau",
+        "title": "Rb Capital Management Llc Reduces Stock Position In Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-01-02T11:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/rb-capital-management-llc-reduces-stock-position-in-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-ygb32u",
+        "title": "Unitedhealth Group Unh Prepares For Operational Changes Following External Audit",
+        "published_at": "2026-01-02T08:15:00Z",
+        "url": "https://www.insidermonkey.com/blog/unitedhealth-group-unh-prepares-for-operational-changes-following-external-audit-1669323/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1t7lv2y",
+        "title": "Ninety One Uk Ltd Sells 10157 Shares Of Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-01-01T14:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/ninety-one-uk-ltd-sells-10157-shares-of-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-prj79z",
+        "title": "Chemistry Wealth Management Llc Raises Holdings In Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-01-01T13:15:00Z",
+        "url": "https://www.defenseworld.net/2026/01/01/chemistry-wealth-management-llc-raises-holdings-in-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-1dnetvy",
+        "title": "Unitedhealth Group Incorporated Unh Holdings Trimmed By Virginia Retirement Systems Et Al",
+        "published_at": "2026-01-01T13:00:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13306319/unitedhealth-group-incorporated-unh-holdings-trimmed-by-virginia-retirement-systems-et-al.html",
+        "source": "gdelt-arch:tickerreport.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

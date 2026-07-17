@@ -3053,7 +3053,78 @@
       "prev_close": 205.37
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-xvr7kh",
+        "title": "Amd Intel Rally On Ai Chip Shortage Semiconductor Etfs Gain But Risks Linger",
+        "published_at": "2026-03-25T22:45:00Z",
+        "url": "https://www.benzinga.com/etfs/sector-etfs/26/03/51472116/amd-intel-rally-on-ai-chip-shortage-semiconductor-etfs-gain-but-risks-linger",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-gl672j",
+        "title": "N82E16883151782",
+        "published_at": "2026-03-25T21:15:00Z",
+        "url": "https://www.newegg.com/msi-gaming-desktop-pc-geforce-rtx-5070-amd-ryzen-7-8700f-32gb-ddr5-1tb-nvme-ssd-aegis-z2-c8nvp-1656us/p/N82E16883151782?Item=N82E16883151782&cm_sp=Homepage_SS-_-P3_83-151-782-_-03252026",
+        "source": "gdelt-arch:newegg.com"
+      },
+      {
+        "id": "gdelt-arch-ojjley",
+        "title": "Arm Holdings Shares Jump Only Cpu Win Amd Intc",
+        "published_at": "2026-03-25T21:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/arm-holdings-shares-jump-only-cpu-win-amd-intc/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-e4lvqf",
+        "title": "Mysterious Amd Rdna 4m Graphics Spotted",
+        "published_at": "2026-03-25T20:45:00Z",
+        "url": "https://www.kitguru.net/components/apu-components/joao-silva/mysterious-amd-rdna-4m-graphics-spotted/",
+        "source": "gdelt-arch:kitguru.net"
+      },
+      {
+        "id": "gdelt-arch-11sg67g",
+        "title": "Amd And Hammer Push Cpu%E2%80%91first Ai Strategy Amid Uk Power Constraints",
+        "published_at": "2026-03-25T20:45:00Z",
+        "url": "https://www.kitguru.net/channel/generaltech/matthew-wilson/amd-and-hammer-push-cpu%E2%80%91first-ai-strategy-amid-uk-power-constraints/",
+        "source": "gdelt-arch:kitguru.net"
+      },
+      {
+        "id": "gdelt-arch-a74say",
+        "title": "Intel Amd Reportedly Set To Raise Cpu Prices By Up To 15 Percent",
+        "published_at": "2026-03-25T19:30:00Z",
+        "url": "https://www.pcmag.com/news/intel-amd-reportedly-set-to-raise-cpu-prices-by-up-to-15-percent",
+        "source": "gdelt-arch:pcmag.com"
+      },
+      {
+        "id": "gdelt-arch-1gx1j6s",
+        "title": "Amd Stock Rises 7 On Cpu Focused Ai Infrastructure Strategy",
+        "published_at": "2026-03-25T17:30:00Z",
+        "url": "https://www.rttnews.com/3633945/amd-stock-rises-7-on-cpu-focused-ai-infrastructure-strategy.aspx",
+        "source": "gdelt-arch:rttnews.com"
+      },
+      {
+        "id": "gdelt-arch-rvor9z",
+        "title": "AMD ROCm 7.2.1",
+        "published_at": "2026-03-25T17:00:00Z",
+        "url": "https://www.phoronix.com/news/AMD-ROCm-7.2.1",
+        "source": "gdelt-arch:phoronix.com"
+      },
+      {
+        "id": "gdelt-arch-5sq6vt",
+        "title": "Pc Makers Face Shortages Of Intel And Amd Cpus That Stretch Up To Six Months Lead Time For Orders Jumps From Just Two Weeks In The Face Of Ai Demand",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://www.tomshardware.com/pc-components/cpus/pc-makers-face-shortages-of-intel-and-amd-cpus-that-stretch-up-to-six-months-lead-time-for-orders-jumps-from-just-two-weeks-in-the-face-of-ai-demand",
+        "source": "gdelt-arch:tomshardware.com"
+      },
+      {
+        "id": "gdelt-arch-1htf26q",
+        "title": "Tech Stock Add My Portfolio Everyone Panic Amd",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/tech-stock-add-my-portfolio-everyone-panic-amd/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

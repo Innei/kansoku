@@ -3055,6 +3055,69 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-d8zctq",
+        "title": "Marvell Technology Nasdaqmrvl Shares Up 6 6 Heres Why",
+        "published_at": "2026-03-25T22:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13391073/marvell-technology-nasdaqmrvl-shares-up-6-6-heres-why.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-nnmvg9",
+        "title": "Gender Wonder",
+        "published_at": "2026-03-25T17:45:00Z",
+        "url": "https://www.lrb.co.uk/the-paper/v48/n06/katie-ebner-landy/gender-wonder",
+        "source": "gdelt-arch:lrb.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1boq0p6",
+        "title": "Davenport Co Llc Purchases 920876 Shares Of Marvell Technology Inc Mrvl",
+        "published_at": "2026-03-25T09:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/davenport-co-llc-purchases-920876-shares-of-marvell-technology-inc-mrvl.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1wb0g9a",
+        "title": "Stifel Highlights Marvell Technology Mrvl Collaboration With Mojo Vision On Optical Interconnects",
+        "published_at": "2026-03-24T20:45:00Z",
+        "url": "https://www.insidermonkey.com/blog/stifel-highlights-marvell-technology-mrvl-collaboration-with-mojo-vision-on-optical-interconnects-1723634/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1ibjvs6",
+        "title": "Heres How Much 100 Invested In Marvell Technology 15 Years Ago Would Be Worth Today",
+        "published_at": "2026-03-24T17:00:00Z",
+        "url": "https://www.benzinga.com/insights/news/26/03/51437019/heres-how-much-100-invested-in-marvell-technology-15-years-ago-would-be-worth-today",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-vy2xyx",
+        "title": "Marvell Technology Mrvl Traded Lower",
+        "published_at": "2026-03-24T13:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/marvell-technology-mrvl-traded-lower-124912812.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1t05jrq",
+        "title": "Marvell Technology Mrvl Traded Lower Despite Solid Execution",
+        "published_at": "2026-03-24T13:15:00Z",
+        "url": "https://www.insidermonkey.com/blog/marvell-technology-mrvl-traded-lower-despite-solid-execution-1723005/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1kjdigf",
+        "title": "Marvell Mrvl Earnings Beat Driven By Strong Ai Data Center Demand",
+        "published_at": "2026-03-24T13:15:00Z",
+        "url": "https://www.insidermonkey.com/blog/marvell-mrvl-earnings-beat-driven-by-strong-ai-data-center-demand-1723136/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1lraxbj",
+        "title": "Marvell Mrvl Earnings Beat Driven",
+        "published_at": "2026-03-24T12:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/marvell-mrvl-earnings-beat-driven-114429304.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
         "id": "edgar-0001628280-26-019851",
         "title": "8-K filed 2026-03-19 (mrvl-20260319.htm)",
         "published_at": "2026-03-19T00:00:00Z",

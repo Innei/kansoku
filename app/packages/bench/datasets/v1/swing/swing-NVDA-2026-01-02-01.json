@@ -3053,7 +3053,78 @@
       "prev_close": 186.276
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-zju0zl",
+        "title": "Ces 2026 Lg Gram Pro",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://www.zdnet.com/home-and-office/home-entertainment/ces-2026-lg-gram-pro/",
+        "source": "gdelt-arch:zdnet.com"
+      },
+      {
+        "id": "gdelt-arch-q7dl4p",
+        "title": "Marketminute 2026 1 2 Nvidia Ignites New Year Surge Semiconductor Rally Propels S And P 500 To Record Highs In Early",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-nvidia-ignites-new-year-surge-semiconductor-rally-propels-s-and-p-500-to-record-highs-in-early-2026",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-qa6vb",
+        "title": "Nvidia Nasdaqnvda Trading 1 3 Higher Whats Next",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/nvidia-nasdaqnvda-trading-1-3-higher-whats-next.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-15cln2g",
+        "title": "Maxon Releases New Cinebench",
+        "published_at": "2026-01-02T22:30:00Z",
+        "url": "https://fudzilla.com/maxon-releases-new-cinebench-2026/",
+        "source": "gdelt-arch:fudzilla.com"
+      },
+      {
+        "id": "gdelt-arch-57iq1x",
+        "title": "Aws Grabs Nvidia Gear To Muscle Into The Big Ai Leagues",
+        "published_at": "2026-01-02T22:30:00Z",
+        "url": "https://fudzilla.com/aws-grabs-nvidia-gear-to-muscle-into-the-big-ai-leagues/",
+        "source": "gdelt-arch:fudzilla.com"
+      },
+      {
+        "id": "gdelt-arch-1673i37",
+        "title": "Ai Boom Adds 550b To Us Tech Elites Wealth In",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/ai-boom-adds-550b-to-us-tech-elites-wealth-in-2025/",
+        "source": "gdelt-arch:webpronews.com"
+      },
+      {
+        "id": "gdelt-arch-w2a02a",
+        "title": "Alphabet Outpaces Nvidia With 65 Stock Surge In 2025 Ai Boom",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/alphabet-outpaces-nvidia-with-65-stock-surge-in-2025-ai-boom/",
+        "source": "gdelt-arch:webpronews.com"
+      },
+      {
+        "id": "gdelt-arch-18fbpuy",
+        "title": "Is Broadcom Stock A Buy After The Dip",
+        "published_at": "2026-01-02T21:15:00Z",
+        "url": "https://www.fool.com/investing/2026/01/02/is-broadcom-stock-a-buy-after-the-dip/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-pxfop8",
+        "title": "Promising Large Cap Stocks To Follow Now January 2nd",
+        "published_at": "2026-01-02T21:00:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307245/promising-large-cap-stocks-to-follow-now-january-2nd.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-zigwkr",
+        "title": "Lgs New Gram Lineup Delivers The Worlds Lightest Laptop With Nvidia Rtx Graphics",
+        "published_at": "2026-01-02T21:00:00Z",
+        "url": "https://www.digitaltrends.com/computing/lgs-new-gram-lineup-delivers-the-worlds-lightest-laptop-with-nvidia-rtx-graphics/",
+        "source": "gdelt-arch:digitaltrends.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

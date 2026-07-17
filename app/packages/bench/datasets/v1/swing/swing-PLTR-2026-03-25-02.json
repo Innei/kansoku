@@ -3053,7 +3053,78 @@
       "prev_close": 154.78
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-12jheaa",
+        "title": "Palantir Technologies Nasdaqpltr Trading 6 8 Higher Heres What Happened",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/palantir-technologies-nasdaqpltr-trading-6-8-higher-heres-what-happened.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-q3fkjl",
+        "title": "Palantir Just Scored Major Department",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/palantir-just-scored-major-department-144906449.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1m7soc4",
+        "title": "Palantir Ceo Says Only The Neurodivergent Will Survive The Ai Takeover",
+        "published_at": "2026-03-25T22:30:00Z",
+        "url": "https://gizmodo.com/palantir-ceo-says-only-the-neurodivergent-will-survive-the-ai-takeover-2000738192",
+        "source": "gdelt-arch:gizmodo.com"
+      },
+      {
+        "id": "gdelt-arch-1drs1xe",
+        "title": "Is Palantir Stock A Long Term Buy",
+        "published_at": "2026-03-25T21:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/is-palantir-stock-a-long-term-buy/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1de6i61",
+        "title": "129810735.cms",
+        "published_at": "2026-03-25T20:15:00Z",
+        "url": "https://economictimes.indiatimes.com/news/international/us/who-will-survive-ai-job-cuts-palantir-ceo-alex-carp-points-to-autistic-neurodivergent-talent/articleshow/129810735.cms",
+        "source": "gdelt-arch:indiatimes.com"
+      },
+      {
+        "id": "gdelt-arch-1rkzfg4",
+        "title": "25969145.anas Sarwar Will Give Palantir Control Scots Health Data",
+        "published_at": "2026-03-25T20:00:00Z",
+        "url": "https://www.thenational.scot/news/25969145.anas-sarwar-will-give-palantir-control-scots-health-data/",
+        "source": "gdelt-arch:thenational.scot"
+      },
+      {
+        "id": "gdelt-arch-1lxq1mf",
+        "title": "4885813 Palantir Defending Its High Growth Premium",
+        "published_at": "2026-03-25T19:00:00Z",
+        "url": "https://seekingalpha.com/article/4885813-palantir-defending-its-high-growth-premium",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-1sus8os",
+        "title": "Palantir Named As Part Of Trump Administrations",
+        "published_at": "2026-03-25T17:30:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/palantir-named-as-part-of-trump-administrations-18/",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-c7rcbi",
+        "title": "Global Markets Live Meta Nvidia Dow Palantir Ipsosa Ce7e5ed3dc8af622",
+        "published_at": "2026-03-25T17:00:00Z",
+        "url": "https://www.marketscreener.com/news/global-markets-live-meta-nvidia-dow-palantir-ipsosa--ce7e5ed3dc8af622",
+        "source": "gdelt-arch:marketscreener.com"
+      },
+      {
+        "id": "gdelt-arch-14j5kro",
+        "title": "3 Weaknesses To Weigh Before You Buy Palantir Pltr",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/3-weaknesses-to-weigh-before-you-buy-palantir-pltr/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

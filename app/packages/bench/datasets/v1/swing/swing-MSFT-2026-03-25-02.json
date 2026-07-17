@@ -3053,7 +3053,78 @@
       "prev_close": 371.92
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-h3yyhh",
+        "title": "Microsoft Says Its Listening On Windows 11 Users Arent Convinced Yet",
+        "published_at": "2026-03-25T22:15:00Z",
+        "url": "https://www.windowscentral.com/microsoft/windows-11/microsoft-says-its-listening-on-windows-11-users-arent-convinced-yet",
+        "source": "gdelt-arch:windowscentral.com"
+      },
+      {
+        "id": "gdelt-arch-120q01c",
+        "title": "Phil Spencer Great Job Microsoft Solid Ground Succeed",
+        "published_at": "2026-03-25T21:15:00Z",
+        "url": "https://wccftech.com/phil-spencer-great-job-microsoft-solid-ground-succeed/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-u2x229",
+        "title": "Rubrik Announces Integration Microsoft Defender",
+        "published_at": "2026-03-25T21:00:00Z",
+        "url": "https://finance.yahoo.com/sectors/technology/articles/rubrik-announces-integration-microsoft-defender-122319457.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-sh1atm",
+        "title": "Microsoft Price Target Lowered On M365 Copilot Questions",
+        "published_at": "2026-03-25T20:30:00Z",
+        "url": "https://www.proactiveinvestors.com/companies/news/1089520/microsoft-price-target-lowered-on-m365-copilot-questions-1089520.html",
+        "source": "gdelt-arch:proactiveinvestors.com"
+      },
+      {
+        "id": "gdelt-arch-1sn4nzw",
+        "title": "Ai Tools Unveiled At Microsoft Nonprofit Summit",
+        "published_at": "2026-03-25T20:15:00Z",
+        "url": "https://thenonprofittimes.com/npt_articles/ai-tools-unveiled-at-microsoft-nonprofit-summit/",
+        "source": "gdelt-arch:thenonprofittimes.com"
+      },
+      {
+        "id": "gdelt-arch-1uem0cl",
+        "title": "Microsoft Is Bringing Some Of Its Copilot Ai Swagger Back To Windows",
+        "published_at": "2026-03-25T18:30:00Z",
+        "url": "https://bioprepwatch.com/2025/microsoft-is-bringing-some-of-its-copilot-ai-swagger-back-to-windows/48225",
+        "source": "gdelt-arch:bioprepwatch.com"
+      },
+      {
+        "id": "gdelt-arch-emsjyb",
+        "title": "Microsoft Diversity Chief Ai Hr",
+        "published_at": "2026-03-25T18:15:00Z",
+        "url": "https://www.cnbc.com/2026/03/25/microsoft-diversity-chief-ai-hr.html",
+        "source": "gdelt-arch:cnbc.com"
+      },
+      {
+        "id": "gdelt-arch-1ios5yz",
+        "title": "Emergency Microsoft Oracle Patches Point To Wider Cyber Issues",
+        "published_at": "2026-03-25T18:15:00Z",
+        "url": "https://www.computerweekly.com/news/366640648/Emergency-Microsoft-Oracle-patches-point-to-wider-cyber-issues",
+        "source": "gdelt-arch:computerweekly.com"
+      },
+      {
+        "id": "gdelt-arch-66ujv2",
+        "title": "You Dont Need Microsoft Word Anymore These Free Apps Prove It",
+        "published_at": "2026-03-25T17:45:00Z",
+        "url": "https://www.howtogeek.com/you-dont-need-microsoft-word-anymore-these-free-apps-prove-it/",
+        "source": "gdelt-arch:howtogeek.com"
+      },
+      {
+        "id": "gdelt-arch-1n1y8a3",
+        "title": "Microsoft Price Target Lowered M365",
+        "published_at": "2026-03-25T17:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/microsoft-price-target-lowered-m365-171200393.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

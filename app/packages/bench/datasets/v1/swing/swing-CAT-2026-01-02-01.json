@@ -3053,7 +3053,57 @@
       "prev_close": 570.464
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-svt5k5",
+        "title": "Caterpillar Adds Joystick Option To 140 Motor Grader",
+        "published_at": "2026-01-02T18:00:00Z",
+        "url": "https://www.constructionequipment.com/industry-news/news/55341068/caterpillar-adds-joystick-option-to-140-motor-grader",
+        "source": "gdelt-arch:constructionequipment.com"
+      },
+      {
+        "id": "gdelt-arch-1gm1pkb",
+        "title": "Caterpillar Nysecat Price Target Raised To 670",
+        "published_at": "2026-01-02T15:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/caterpillar-nysecat-price-target-raised-to-670-00.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-3922ys",
+        "title": "The Hungry Caterpillar Lyth Design",
+        "published_at": "2026-01-02T14:30:00Z",
+        "url": "https://www.archdaily.com/1037150/the-hungry-caterpillar-lyth-design",
+        "source": "gdelt-arch:archdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1wtm3h2",
+        "title": "Retirement Guys Formula Llc Sells 3220 Shares Of Caterpillar Inc Cat",
+        "published_at": "2026-01-02T14:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/retirement-guys-formula-llc-sells-3220-shares-of-caterpillar-inc-cat.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-161p493",
+        "title": "Caterpillar Inc Cat Shares Acquired By Global Financial Private Client Llc",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.defenseworld.net/2026/01/02/caterpillar-inc-cat-shares-acquired-by-global-financial-private-client-llc.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-oiesst",
+        "title": "Evaluating Caterpillar Stocks Actual Performance",
+        "published_at": "2026-01-01T19:00:00Z",
+        "url": "https://www.fool.com/investing/2026/01/01/evaluating-caterpillar-stocks-actual-performance/",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1oa38x6",
+        "title": "Bernstein Raises Caterpillar Cat Target",
+        "published_at": "2026-01-01T08:00:00Z",
+        "url": "https://finance.yahoo.com/news/bernstein-raises-caterpillar-cat-target-204518919.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

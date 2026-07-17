@@ -3053,7 +3053,78 @@
       "prev_close": 214.16
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-9smc00",
+        "title": "Amd And Hpe Invoke Helios To Elbow Into The Ai Rack Wars",
+        "published_at": "2026-01-02T22:30:00Z",
+        "url": "https://fudzilla.com/amd-and-hpe-invoke-helios-to-elbow-into-the-ai-rack-wars/",
+        "source": "gdelt-arch:fudzilla.com"
+      },
+      {
+        "id": "gdelt-arch-3xnsj2",
+        "title": "4536342 Micron Intel Amd Lead Chip Stocks Higher To Kick Off",
+        "published_at": "2026-01-02T20:00:00Z",
+        "url": "https://seekingalpha.com/news/4536342-micron-intel-amd-lead-chip-stocks-higher-to-kick-off-2026",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-1f4lvhy",
+        "title": "How To Watch The Amd Ces 2026 Keynote Live",
+        "published_at": "2026-01-02T19:45:00Z",
+        "url": "https://www.engadget.com/computing/how-to-watch-the-amd-ces-2026-keynote-live-190012078.html",
+        "source": "gdelt-arch:engadget.com"
+      },
+      {
+        "id": "gdelt-arch-t86cra",
+        "title": "Asus Rog Ally Price Increase Nvidia Amd Ai Ps6 Delay",
+        "published_at": "2026-01-02T19:45:00Z",
+        "url": "https://kotaku.com/asus-rog-ally-price-increase-nvidia-amd-ai-ps6-delay-2000656448",
+        "source": "gdelt-arch:kotaku.com"
+      },
+      {
+        "id": "gdelt-arch-1nqrsk6",
+        "title": "Nvidia And Amd Expected To Raise Gpu Prices Significantly Starting This Month",
+        "published_at": "2026-01-02T17:15:00Z",
+        "url": "https://www.gamereactor.eu/nvidia-and-amd-expected-to-raise-gpu-prices-significantly-starting-this-month-1655423/",
+        "source": "gdelt-arch:gamereactor.eu"
+      },
+      {
+        "id": "gdelt-arch-1hznz43",
+        "title": "Marketminute 2026 1 2 Chip Stocks Surge To Start 2026 Nvidia And Amd Drive Nasdaq To Record Highs",
+        "published_at": "2026-01-02T17:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-chip-stocks-surge-to-start-2026-nvidia-and-amd-drive-nasdaq-to-record-highs",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-16bki0q",
+        "title": "Stockstory 2026 1 2 Why Are Amd Amd Shares Soaring Today",
+        "published_at": "2026-01-02T16:45:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-1-2-why-are-amd-amd-shares-soaring-today",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-1a0zxw7",
+        "title": "Advanced Micro Devices Amd Is Gaining On Several Fronts",
+        "published_at": "2026-01-02T16:30:00Z",
+        "url": "https://www.insidermonkey.com/blog/advanced-micro-devices-amd-is-gaining-on-several-fronts-1669449/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-3xwtct",
+        "title": "Graniteshares 2x Long Amd Daily Etf Nasdaqamdl Shares Gap Up Heres Why",
+        "published_at": "2026-01-02T16:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/graniteshares-2x-long-amd-daily-etf-nasdaqamdl-shares-gap-up-heres-why.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-sr2u4p",
+        "title": "Amd Windows 11 Big Gains Final Steam Survey",
+        "published_at": "2026-01-02T16:00:00Z",
+        "url": "https://hothardware.com/news/amd-windows-11-big-gains-final-steam-survey-2025",
+        "source": "gdelt-arch:hothardware.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

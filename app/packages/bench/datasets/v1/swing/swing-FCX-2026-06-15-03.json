@@ -3055,6 +3055,69 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-1vqunjk",
+        "title": "Scottish Green Freeport Project Unlocks Funding, Targets Renewable Energy Hub Status 427b0",
+        "published_at": "2026-06-15T22:30:00Z",
+        "url": "https://myfinancereporter.com/news/scottish-green-freeport-project-unlocks-funding,-targets-renewable-energy-hub-status_427b0/",
+        "source": "gdelt-arch:myfinancereporter.com"
+      },
+      {
+        "id": "gdelt-arch-13abnqj",
+        "title": "Freeport Woman Dead After Single Car Rollover Crash",
+        "published_at": "2026-06-15T16:45:00Z",
+        "url": "https://www.wifr.com/2026/06/15/freeport-woman-dead-after-single-car-rollover-crash/",
+        "source": "gdelt-arch:wifr.com"
+      },
+      {
+        "id": "gdelt-arch-1jk2hyy",
+        "title": "Thornburg Investment Management Inc Increases Stock Holdings In Freeport Mcmoran Inc Fcx",
+        "published_at": "2026-06-15T15:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/thornburg-investment-management-inc-increases-stock-holdings-in-freeport-mcmoran-inc-fcx.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-e5jp64",
+        "title": "Tamar Securities Llc Increases Stock Holdings In Freeport Mcmoran Inc Fcx",
+        "published_at": "2026-06-15T13:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13476092/tamar-securities-llc-increases-stock-holdings-in-freeport-mcmoran-inc-fcx.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-dnwf2k",
+        "title": "Freeport Mcmoran Inc Fcx Shares Acquired By Tamar Securities Llc",
+        "published_at": "2026-06-15T13:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/freeport-mcmoran-inc-fcx-shares-acquired-by-tamar-securities-llc.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-e47gy3",
+        "title": "Freeport Secures 31m Build Well",
+        "published_at": "2026-06-15T09:15:00Z",
+        "url": "https://www.yahoo.com/news/us/articles/freeport-secures-31m-build-well-084045987.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1l8z0np",
+        "title": "Bornite Capital Management Lp Makes New Investment In Freeport Mcmoran Inc Fcx",
+        "published_at": "2026-06-14T13:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13475214/bornite-capital-management-lp-makes-new-investment-in-freeport-mcmoran-inc-fcx.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-4mye2d",
+        "title": "Analysts Set Freeport Mcmoran Inc Nysefcx Pt At 66",
+        "published_at": "2026-06-14T13:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/14/analysts-set-freeport-mcmoran-inc-nysefcx-pt-at-66-04.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1arpcqi",
+        "title": "Freeport Church Hosts Community Outreach Drive",
+        "published_at": "2026-06-14T07:45:00Z",
+        "url": "https://www.wifr.com/2026/06/14/freeport-church-hosts-community-outreach-drive/",
+        "source": "gdelt-arch:wifr.com"
+      },
+      {
         "id": "edgar-0000831259-26-000030",
         "title": "8-K filed 2026-06-10 (fcx-20260610.htm)",
         "published_at": "2026-06-10T00:00:00Z",

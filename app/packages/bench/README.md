@@ -72,7 +72,11 @@ pnpm --filter @kansoku/bench cli gold --dataset-version v1 --check
 
 ## 一期已知限制
 
-- **`fixtures.news` 现在是真实历史数据**：`backfill-news` 子命令从 GDELT（cutoff 前 48 小时的新闻文章，按标题去重、按时间倒序取前 10 条）+ SEC EDGAR（cutoff 前 14 天内的 8-K/10-Q/10-K 原始文件，标成 `edgar:<form>`）拉取并原地回填，已在 v1 全量执行过。指数 ETF（SPY/QQQ/SMH/IWM）没有对应公司主体，`companyQuery`/`cik` 都留 null，不拉新闻——这类题目 `fixtures.news` 会一直是空数组，这是有意为之，不是遗漏。`fixtures.capitalFlow` / `fixtures.fundamentals` 依然是长桥拿不到历史时点快照，留空——这两项还没解决。
+- **`fixtures.news` 现在是真实历史数据，走两条可选的抓取路径**：`backfill-news --news-source doc|archive|auto`。
+  - **`doc`**：走 GDELT DOC 检索 API（cutoff 前 48 小时的新闻文章，按标题去重、按时间倒序取前 10 条），有配额但没被限流时最快；单 IP 容易被限流,连续失败会触发熔断（`GDELT_CIRCUIT_BREAKER_THRESHOLD` 次连续失败即跳闸)。
+  - **`archive`**：直接下载 GDELT 的原始 15 分钟归档文件（`http://data.gdeltproject.org/gdeltv2/<timestamp>.gkg.csv.zip`），本机 IP 不受 DOC API 的限流影响，代价是要把 cutoff 前 48 小时的整窗文件（每 15 分钟一份，48 小时 = 192 份）全下下来解析，同一个 48 小时窗口在多个标的之间共享时只扫一遍（一次扫描顺带给窗口内所有标的做组织名匹配），提取结果按 `(窗口, 标的)` 缓存成 JSON，重跑不会重扫。标题这条链路里原始文件不带标题，只能从 URL 的路径 slug 反推（连字符转空格、去掉结尾的纯数字 id），标了 `gdelt-arch:<domain>` 以区别于 DOC 路径的 `gdelt:<domain>`。
+  - **`auto`**（默认）：先按批用 DOC，一旦触发熔断，剩下的题目自动切到 `archive` 路径，不用手动重跑。
+  - 无论走哪条路径，都叠加 SEC EDGAR（cutoff 前 14 天内的 8-K/10-Q/10-K 原始文件，标成 `edgar:<form>`）合并进 `fixtures.news`。指数 ETF（SPY/QQQ/SMH/IWM）没有对应公司主体，`companyQuery`/`cik` 都留 null，不拉新闻——这类题目 `fixtures.news` 会一直是空数组，这是有意为之，不是遗漏。`fixtures.capitalFlow` / `fixtures.fundamentals` 依然是长桥拿不到历史时点快照，留空——这两项还没解决。
 - **`backfill-news` 只补新闻，不解决财报日历的前视泄漏**：见下面「日历 fixture 带前视信息」一条，两者是独立问题。
 - **日内题库（intraday bank）还没实现**，`generate` 目前只支持 `--bank swing`，`--bank intraday` 会直接报错。
 - **对抗题（`adversarial: true`）还没批量生成**，schema 支持这个字段，但一期题库里全部是 `false`。

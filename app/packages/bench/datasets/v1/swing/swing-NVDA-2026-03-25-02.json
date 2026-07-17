@@ -3053,7 +3053,78 @@
       "prev_close": 174.99
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-vqsy4c",
+        "title": "Trump Names Zuckerberg Huang Ellison White House Ai Council",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.androidheadlines.com/2026/03/trump-names-zuckerberg-huang-ellison-white-house-ai-council.html",
+        "source": "gdelt-arch:androidheadlines.com"
+      },
+      {
+        "id": "gdelt-arch-fcga3n",
+        "title": "Heres What Could Send Nvidia Stock To New All Time",
+        "published_at": "2026-03-25T23:30:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/heres-what-could-send-nvidia-stock-to-new-all-time/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1h60ocd",
+        "title": "Feds Arrest Trio For Nvidia Gpu Smuggling Scheme Involving Supermicro Servers",
+        "published_at": "2026-03-25T23:15:00Z",
+        "url": "https://www.pcmag.com/news/feds-arrest-trio-for-nvidia-gpu-smuggling-scheme-involving-supermicro-servers",
+        "source": "gdelt-arch:pcmag.com"
+      },
+      {
+        "id": "gdelt-arch-28v4ao",
+        "title": "Trump Appoints Nvidia Meta Oracle Leaders To His Council",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://americanbazaaronline.com/2026/03/25/trump-appoints-nvidia-meta-oracle-leaders-to-his-council-477542/",
+        "source": "gdelt-arch:americanbazaaronline.com"
+      },
+      {
+        "id": "gdelt-arch-p3qrre",
+        "title": "Why Nvidia Different Stock Retirees",
+        "published_at": "2026-03-25T22:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/why-nvidia-different-stock-retirees-221205180.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-s21sxy",
+        "title": "Arms Stock Shoots To Best Day In A Year As An Nvidia Like Chapter May Be Starting",
+        "published_at": "2026-03-25T22:30:00Z",
+        "url": "https://www.morningstar.com/news/marketwatch/20260325320/arms-stock-shoots-to-best-day-in-a-year-as-an-nvidia-like-chapter-may-be-starting",
+        "source": "gdelt-arch:morningstar.com"
+      },
+      {
+        "id": "gdelt-arch-18c771o",
+        "title": "Heres Could Send Nvidia Stock",
+        "published_at": "2026-03-25T22:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/heres-could-send-nvidia-stock-215000553.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1ouuolb",
+        "title": "Razer Blade 16 2026 Intel Panther Lake Brighter Oled",
+        "published_at": "2026-03-25T22:00:00Z",
+        "url": "https://www.cnet.com/tech/computing/razer-blade-16-2026-intel-panther-lake-brighter-oled/",
+        "source": "gdelt-arch:cnet.com"
+      },
+      {
+        "id": "gdelt-arch-v60ehp",
+        "title": "4885905 Nvidia Sky Isnt The Limit Anymore",
+        "published_at": "2026-03-25T22:00:00Z",
+        "url": "https://seekingalpha.com/article/4885905-nvidia-sky-isnt-the-limit-anymore",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-1817gvf",
+        "title": "Nvidia Gtc Developments Were Far",
+        "published_at": "2026-03-25T21:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-gtc-developments-were-far-131614897.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

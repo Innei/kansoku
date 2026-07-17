@@ -3053,7 +3053,78 @@
       "prev_close": 291.13
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-11nbsh7",
+        "title": "Apple And Other Tech Companies Fined In Brazil For Lack Of Control Of Loot Box Access For Minors",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://www.mactech.com/2026/06/15/apple-and-other-tech-companies-fined-in-brazil-for-lack-of-control-of-loot-box-access-for-minors/",
+        "source": "gdelt-arch:mactech.com"
+      },
+      {
+        "id": "gdelt-arch-jz96qa",
+        "title": "Apple Iphone 18 Pro Duo To Enhance Low Light Photography With A Wider Aperture Telephoto And On The Fly Depth And Focus Control",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://wccftech.com/apple-iphone-18-pro-duo-to-enhance-low-light-photography-with-a-wider-aperture-telephoto-and-on-the-fly-depth-and-focus-control/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-hha6bd",
+        "title": "Quote Of The Day By Apple Ceo Tim Cook If You Put A Key Under The Mat For The Cops A Burglar Can Find It Too A Stark Warning On Threats To Undermine Privacy",
+        "published_at": "2026-06-15T23:00:00Z",
+        "url": "https://www.techradar.com/pro/quote-of-the-day-by-apple-ceo-tim-cook-if-you-put-a-key-under-the-mat-for-the-cops-a-burglar-can-find-it-too-a-stark-warning-on-threats-to-undermine-privacy",
+        "source": "gdelt-arch:techradar.com"
+      },
+      {
+        "id": "gdelt-arch-1ct287e",
+        "title": "Apple Tv Teases Widows Bay Season Finale Coming Tuesday Night",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://macdailynews.com/2026/06/15/apple-tv-teases-widows-bay-season-finale-coming-tuesday-night/",
+        "source": "gdelt-arch:macdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-1gr3kxg",
+        "title": "Apple Releases Second Macos 26 6 Ios 26 6 Ipados 26 6 Watchos 26 6 Tvos 26 6 And Visionos 26 6 Betas",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://macdailynews.com/2026/06/15/apple-releases-second-macos-26-6-ios-26-6-ipados-26-6-watchos-26-6-tvos-26-6-and-visionos-26-6-betas/",
+        "source": "gdelt-arch:macdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-owip9",
+        "title": "Chase Sapphire Preferred Just Got Even Better For Apple Users Free Apple Tv 3x Points On Streaming And Travel",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://macdailynews.com/2026/06/15/chase-sapphire-preferred-just-got-even-better-for-apple-users-free-apple-tv-3x-points-on-streaming-and-travel/",
+        "source": "gdelt-arch:macdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-5sldpd",
+        "title": "Ios 27 Apple Would Still Have Three Amazing Features To Unveil",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://myhostnews.com/ios-27-apple-would-still-have-three-amazing-features-to-unveil/",
+        "source": "gdelt-arch:myhostnews.com"
+      },
+      {
+        "id": "gdelt-arch-eznu9n",
+        "title": "Apple Tv Cancels 1 Tv Show Renews Many Fan Favorites For",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://www.justjared.com/2026/06/15/apple-tv-cancels-1-tv-show-renews-many-fan-favorites-for-2026/",
+        "source": "gdelt-arch:justjared.com"
+      },
+      {
+        "id": "gdelt-arch-xzfcnv",
+        "title": "How Apple Is Making Even Aging Iphones Run Faster And Last Longer",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://macdailynews.com/2026/06/15/how-apple-is-making-even-aging-iphones-run-faster-and-last-longer/",
+        "source": "gdelt-arch:macdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-j0vyu1",
+        "title": "Spacex Stock Ipo Traded More Than Apple Microsoft Tesla Meta Google Combined",
+        "published_at": "2026-06-15T22:00:00Z",
+        "url": "https://www.benzinga.com/trading-ideas/movers/26/06/53208741/spacex-stock-ipo-traded-more-than-apple-microsoft-tesla-meta-google-combined",
+        "source": "gdelt-arch:benzinga.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

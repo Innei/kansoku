@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Value } from "typebox/value";
 import { runBackfillNews } from "./generate/backfillPipeline.js";
+import type { NewsSourceMode } from "./generate/backfillPipeline.js";
+import { fetchArchiveFileLive, readArchiveCsvLive } from "./generate/archiveSource.js";
 import { fetchGdeltArticlesLive, fetchEdgarFilingsLive } from "./generate/newsSource.js";
 import { runGenerate } from "./generate/pipeline.js";
 import { fetchCalendarLive, fetchKlineHistoryLive } from "./generate/source.js";
@@ -248,6 +250,13 @@ interface BackfillNewsArgs {
   symbols?: string[];
   dryRun: boolean;
   fresh: boolean;
+  newsSource: NewsSourceMode;
+}
+
+const NEWS_SOURCE_MODES: NewsSourceMode[] = ["doc", "archive", "auto"];
+
+function isNewsSourceMode(value: string): value is NewsSourceMode {
+  return (NEWS_SOURCE_MODES as string[]).includes(value);
 }
 
 function parseBackfillNewsArgs(argv: string[]): BackfillNewsArgs {
@@ -256,6 +265,7 @@ function parseBackfillNewsArgs(argv: string[]): BackfillNewsArgs {
   let symbols: string[] | undefined;
   let dryRun = false;
   let fresh = false;
+  let newsSource: NewsSourceMode = "auto";
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -275,13 +285,19 @@ function parseBackfillNewsArgs(argv: string[]): BackfillNewsArgs {
       case "--fresh":
         fresh = true;
         break;
+      case "--news-source": {
+        const value = argv[++i];
+        if (!isNewsSourceMode(value)) throw new Error(`--news-source must be one of doc|archive|auto, got: ${value}`);
+        newsSource = value;
+        break;
+      }
       default:
         throw new Error(`unknown backfill-news option: ${arg}`);
     }
   }
 
   if (!version) throw new Error("--dataset-version is required");
-  return { version, bank, symbols, dryRun, fresh };
+  return { version, bank, symbols, dryRun, fresh, newsSource };
 }
 
 async function runBackfillNewsCommand(argv: string[]): Promise<void> {
@@ -294,8 +310,11 @@ async function runBackfillNewsCommand(argv: string[]): Promise<void> {
     symbols: args.symbols,
     dryRun: args.dryRun,
     fresh: args.fresh,
+    newsSource: args.newsSource,
     fetchGdelt: fetchGdeltArticlesLive,
     fetchEdgar: fetchEdgarFilingsLive,
+    fetchArchiveFile: fetchArchiveFileLive,
+    readArchiveCsv: readArchiveCsvLive,
     log: (line) => process.stdout.write(`${line}\n`),
     listQuestionIds: listQuestions,
   });

@@ -3053,7 +3053,64 @@
       "prev_close": 149.61
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1pr3gbb",
+        "title": "Pya Waltman Capital Llc Sells 6878 Shares Of Procter Gamble Company The Pg",
+        "published_at": "2026-06-15T14:30:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/pya-waltman-capital-llc-sells-6878-shares-of-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1f72yg0",
+        "title": "Procter Gamble Pg Stock Recent",
+        "published_at": "2026-06-15T01:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/procter-gamble-pg-stock-recent-011033302.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-3zhj4t",
+        "title": "Upcoming Calendar",
+        "published_at": "2026-06-14T18:15:00Z",
+        "url": "https://www.troyrecord.com/2026/06/14/upcoming-calendar-358/",
+        "source": "gdelt-arch:troyrecord.com"
+      },
+      {
+        "id": "gdelt-arch-1ysb6c7",
+        "title": "Generations Wealth Llc Purchases New Shares In Procter Gamble Company The Pg",
+        "published_at": "2026-06-14T14:00:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13475232/generations-wealth-llc-purchases-new-shares-in-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-iqhfhb",
+        "title": "Brown Advisory Inc Buys 23724 Shares Of Procter Gamble Company The Pg",
+        "published_at": "2026-06-14T13:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/14/brown-advisory-inc-buys-23724-shares-of-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-s1bx02",
+        "title": "Bollard Group Llc Has 1 63 Million Holdings In Procter Gamble Company The Pg",
+        "published_at": "2026-06-14T12:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/14/bollard-group-llc-has-1-63-million-holdings-in-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-16s9uwj",
+        "title": "Bernstein Launches Coverage On Procter Gamble Pg With Neutral Outlook",
+        "published_at": "2026-06-14T06:45:00Z",
+        "url": "https://www.insidermonkey.com/blog/bernstein-launches-coverage-on-procter-gamble-pg-with-neutral-outlook-1781480/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1dq19ta",
+        "title": "Bernstein Launches Coverage Procter Gamble",
+        "published_at": "2026-06-14T05:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/bernstein-launches-coverage-procter-gamble-043318894.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

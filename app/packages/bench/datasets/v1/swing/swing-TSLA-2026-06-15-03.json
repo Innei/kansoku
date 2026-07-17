@@ -3053,7 +3053,78 @@
       "prev_close": 406.43
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-qv6zrr",
+        "title": "Spacex Surges 20 In Second Day To Add 412 Billion In Value",
+        "published_at": "2026-06-16T00:00:00Z",
+        "url": "https://www.latimes.com/business/story/2026-06-15/spacex-surges-20-in-second-day-to-add-412-billion-in-value",
+        "source": "gdelt-arch:latimes.com"
+      },
+      {
+        "id": "gdelt-arch-he2k7x",
+        "title": "Rivian Autonomous Driving Tesla Fsd Rj Scaringe 2026",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://www.businessinsider.com/rivian-autonomous-driving-tesla-fsd-rj-scaringe-2026-6",
+        "source": "gdelt-arch:businessinsider.com"
+      },
+      {
+        "id": "gdelt-arch-vt8blo",
+        "title": "Xiaomi Unveiled An Ev Feature That Tesla Promised Back In 2014 But It Could Make Charging A Lot Easier",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://www.techradar.com/vehicle-tech/hybrid-electric-vehicles/xiaomi-unveiled-an-ev-feature-that-tesla-promised-back-in-2014-but-it-could-make-charging-a-lot-easier",
+        "source": "gdelt-arch:techradar.com"
+      },
+      {
+        "id": "gdelt-arch-5mh6n3",
+        "title": "Tesla Cybercab Specs",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://insideevs.com:443/news/798790/tesla-cybercab-specs/",
+        "source": "gdelt-arch:insideevs.com"
+      },
+      {
+        "id": "gdelt-arch-nb0z28",
+        "title": "Monsters Of Rock Cruise 2027 Announces Tesla Extreme Kks Priest And More",
+        "published_at": "2026-06-15T23:30:00Z",
+        "url": "https://metalinsider.net/festivals/monsters-of-rock-cruise-2027-announces-tesla-extreme-kks-priest-and-more",
+        "source": "gdelt-arch:metalinsider.net"
+      },
+      {
+        "id": "gdelt-arch-g3y1hh",
+        "title": "Stewartville Man Claims Elon Musk Directed Him To Collect Checks In Tesla Investment Scam",
+        "published_at": "2026-06-15T22:45:00Z",
+        "url": "https://www.postbulletin.com/news/local/stewartville-man-claims-elon-musk-directed-him-to-collect-checks-in-tesla-investment-scam",
+        "source": "gdelt-arch:postbulletin.com"
+      },
+      {
+        "id": "gdelt-arch-vunr26",
+        "title": "Spacex Surpassed Broadcom Meta Platforms And Tesla",
+        "published_at": "2026-06-15T22:30:00Z",
+        "url": "https://www.fool.com/investing/2026/06/15/spacex-surpassed-broadcom-meta-platforms-and-tesla/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-18z5f98",
+        "title": "Why Tesla Might Need To Merge With Spacex Sooner R",
+        "published_at": "2026-06-15T22:30:00Z",
+        "url": "https://www.fool.com/investing/2026/06/15/why-tesla-might-need-to-merge-with-spacex-sooner-r/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-ica4b5",
+        "title": "Tesla Used Self Published Safety Claims In Push For Eu Full Self Driving Approval",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://auto.economictimes.indiatimes.com/news/auto-technology/tesla-used-self-published-safety-claims-in-push-for-eu-full-self-driving-approval/131750927",
+        "source": "gdelt-arch:indiatimes.com"
+      },
+      {
+        "id": "gdelt-arch-j0vyu1",
+        "title": "Spacex Stock Ipo Traded More Than Apple Microsoft Tesla Meta Google Combined",
+        "published_at": "2026-06-15T22:00:00Z",
+        "url": "https://www.benzinga.com/trading-ideas/movers/26/06/53208741/spacex-stock-ipo-traded-more-than-apple-microsoft-tesla-meta-google-combined",
+        "source": "gdelt-arch:benzinga.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

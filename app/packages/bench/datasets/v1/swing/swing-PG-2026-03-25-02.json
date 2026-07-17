@@ -3053,7 +3053,78 @@
       "prev_close": 142.086
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-19doc5l",
+        "title": "2112504 Avatar Fire And Ash Reference Footage Clip Exclusive",
+        "published_at": "2026-03-25T17:45:00Z",
+        "url": "https://www.comingsoon.net/movies/trailers/2112504-avatar-fire-and-ash-reference-footage-clip-exclusive",
+        "source": "gdelt-arch:comingsoon.net"
+      },
+      {
+        "id": "gdelt-arch-1xiqhrs",
+        "title": "Avatar Fire And Ash Finally Has A Digital Release Date After Making 15 Billion At The Box Office",
+        "published_at": "2026-03-25T13:00:00Z",
+        "url": "https://www.ign.com/articles/avatar-fire-and-ash-finally-has-a-digital-release-date-after-making-15-billion-at-the-box-office",
+        "source": "gdelt-arch:ign.com"
+      },
+      {
+        "id": "gdelt-arch-5klg6b",
+        "title": "Viking Fund Management Llc Purchases 10000 Shares Of Procter Gamble Company The Pg",
+        "published_at": "2026-03-25T12:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/viking-fund-management-llc-purchases-10000-shares-of-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1d980ta",
+        "title": "Pensionfund Sabic Purchases New Shares In Procter Gamble Company The Pg",
+        "published_at": "2026-03-25T11:15:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/pensionfund-sabic-purchases-new-shares-in-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-skn6bf",
+        "title": "State Green Lights High Tech Industry Park In Somerville",
+        "published_at": "2026-03-25T06:30:00Z",
+        "url": "https://www.mpnews.com.au/2026/03/25/state-green-lights-high-tech-industry-park-in-somerville/",
+        "source": "gdelt-arch:mpnews.com.au"
+      },
+      {
+        "id": "gdelt-arch-pv4myf",
+        "title": "Avatar Fire And Ash Blu Ray And Digital Release Dates Announced With Over 3 Hours Of Special Features A226994",
+        "published_at": "2026-03-25T00:15:00Z",
+        "url": "https://comicbookmovie.com/sci_fi/avatar/avatar-fire-and-ash-blu-ray-and-digital-release-dates-announced---with-over-3-hours-of-special-features-a226994",
+        "source": "gdelt-arch:comicbookmovie.com"
+      },
+      {
+        "id": "gdelt-arch-fu1k6s",
+        "title": "Avatar Fire And Ash 4k Blu Ray Details Revealed Including Over Three Hours Of New Bonus Features",
+        "published_at": "2026-03-24T21:00:00Z",
+        "url": "https://www.forbes.com/sites/johnarcher/2026/03/24/avatar-fire-and-ash-4k-blu-ray-details-revealed-including-over-three-hours-of-new-bonus-features/",
+        "source": "gdelt-arch:forbes.com"
+      },
+      {
+        "id": "gdelt-arch-1or7iac",
+        "title": "Avatar Fire Ash Digital Media Physical Media",
+        "published_at": "2026-03-24T19:30:00Z",
+        "url": "https://www.laughingplace.com/disney-entertainment/avatar-fire-ash-digital-media-physical-media/",
+        "source": "gdelt-arch:laughingplace.com"
+      },
+      {
+        "id": "gdelt-arch-1pmgqyq",
+        "title": "2111418 Avatar Fire And Ash Digital 4k Blu Ray Release Dates Movie",
+        "published_at": "2026-03-24T17:45:00Z",
+        "url": "https://www.comingsoon.net/movies/news/2111418-avatar-fire-and-ash-digital-4k-blu-ray-release-dates-movie",
+        "source": "gdelt-arch:comingsoon.net"
+      },
+      {
+        "id": "gdelt-arch-1whs9aa",
+        "title": "Avatar Fire And Ash Home Release Date Streaming Blu Ray",
+        "published_at": "2026-03-24T16:00:00Z",
+        "url": "https://gizmodo.com/avatar-fire-and-ash-home-release-date-streaming-blu-ray-2000737397",
+        "source": "gdelt-arch:gizmodo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

@@ -3053,7 +3053,78 @@
       "prev_close": 177.75
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-6rmkup",
+        "title": "Palantir Technologies Nasdaqpltr Trading Down 5 6 Should You Sell",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307280/palantir-technologies-nasdaqpltr-trading-down-5-6-should-you-sell.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-gaemwj",
+        "title": "Why Palantir Fell Hard To Start",
+        "published_at": "2026-01-02T21:15:00Z",
+        "url": "https://www.fool.com/investing/2026/01/02/why-palantir-fell-hard-to-start-2026/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-24fqfe",
+        "title": "126311934.cms",
+        "published_at": "2026-01-02T19:45:00Z",
+        "url": "https://economictimes.indiatimes.com/news/international/us/palantir-stock-plunges-more-than-5-today-now-12-5-in-just-one-week-why-theres-heavy-selling-pltr-all-out-crash-imminent-as-february-earnings-report-nears/articleshow/126311934.cms",
+        "source": "gdelt-arch:indiatimes.com"
+      },
+      {
+        "id": "gdelt-arch-f2p48j",
+        "title": "Risks That Palantir Stock Investors Must Know",
+        "published_at": "2026-01-02T17:00:00Z",
+        "url": "https://www.forbes.com/sites/greatspeculations/2026/01/02/risks-that-palantir-stock-investors-must-know/",
+        "source": "gdelt-arch:forbes.com"
+      },
+      {
+        "id": "gdelt-arch-1qpk3r6",
+        "title": "4856724 Palantir Entering Second Half 2020s As Our Top Tech Pick",
+        "published_at": "2026-01-02T15:45:00Z",
+        "url": "https://seekingalpha.com/article/4856724-palantir-entering-second-half-2020s-as-our-top-tech-pick",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-724zxs",
+        "title": "1000 Invested In Palantir Technologies 10 Years Ago Would Be Worth This Much Today",
+        "published_at": "2026-01-02T14:45:00Z",
+        "url": "https://www.benzinga.com/insights/news/26/01/49665634/1000-invested-in-palantir-technologies-10-years-ago-would-be-worth-this-much-today",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-18pr0xf",
+        "title": "Palantir Technologies Inc Pltr Shares Bought By Watershed Private Wealth Llc",
+        "published_at": "2026-01-02T13:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307030/palantir-technologies-inc-pltr-shares-bought-by-watershed-private-wealth-llc.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1tfe68s",
+        "title": "Fischer Financial Services Inc Takes 1 91 Million Position In Palantir Technologies Inc Pltr",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.defenseworld.net/2026/01/02/fischer-financial-services-inc-takes-1-91-million-position-in-palantir-technologies-inc-pltr.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-1bvm00j",
+        "title": "Sullivan Wood Capital Management Llc Has 1 38 Million Stake In Palantir Technologies Inc Pltr",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/sullivan-wood-capital-management-llc-has-1-38-million-stake-in-palantir-technologies-inc-pltr.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-j3l8ef",
+        "title": "Palantir Co Founder Joe Lonsdale On Early Employee Stock Options Now All My Friends Are Too Rich",
+        "published_at": "2026-01-02T11:15:00Z",
+        "url": "https://www.benzinga.com/markets/equities/26/01/49662784/palantir-co-founder-joe-lonsdale-on-early-employee-stock-options-now-all-my-friends-are-too-rich",
+        "source": "gdelt-arch:benzinga.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

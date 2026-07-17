@@ -3053,7 +3053,36 @@
       "prev_close": 84.853
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1bro8tg",
+        "title": "Stockstory 2026 1 2 Marvell Technology Mrvl Stock Trades Up Here Is Why",
+        "published_at": "2026-01-02T20:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-1-2-marvell-technology-mrvl-stock-trades-up-here-is-why",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-zgmvc1",
+        "title": "Moderately Bullish Activity Marvell Shares",
+        "published_at": "2026-01-01T22:30:00Z",
+        "url": "https://finance.yahoo.com/news/moderately-bullish-activity-marvell-shares-220014142.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-151829g",
+        "title": "Marvell Technology Nasdaqmrvl Shares Up 1 2 Time To Buy",
+        "published_at": "2026-01-01T18:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/marvell-technology-nasdaqmrvl-shares-up-1-2-time-to-buy.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-c5z61o",
+        "title": "Dear Marvell Stock Fans Mark",
+        "published_at": "2026-01-01T05:45:00Z",
+        "url": "https://finance.yahoo.com/news/dear-marvell-stock-fans-mark-185157816.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

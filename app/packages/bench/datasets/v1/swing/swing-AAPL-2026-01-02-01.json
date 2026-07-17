@@ -3055,6 +3055,76 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-pg196w",
+        "title": "Apple Tv 4k Could Get Its Long Awaited Refresh This Year What We Know So Far",
+        "published_at": "2026-01-02T23:45:00Z",
+        "url": "https://www.tomsguide.com/entertainment/streaming-devices/apple-tv-4k-could-get-its-long-awaited-refresh-this-year-what-we-know-so-far",
+        "source": "gdelt-arch:tomsguide.com"
+      },
+      {
+        "id": "gdelt-arch-kx998k",
+        "title": "Weekend Streaming Guide New Shows Movies Netflix Hbo Apple Tv Hulu Disney Plus January",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://www.forbes.com/sites/erikkain/2026/01/02/weekend-streaming-guide-new-shows-movies-netflix-hbo-apple-tv-hulu-disney-plus-january-2/",
+        "source": "gdelt-arch:forbes.com"
+      },
+      {
+        "id": "gdelt-arch-17u79ar",
+        "title": "Arizona Man Charged Stealing Iphones From Naperville Apple Store",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://www.fox32chicago.com/news/arizona-man-charged-stealing-iphones-from-naperville-apple-store",
+        "source": "gdelt-arch:fox32chicago.com"
+      },
+      {
+        "id": "gdelt-arch-yv7ede",
+        "title": "Apple Tvs Next Big Movie Has Elizabeth Olsen And Is Coming Soon",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://9to5mac.com/2026/01/02/apple-tvs-next-big-movie-has-elizabeth-olsen-and-is-coming-soon/",
+        "source": "gdelt-arch:9to5mac.com"
+      },
+      {
+        "id": "gdelt-arch-1t15p61",
+        "title": "Apple Slashes Vision Pro Production And Marketing Due To Weak Sales",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://macdailynews.com/2026/01/02/apple-slashes-vision-pro-production-and-marketing-due-to-weak-sales/",
+        "source": "gdelt-arch:macdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-1akmlg5",
+        "title": "Apple Watch Helps You Make It Apst Quitters Day",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://9to5mac.com/2026/01/02/apple-watch-helps-you-make-it-apst-quitters-day/",
+        "source": "gdelt-arch:9to5mac.com"
+      },
+      {
+        "id": "gdelt-arch-17v75x2",
+        "title": "Apple Names Borders As Principal Accounting Officer Ce7e59d9df8df22d",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://www.marketscreener.com/news/apple-names-borders-as-principal-accounting-officer-ce7e59d9df8df22d",
+        "source": "gdelt-arch:marketscreener.com"
+      },
+      {
+        "id": "gdelt-arch-vqwppl",
+        "title": "Apple Tv To Stream Elizabeth Olsen Film Eternity In February",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://macmegasite.com/2026/01/02/apple-tv-to-stream-elizabeth-olsen-film-eternity-in-february/",
+        "source": "gdelt-arch:macmegasite.com"
+      },
+      {
+        "id": "gdelt-arch-1jpihqm",
+        "title": "Apple Patents Eeg Earbuds For Brain Monitoring And Health Insights",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/apple-patents-eeg-earbuds-for-brain-monitoring-and-health-insights/",
+        "source": "gdelt-arch:webpronews.com"
+      },
+      {
+        "id": "gdelt-arch-1tj1qvn",
+        "title": "Apple Patches Zero Day Iphone Vulnerabilities Linked To Pegasus Spyware",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/apple-patches-zero-day-iphone-vulnerabilities-linked-to-pegasus-spyware/",
+        "source": "gdelt-arch:webpronews.com"
+      },
+      {
         "id": "edgar-0001140361-26-000199",
         "title": "8-K filed 2026-01-02 (ef20060722_8k.htm)",
         "published_at": "2026-01-02T00:00:00Z",

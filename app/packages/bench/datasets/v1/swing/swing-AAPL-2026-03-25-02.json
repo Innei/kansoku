@@ -3053,7 +3053,78 @@
       "prev_close": 251.414
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1bq84b5",
+        "title": "Apple Tv Miniseries You Can Finish One Day",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.bgr.com/2131221/apple-tv-miniseries-you-can-finish-one-day/",
+        "source": "gdelt-arch:bgr.com"
+      },
+      {
+        "id": "gdelt-arch-ymakh0",
+        "title": "Fountain Of Youth Guy Ritchie Adventure Movie Indiana Jones Replacement Global Streaming Success Apple Tv March",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://collider.com/fountain-of-youth-guy-ritchie-adventure-movie-indiana-jones-replacement-global-streaming-success-apple-tv-march-2026/",
+        "source": "gdelt-arch:collider.com"
+      },
+      {
+        "id": "gdelt-arch-1cyc77s",
+        "title": "Apple To Release New Ask Siri Button And Features At Wwdc",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.androidheadlines.com/2026/03/apple-to-release-new-ask-siri-button-and-features-at-wwdc-2026.html",
+        "source": "gdelt-arch:androidheadlines.com"
+      },
+      {
+        "id": "gdelt-arch-1fbk8dl",
+        "title": "Tom Hanks Modern Cult Classic Ww2 Thriller Greyhound Streaming Success Apple Tv March",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://collider.com/tom-hanks-modern-cult-classic-ww2-thriller-greyhound-streaming-success-apple-tv-march-2026/",
+        "source": "gdelt-arch:collider.com"
+      },
+      {
+        "id": "gdelt-arch-1vc5pqp",
+        "title": "For All Mankind Sets Course For Final Mission As Apple Tv Confirms Season 6 Endgame",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.fanbolt.com/171957/for-all-mankind-sets-course-for-final-mission-as-apple-tv-confirms-season-6-endgame/",
+        "source": "gdelt-arch:fanbolt.com"
+      },
+      {
+        "id": "gdelt-arch-ea6tp3",
+        "title": "Apple Airpods Max 2 Pre Order April Delivery",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.androidheadlines.com/2026/03/apple-airpods-max-2-pre-order-april-delivery.html",
+        "source": "gdelt-arch:androidheadlines.com"
+      },
+      {
+        "id": "gdelt-arch-1kf6wfm",
+        "title": "Apple Tv Imperfect Women Scandal Kerry Washington Flipped Role",
+        "published_at": "2026-03-25T23:30:00Z",
+        "url": "https://screenrant.com/apple-tv-imperfect-women-scandal-kerry-washington-flipped-role/",
+        "source": "gdelt-arch:screenrant.com"
+      },
+      {
+        "id": "gdelt-arch-1p5ro2m",
+        "title": "Apple Watch And My Plush Pop Tart",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://9to5mac.com/2026/03/25/apple-watch-and-my-plush-pop-tart/",
+        "source": "gdelt-arch:9to5mac.com"
+      },
+      {
+        "id": "gdelt-arch-16u0zcq",
+        "title": "Apple Settles Lawsuit With Ex Employee Who Stole Vision Pro Trade Secrets Before Joining Snap",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://9to5mac.com/2026/03/25/apple-settles-lawsuit-with-ex-employee-who-stole-vision-pro-trade-secrets-before-joining-snap/",
+        "source": "gdelt-arch:9to5mac.com"
+      },
+      {
+        "id": "gdelt-arch-1ykikn9",
+        "title": "Report Apple Sees Softer China Demand As Smartphone Shipments Decline In February",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://9to5mac.com/2026/03/25/report-apple-sees-softer-china-demand-as-smartphone-shipments-decline-in-february/",
+        "source": "gdelt-arch:9to5mac.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

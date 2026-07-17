@@ -3053,7 +3053,57 @@
       "prev_close": 118.739
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-d8728k",
+        "title": "Heres How Much You Would Have Made Owning Exxon Mobil Stock In The Last 5 Years",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://www.benzinga.com/insights/news/26/01/49678164/heres-how-much-you-would-have-made-owning-exxon-mobil-stock-in-the-last-5-years",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-5saeqa",
+        "title": "Exxon Mobil Nysexom Trading 1 9 Higher Whats Next",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/exxon-mobil-nysexom-trading-1-9-higher-whats-next.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-7jn7qw",
+        "title": "Exxon Mobil Target Of Unusually Large Options Trading Nysexom",
+        "published_at": "2026-01-02T22:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/exxon-mobil-target-of-unusually-large-options-trading-nysexom.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-c503q6",
+        "title": "Exxon Is Breaking Out At The Turn Of The New Year Why Jay Woods Thinks Its A Buy",
+        "published_at": "2026-01-02T17:15:00Z",
+        "url": "https://www.cnbc.com/2026/01/02/exxon-is-breaking-out-at-the-turn-of-the-new-year-why-jay-woods-thinks-its-a-buy.html",
+        "source": "gdelt-arch:cnbc.com"
+      },
+      {
+        "id": "gdelt-arch-1i1daq2",
+        "title": "Weaver Capital Management Llc Purchases 4253 Shares Of Exxon Mobil Corporation Xom",
+        "published_at": "2026-01-02T13:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307028/weaver-capital-management-llc-purchases-4253-shares-of-exxon-mobil-corporation-xom.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-11k5moi",
+        "title": "Oak Harvest Investment Services Has 4 68 Million Stock Position In Exxon Mobil Corporation Xom",
+        "published_at": "2026-01-01T11:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13306143/oak-harvest-investment-services-has-4-68-million-stock-position-in-exxon-mobil-corporation-xom.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1wi51nj",
+        "title": "Plimoth Trust Co Llc Sells 4818 Shares Of Exxon Mobil Corporation Xom",
+        "published_at": "2026-01-01T11:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/01/plimoth-trust-co-llc-sells-4818-shares-of-exxon-mobil-corporation-xom.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

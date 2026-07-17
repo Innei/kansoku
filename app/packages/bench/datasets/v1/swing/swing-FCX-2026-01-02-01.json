@@ -3053,7 +3053,78 @@
       "prev_close": 50.429
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-csrafl",
+        "title": "Freeport Mcmoran Nysefcx Trading Up 2 3 Heres Why",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307284/freeport-mcmoran-nysefcx-trading-up-2-3-heres-why.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-h4y99t",
+        "title": "Lost Money On Freeport Mcmoran Inc Fcx Urged To Join Class Action R5161018",
+        "published_at": "2026-01-02T19:45:00Z",
+        "url": "https://www.pr-inside.com/lost-money-on-freeport-mcmoran-inc-fcx-urged-to-join-class-action-r5161018.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
+        "id": "gdelt-arch-1kip7pv",
+        "title": "Harraseeket Freeport Maine Ice Bar",
+        "published_at": "2026-01-02T17:45:00Z",
+        "url": "https://wcyy.com/harraseeket-freeport-maine-ice-bar/",
+        "source": "gdelt-arch:wcyy.com"
+      },
+      {
+        "id": "gdelt-arch-13f6ksf",
+        "title": "Investor Alert Deadline Approaching To Join Freeport Mcmoran Inc R5160943",
+        "published_at": "2026-01-02T16:15:00Z",
+        "url": "https://www.pr-inside.com/investor-alert-deadline-approaching-to-join-freeport-mcmoran-inc-r5160943.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
+        "id": "gdelt-arch-kxs359",
+        "title": "January 12 2026 Deadline Approaching Join Class Action Against Freeport Mcmoran R5160865",
+        "published_at": "2026-01-02T11:45:00Z",
+        "url": "https://www.pr-inside.com/january-12-2026-deadline-approaching-join-class-action-against-freeport-mcmoran-r5160865.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
+        "id": "gdelt-arch-y2oeoq",
+        "title": "Article 73fc893a 292c 4a82 9c8f 06ee8b8efd6d",
+        "published_at": "2026-01-02T02:15:00Z",
+        "url": "https://www.beloitdailynews.com/news/local-news/mercyhealth-freeport-health-provider-finalize-agreement/article_73fc893a-292c-4a82-9c8f-06ee8b8efd6d.html",
+        "source": "gdelt-arch:beloitdailynews.com"
+      },
+      {
+        "id": "gdelt-arch-14ffup9",
+        "title": "Jobs Fair Set Jan 9 As Cdc Dole Extend Help To Charter Link Employees",
+        "published_at": "2026-01-01T18:00:00Z",
+        "url": "https://www.manilatimes.net/2026/01/02/tmt-newswire/jobs-fair-set-jan-9-as-cdc-dole-extend-help-to-charter-link-employees/2251681",
+        "source": "gdelt-arch:manilatimes.net"
+      },
+      {
+        "id": "gdelt-arch-1c4ursg",
+        "title": "Freeport Mcmoran Inc Nysefcx Short Interest Update",
+        "published_at": "2026-01-01T17:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13306546/freeport-mcmoran-inc-nysefcx-short-interest-update.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-rlend4",
+        "title": "Article 0a5840ed 8922 4d44 97c6 685e7bdfdab7",
+        "published_at": "2026-01-01T17:30:00Z",
+        "url": "https://trinidadexpress.com/newsextra/police-say-overtaking-manoeuvre-triggered-deadly-freeport-crash/article_0a5840ed-8922-4d44-97c6-685e7bdfdab7.html",
+        "source": "gdelt-arch:trinidadexpress.com"
+      },
+      {
+        "id": "gdelt-arch-1x3refu",
+        "title": "Marketminute 2026 1 1 Institutional Rebalancing Amidst Record Metal Prices Ninety One Uk Ltd Trims Stake In Freeport Mcmoran",
+        "published_at": "2026-01-01T15:30:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-1-institutional-rebalancing-amidst-record-metal-prices-ninety-one-uk-ltd-trims-stake-in-freeport-mcmoran",
+        "source": "gdelt-arch:financialcontent.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

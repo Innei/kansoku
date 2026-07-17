@@ -34,7 +34,7 @@ function gdeltSeenDateToIso(seendate: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
 }
 
-function hashSlug(value: string): string {
+export function hashSlug(value: string): string {
   let hash = 5381;
   for (let i = 0; i < value.length; i++) {
     hash = (hash * 33) ^ value.charCodeAt(i);

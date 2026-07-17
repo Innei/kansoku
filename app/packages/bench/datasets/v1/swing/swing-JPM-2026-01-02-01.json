@@ -3053,7 +3053,78 @@
       "prev_close": 317.709
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-vsmadn",
+        "title": "Ex Jpmorgan Advisor Gets U 5 Firing Expunged By Arb Panel",
+        "published_at": "2026-01-02T23:45:00Z",
+        "url": "https://www.financial-planning.com/news/ex-jpmorgan-advisor-gets-u-5-firing-expunged-by-arb-panel",
+        "source": "gdelt-arch:financial-planning.com"
+      },
+      {
+        "id": "gdelt-arch-sxrtlu",
+        "title": "Transaction In Own Shares",
+        "published_at": "2026-01-02T19:00:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-japanese-inv-trust--jfj/transaction-in-own-shares/9330889",
+        "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1ao76mo",
+        "title": "Gtreasury Move On Xrp Ledger",
+        "published_at": "2026-01-02T18:00:00Z",
+        "url": "https://www.newsbtc.com/xrp-news/gtreasury-move-on-xrp-ledger/",
+        "source": "gdelt-arch:newsbtc.com"
+      },
+      {
+        "id": "gdelt-arch-frgsw9",
+        "title": "These Stocks Were Among The Top 2025 Performers On Our List What We Expect In",
+        "published_at": "2026-01-02T17:15:00Z",
+        "url": "https://www.cnbc.com/2026/01/02/these-stocks-were-among-the-top-2025-performers-on-our-list-what-we-expect-in-2026.html",
+        "source": "gdelt-arch:cnbc.com"
+      },
+      {
+        "id": "gdelt-arch-1q25dlz",
+        "title": "Closed Period Notification",
+        "published_at": "2026-01-02T16:00:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-american-inv-trust--jam/closed-period-notification/9330696",
+        "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1vlcts3",
+        "title": "Jpmorgan Boosts Rating Recursion Pharmaceuticals",
+        "published_at": "2026-01-02T15:00:00Z",
+        "url": "https://finance.yahoo.com/news/jpmorgan-boosts-rating-recursion-pharmaceuticals-141023713.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1cshjnk",
+        "title": "Jpmorgan Equity Premium Income Etf Jepi Is Mayfair Advisory Group Llcs 3rd Largest Position",
+        "published_at": "2026-01-02T13:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/jpmorgan-equity-premium-income-etf-jepi-is-mayfair-advisory-group-llcs-3rd-largest-position.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-uo2fh8",
+        "title": "Sterling Investment Counsel Llc Has 26 75 Million Stake In Jpmorgan Equity Premium Income Etf Jepi",
+        "published_at": "2026-01-02T13:00:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/sterling-investment-counsel-llc-has-26-75-million-stake-in-jpmorgan-equity-premium-income-etf-jepi.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-9vpzxl",
+        "title": "Retirement Guys Formula Llc Buys 24616 Shares Of Jpmorgan Ultra Short Income Etf Jpst",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/retirement-guys-formula-llc-buys-24616-shares-of-jpmorgan-ultra-short-income-etf-jpst.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-162791s",
+        "title": "Closed Period Announcement",
+        "published_at": "2026-01-02T12:30:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-claverhouse-inv-trust--jch/closed-period-announcement/9330246",
+        "source": "gdelt-arch:investegate.co.uk"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

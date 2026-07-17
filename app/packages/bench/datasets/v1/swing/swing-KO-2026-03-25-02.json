@@ -3053,7 +3053,78 @@
       "prev_close": 74.192
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-6gtpfc",
+        "title": "Coca Cola System Invests In Tanzanias Water Future Through Ruvu Basin Restoration",
+        "published_at": "2026-03-25T23:30:00Z",
+        "url": "https://africa.com/coca-cola-system-invests-in-tanzanias-water-future-through-ruvu-basin-restoration/",
+        "source": "gdelt-arch:africa.com"
+      },
+      {
+        "id": "gdelt-arch-d98zbe",
+        "title": "Coca Cola Consolidated Nasdaqcoke Trading Down 5 5 Heres Why",
+        "published_at": "2026-03-25T23:00:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13391087/coca-cola-consolidated-nasdaqcoke-trading-down-5-5-heres-why.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1w63vsd",
+        "title": "Coca Cola System Aims To Strengthen Water Security In Tanzania With Usd 1 94 Million Investment",
+        "published_at": "2026-03-25T21:00:00Z",
+        "url": "https://www.maravipost.com/coca-cola-system-aims-to-strengthen-water-security-in-tanzania-with-usd-1-94-million-investment/",
+        "source": "gdelt-arch:maravipost.com"
+      },
+      {
+        "id": "gdelt-arch-qecap0",
+        "title": "Coca Cola Park Named Best Minor League Ball Park",
+        "published_at": "2026-03-25T20:45:00Z",
+        "url": "https://lvb.com/coca-cola-park-named-best-minor-league-ball-park/",
+        "source": "gdelt-arch:lvb.com"
+      },
+      {
+        "id": "gdelt-arch-1gi43tu",
+        "title": "Coca Cola Park Best Minor League Ballpark America Usa Today",
+        "published_at": "2026-03-25T17:30:00Z",
+        "url": "https://www.dailylocal.com/2026/03/25/coca-cola-park-best-minor-league-ballpark-america-usa-today/",
+        "source": "gdelt-arch:dailylocal.com"
+      },
+      {
+        "id": "gdelt-arch-1a69jq8",
+        "title": "Stampede Drops Coca Cola Stage Lineup As 100 Day Countdown Begins",
+        "published_at": "2026-03-25T15:45:00Z",
+        "url": "https://discoverairdrie.com/articles/stampede-drops-coca-cola-stage-lineup-as-100-day-countdown-begins",
+        "source": "gdelt-arch:discoverairdrie.com"
+      },
+      {
+        "id": "gdelt-arch-1m9pydc",
+        "title": "2026 Calgary Stampede Coca Cola Stage Lineup Revealed",
+        "published_at": "2026-03-25T15:45:00Z",
+        "url": "https://calgarysun.com/news/2026-calgary-stampede-coca-cola-stage-lineup-revealed",
+        "source": "gdelt-arch:calgarysun.com"
+      },
+      {
+        "id": "gdelt-arch-53upc7",
+        "title": "Coca Cola Commits 650m To Expand Fairlife Dairy Production In Michigan",
+        "published_at": "2026-03-25T15:15:00Z",
+        "url": "https://www.foodbev.com/news/coca-cola-commits-650m-to-expand-fairlife-dairy-production-in-michigan",
+        "source": "gdelt-arch:foodbev.com"
+      },
+      {
+        "id": "gdelt-arch-lq6aob",
+        "title": "Cchbc Finance B V Supplementary Base Prospectus",
+        "published_at": "2026-03-25T15:15:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/coca-cola-hbc-finance-b-v---65er/cchbc-finance-b-v-supplementary-base-prospectus/9492111",
+        "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1xvaw57",
+        "title": "Coca Cola Zero Caffeine Zero Sugar Returns To Shelves With New Look Aimed At Evening Occasions",
+        "published_at": "2026-03-25T15:00:00Z",
+        "url": "https://www.retailgazette.co.uk/blog/2026/03/coca-cola-zero-caffeine-zero-sugar-returns-to-shelves-with-new-look-aimed-at-evening-occasions/",
+        "source": "gdelt-arch:retailgazette.co.uk"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

@@ -3053,7 +3053,78 @@
       "prev_close": 511.57
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-psvxu9",
+        "title": "Amd Bets On Mext Predictive Memory Tech To Slash Data Center Tco",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://wccftech.com/amd-bets-on-mext-predictive-memory-tech-to-slash-data-center-tco/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-1c08ofj",
+        "title": "Amd Olympic Ridge Zen 6 Ryzen Cpus Get Integrated Npu At The Cost Of Igpu",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://wccftech.com/amd-olympic-ridge-zen-6-ryzen-cpus-get-integrated-npu-at-the-cost-of-igpu/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-8ebzzx",
+        "title": "Amd Vs Intel Both Are Positioned For Ai Data Center Growth But There Will Be Only One Winner",
+        "published_at": "2026-06-15T21:00:00Z",
+        "url": "https://247wallst.com/investing/2026/06/15/amd-vs-intel-both-are-positioned-for-ai-data-center-growth-but-there-will-be-only-one-winner/",
+        "source": "gdelt-arch:247wallst.com"
+      },
+      {
+        "id": "gdelt-arch-6z5lgt",
+        "title": "Amd Tsme Memory Encryption Removed Consumer Ryzen Cpus",
+        "published_at": "2026-06-15T20:45:00Z",
+        "url": "https://thenextweb.com/news/amd-tsme-memory-encryption-removed-consumer-ryzen-cpus",
+        "source": "gdelt-arch:thenextweb.com"
+      },
+      {
+        "id": "gdelt-arch-1mc0tm2",
+        "title": "CPU Zombies AMD Revives Three More Ryzen Processors For DDR4 RAM",
+        "published_at": "2026-06-15T19:45:00Z",
+        "url": "https://www.heise.de/en/news/CPU-Zombies-AMD-Revives-Three-More-Ryzen-Processors-for-DDR4-RAM-11332922.html",
+        "source": "gdelt-arch:heise.de"
+      },
+      {
+        "id": "gdelt-arch-1pnlfd9",
+        "title": "Amd Takes Over Mext To Address Growing Memory Constraints In The Data Center Memory Tiering Technology Enables Flash To Appear As Dram To Applications",
+        "published_at": "2026-06-15T19:45:00Z",
+        "url": "https://www.tomshardware.com/pc-components/cpus/amd-takes-over-mext-to-address-growing-memory-constraints-in-the-data-center-memory-tiering-technology-enables-flash-to-appear-as-dram-to-applications",
+        "source": "gdelt-arch:tomshardware.com"
+      },
+      {
+        "id": "gdelt-arch-5nsj2i",
+        "title": "Users Cry Foul After Amd Stripped Memory Crypto From Its Consumer Cpus",
+        "published_at": "2026-06-15T19:00:00Z",
+        "url": "https://arstechnica.com/security/2026/06/users-cry-foul-after-amd-stripped-memory-crypto-from-its-consumer-cpus/",
+        "source": "gdelt-arch:arstechnica.com"
+      },
+      {
+        "id": "gdelt-arch-sl6u3m",
+        "title": "Amd Refuse To Pay 10000 Dollar Bug Bounty",
+        "published_at": "2026-06-15T18:45:00Z",
+        "url": "https://www.bgr.com/2194123/amd-refuse-to-pay-10000-dollar-bug-bounty/",
+        "source": "gdelt-arch:bgr.com"
+      },
+      {
+        "id": "gdelt-arch-1ezknv8",
+        "title": "Apple Macbook Neo Comparison",
+        "published_at": "2026-06-15T18:30:00Z",
+        "url": "https://www.pcgamesn.com/amd/apple-macbook-neo-comparison",
+        "source": "gdelt-arch:pcgamesn.com"
+      },
+      {
+        "id": "gdelt-arch-1fupvfa",
+        "title": "Amd Jumps 8 Record High",
+        "published_at": "2026-06-15T17:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/amd-jumps-8-record-high-162242216.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

@@ -3053,7 +3053,78 @@
       "prev_close": 164.272
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-dxvbks",
+        "title": "Exxon Mobil Nysexom Trading Down 1 4 Should You Sell",
+        "published_at": "2026-03-25T22:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/exxon-mobil-nysexom-trading-down-1-4-should-you-sell.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-rms34e",
+        "title": "Xom Stock Near Highs Is Exxon Just Getting Started",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.financial-news.co.uk/xom-stock-near-highs-is-exxon-just-getting-started/",
+        "source": "gdelt-arch:financial-news.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1fht20q",
+        "title": "4568501 Exxon Mobil Tops Nvidia In Valuation Amid The Ongoing Middle East Conflict",
+        "published_at": "2026-03-25T14:30:00Z",
+        "url": "https://seekingalpha.com/news/4568501-exxon-mobil-tops-nvidia-in-valuation-amid-the-ongoing-middle-east-conflict",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-fjjr7v",
+        "title": "World Investment Advisors Buys 60332 Shares Of Exxon Mobil Corporation Xom",
+        "published_at": "2026-03-25T13:15:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/world-investment-advisors-buys-60332-shares-of-exxon-mobil-corporation-xom.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1xpmbug",
+        "title": "Exxon Mobil Corporation Xom Shares Purchased By Sg Americas Securities Llc",
+        "published_at": "2026-03-25T11:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/exxon-mobil-corporation-xom-shares-purchased-by-sg-americas-securities-llc.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-14t4vyp",
+        "title": "Asempa Wealth Advisors Makes New 1 41 Million Investment In Exxon Mobil Corporation Xom",
+        "published_at": "2026-03-25T10:00:00Z",
+        "url": "https://www.defenseworld.net/2026/03/25/asempa-wealth-advisors-makes-new-1-41-million-investment-in-exxon-mobil-corporation-xom.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-145jykg",
+        "title": "Exxon Mobil Corporation Xom Shares Sold By Assenagon Asset Management S A",
+        "published_at": "2026-03-25T10:00:00Z",
+        "url": "https://www.defenseworld.net/2026/03/25/exxon-mobil-corporation-xom-shares-sold-by-assenagon-asset-management-s-a.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-if0kr",
+        "title": "Day Water Died 37 Years After Exxon Valdez Damage Still Lingers",
+        "published_at": "2026-03-25T06:15:00Z",
+        "url": "https://www.alaskasnewssource.com/2026/03/25/day-water-died-37-years-after-exxon-valdez-damage-still-lingers/",
+        "source": "gdelt-arch:alaskasnewssource.com"
+      },
+      {
+        "id": "gdelt-arch-3e4yw2",
+        "title": "Exxon Award Contracts To Build 8th Oil Ship Without Govt Approval",
+        "published_at": "2026-03-25T05:15:00Z",
+        "url": "https://kaieteurnewsonline.com/2026/03/25/exxon-award-contracts-to-build-8th-oil-ship-without-govt-approval/",
+        "source": "gdelt-arch:kaieteurnewsonline.com"
+      },
+      {
+        "id": "gdelt-arch-1mgb9ib",
+        "title": "This Day History Exxon Valdez Crashes Causing One Worst Oil Spills Ever",
+        "published_at": "2026-03-25T05:15:00Z",
+        "url": "https://www.whsv.com/2026/03/25/this-day-history-exxon-valdez-crashes-causing-one-worst-oil-spills-ever/",
+        "source": "gdelt-arch:whsv.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

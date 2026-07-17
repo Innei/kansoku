@@ -3053,7 +3053,78 @@
       "prev_close": 68.987
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1jlcv8h",
+        "title": "Coca Cola Planning Layoff Its Atlanta Headquarters",
+        "published_at": "2026-01-02T18:30:00Z",
+        "url": "https://www.fox5atlanta.com/news/coca-cola-planning-layoff-its-atlanta-headquarters",
+        "source": "gdelt-arch:fox5atlanta.com"
+      },
+      {
+        "id": "gdelt-arch-1wlp3gg",
+        "title": "Coca Cola Diet Cherry Coke Returns",
+        "published_at": "2026-01-02T17:30:00Z",
+        "url": "https://www.dailymail.co.uk/yourmoney/article-15427639/coca-cola-diet-cherry-coke-returns.html",
+        "source": "gdelt-arch:dailymail.co.uk"
+      },
+      {
+        "id": "gdelt-arch-1dlagkl",
+        "title": "Total Voting Rights",
+        "published_at": "2026-01-02T16:00:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/coca-cola-europacific-partners-di---ccep/total-voting-rights/9330637",
+        "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-ukaxax",
+        "title": "Analyzing Coca Cola Hbc Otcmktscchgy Chagee Nasdaqcha",
+        "published_at": "2026-01-02T09:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13306796/analyzing-coca-cola-hbc-otcmktscchgy-chagee-nasdaqcha.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-11dkn0g",
+        "title": "Coca Cola Lay Off Workers Atlanta Headquarters",
+        "published_at": "2026-01-02T04:00:00Z",
+        "url": "https://www.wrdw.com/2026/01/01/coca-cola-lay-off-workers-atlanta-headquarters/",
+        "source": "gdelt-arch:wrdw.com"
+      },
+      {
+        "id": "gdelt-arch-2pjm50",
+        "title": "A Holiday Christmas Magic Coca Cola Bridges Miles By Bringing Sound Of Home To Overseas Filipino Workers In Australia",
+        "published_at": "2026-01-02T00:45:00Z",
+        "url": "https://www.manilatimes.net/2026/01/02/tmt-newswire/media-outreach-newswire/a-holiday-christmas-magic-coca-cola-bridges-miles-by-bringing-sound-of-home-to-overseas-filipino-workers-in-australia/2251771",
+        "source": "gdelt-arch:manilatimes.net"
+      },
+      {
+        "id": "gdelt-arch-1eql5s",
+        "title": "Coca Cola Laying Off Workers Atlanta Headquarters",
+        "published_at": "2026-01-02T00:00:00Z",
+        "url": "https://www.atlantanewsfirst.com/2026/01/01/coca-cola-laying-off-workers-atlanta-headquarters/",
+        "source": "gdelt-arch:atlantanewsfirst.com"
+      },
+      {
+        "id": "gdelt-arch-1x8tebc",
+        "title": "WNS3RGRWEFHZLI27ITWJDN6SVM",
+        "published_at": "2026-01-01T19:00:00Z",
+        "url": "https://www.wsbtv.com/news/local/coca-cola-laying-off-75-workers-its-corporate-headquarters-atlanta/WNS3RGRWEFHZLI27ITWJDN6SVM/",
+        "source": "gdelt-arch:wsbtv.com"
+      },
+      {
+        "id": "gdelt-arch-1qb4x07",
+        "title": "85 043a3b21 A30b 4c66 8603 0e9a953f8ced",
+        "published_at": "2026-01-01T15:45:00Z",
+        "url": "https://www.11alive.com/article/news/local/coca-cola-announces-plans-for-corporate-layoffs-in-atlanta/85-043a3b21-a30b-4c66-8603-0e9a953f8ced",
+        "source": "gdelt-arch:11alive.com"
+      },
+      {
+        "id": "gdelt-arch-1tz94rf",
+        "title": "Costa Coffee Losses Mount Coca Cola Searches New Buyer",
+        "published_at": "2026-01-01T12:00:00Z",
+        "url": "https://www.dailymail.co.uk/money/markets/article-15426771/Costa-Coffee-losses-mount-Coca-Cola-searches-new-buyer.html",
+        "source": "gdelt-arch:dailymail.co.uk"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

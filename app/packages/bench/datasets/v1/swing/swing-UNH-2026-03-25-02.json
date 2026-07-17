@@ -3053,7 +3053,43 @@
       "prev_close": 270.728
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-3tt5k",
+        "title": "Rep Josh Gottheimer Purchases Shares Of Unitedhealth Group Incorporated Nyseunh",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/rep-josh-gottheimer-purchases-shares-of-unitedhealth-group-incorporated-nyseunh.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-hmsz4u",
+        "title": "Pensionfund Sabic Purchases Shares Of 8150 Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-03-25T11:15:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/pensionfund-sabic-purchases-shares-of-8150-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-uovhmd",
+        "title": "Unitedhealth Stock Down 18 2026",
+        "published_at": "2026-03-25T06:45:00Z",
+        "url": "https://finance.yahoo.com/sectors/healthcare/articles/unitedhealth-stock-down-18-2026-191916152.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-195v7ht",
+        "title": "Central Bank Trust Co Trims Position In Unitedhealth Group Incorporated Unh",
+        "published_at": "2026-03-25T00:00:00Z",
+        "url": "https://www.defenseworld.net/2026/03/24/central-bank-trust-co-trims-position-in-unitedhealth-group-incorporated-unh.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-1gp8aup",
+        "title": "Unitedhealth Unh Expands Ai Investments",
+        "published_at": "2026-03-24T12:15:00Z",
+        "url": "https://finance.yahoo.com/sectors/healthcare/articles/unitedhealth-unh-expands-ai-investments-112658049.html",
+        "source": "gdelt-arch:yahoo.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

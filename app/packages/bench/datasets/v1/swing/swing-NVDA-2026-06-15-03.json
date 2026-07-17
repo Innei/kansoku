@@ -3053,7 +3053,78 @@
       "prev_close": 205.19
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-ycj199",
+        "title": "Nvidia Joins Ai Borrowing Frenzy With 25 Million Bond Sale",
+        "published_at": "2026-06-16T00:00:00Z",
+        "url": "https://www.latimes.com/business/story/2026-06-15/nvidia-joins-ai-borrowing-frenzy-with-25-million-bond-sale",
+        "source": "gdelt-arch:latimes.com"
+      },
+      {
+        "id": "gdelt-arch-165bq9n",
+        "title": "Datacenters Outstripping Power Grid Forcing Nvidia Google Into A Radical 800v Dc Overhaul",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://wccftech.com/datacenters-outstripping-power-grid-forcing-nvidia-google-into-a-radical-800v-dc-overhaul/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-ce7ljd",
+        "title": "Intel Serpent Lake Socs With Nvidia Rtx Gpu Tiles Reportedly Arrive In Q1",
+        "published_at": "2026-06-15T23:45:00Z",
+        "url": "https://wccftech.com/intel-serpent-lake-socs-with-nvidia-rtx-gpu-tiles-reportedly-arrive-in-q1-2028/",
+        "source": "gdelt-arch:wccftech.com"
+      },
+      {
+        "id": "gdelt-arch-1cfu6wv",
+        "title": "Hidden Siri Ai Features",
+        "published_at": "2026-06-15T23:00:00Z",
+        "url": "https://www.geeky-gadgets.com/hidden-siri-ai-features-2026/",
+        "source": "gdelt-arch:geeky-gadgets.com"
+      },
+      {
+        "id": "gdelt-arch-12gxgqm",
+        "title": "Stock Market Today June 15 Nvidia Jumps As Markets Soar On Peace Hopes",
+        "published_at": "2026-06-15T22:30:00Z",
+        "url": "https://www.fool.com/coverage/stock-market-today/2026/06/15/stock-market-today-june-15-nvidia-jumps-as-markets-soar-on-peace-hopes/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-bbic8",
+        "title": "Billionaire Ken Fishers Top 12 High Growth Stock Picks",
+        "published_at": "2026-06-15T22:30:00Z",
+        "url": "https://www.insidermonkey.com/blog/billionaire-ken-fishers-top-12-high-growth-stock-picks-1780804/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-1jxhs32",
+        "title": "Chipmaker Nvidia Seeks To Raise Over 25b In First Bond Deal Since",
+        "published_at": "2026-06-15T22:15:00Z",
+        "url": "https://arstechnica.com/ai/2026/06/chipmaker-nvidia-seeks-to-raise-over-25b-in-first-bond-deal-since-2021/",
+        "source": "gdelt-arch:arstechnica.com"
+      },
+      {
+        "id": "gdelt-arch-kr3trp",
+        "title": "Nvidia To Raise 20 Billion Source Says In First Co",
+        "published_at": "2026-06-15T22:00:00Z",
+        "url": "https://www.spokesman.com/stories/2026/jun/15/nvidia-to-raise-20-billion-source-says-in-first-co/",
+        "source": "gdelt-arch:spokesman.com"
+      },
+      {
+        "id": "gdelt-arch-vx3u1",
+        "title": "Nvidia Plans To Raise About 20 Billion First Debt Sale In Ai Boom",
+        "published_at": "2026-06-15T20:45:00Z",
+        "url": "https://www.cnbc.com/2026/06/15/nvidia-plans-to-raise-about-20-billion-first-debt-sale-in-ai-boom.html",
+        "source": "gdelt-arch:cnbc.com"
+      },
+      {
+        "id": "gdelt-arch-wairpu",
+        "title": "Nvidia Plans Massive 20 Billion Debt Offering Fuel Ai Expansion",
+        "published_at": "2026-06-15T20:45:00Z",
+        "url": "https://www.ibtimes.com/nvidia-plans-massive-20-billion-debt-offering-fuel-ai-expansion-3804131",
+        "source": "gdelt-arch:ibtimes.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

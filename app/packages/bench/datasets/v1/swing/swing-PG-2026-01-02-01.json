@@ -3053,7 +3053,57 @@
       "prev_close": 141.232
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-r74oa",
+        "title": "Lazard Freres Gestion S A S Buys Shares Of 54197 Procter Gamble Company The Pg",
+        "published_at": "2026-01-02T14:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/lazard-freres-gestion-s-a-s-buys-shares-of-54197-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-jzhm36",
+        "title": "Steelpeak Wealth Llc Raises Position In Procter Gamble Company The Pg",
+        "published_at": "2026-01-02T14:00:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/steelpeak-wealth-llc-raises-position-in-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-10ikfkr",
+        "title": "Procter Gamble Company The Pg Position Increased By Silver Oak Securities Incorporated",
+        "published_at": "2026-01-02T13:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13307014/procter-gamble-company-the-pg-position-increased-by-silver-oak-securities-incorporated.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1iwtk6b",
+        "title": "Silver Oak Securities Incorporated Raises Stock Position In Procter Gamble Company The Pg",
+        "published_at": "2026-01-02T13:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/silver-oak-securities-incorporated-raises-stock-position-in-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-vn70ae",
+        "title": "Tectonic Advisors Llc Purchases 4302 Shares Of Procter Gamble Company The Pg",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13306965/tectonic-advisors-llc-purchases-4302-shares-of-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-k2fazc",
+        "title": "First Pacific Financial Purchases 6871 Shares Of Procter Gamble Company The Pg",
+        "published_at": "2026-01-02T12:45:00Z",
+        "url": "https://www.defenseworld.net/2026/01/02/first-pacific-financial-purchases-6871-shares-of-procter-gamble-company-the-pg.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-1sgrtcc",
+        "title": "Procter Gamble Company The Pg Shares Sold By Ninety One North America Inc",
+        "published_at": "2026-01-01T14:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/procter-gamble-company-the-pg-shares-sold-by-ninety-one-north-america-inc.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

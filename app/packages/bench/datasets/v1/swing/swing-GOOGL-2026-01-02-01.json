@@ -3053,7 +3053,78 @@
       "prev_close": 312.593
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1qasxti",
+        "title": "Autozen Is The Driving Assistant Google Should Have Built",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.makeuseof.com/autozen-is-the-driving-assistant-google-should-have-built/",
+        "source": "gdelt-arch:makeuseof.com"
+      },
+      {
+        "id": "gdelt-arch-bbfdt0",
+        "title": "I Revisited The Original Google Pixel Fold",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.makeuseof.com/i-revisited-the-original-google-pixel-fold/",
+        "source": "gdelt-arch:makeuseof.com"
+      },
+      {
+        "id": "gdelt-arch-1y6yqjj",
+        "title": "Menu Order Ai Launches On Google Play Store Expanding Global Access To Its Real Time Glp 1 Dining Companion",
+        "published_at": "2026-01-02T23:45:00Z",
+        "url": "https://www.prnewswire.com/news-releases/menu-order-ai-launches-on-google-play-store-expanding-global-access-to-its-real-time-glp-1-dining-companion-302651863.html",
+        "source": "gdelt-arch:prnewswire.com"
+      },
+      {
+        "id": "gdelt-arch-1ucxm6v",
+        "title": "Clnica Garca Dihinx Celebrates 500 Google Reviews Milestone Reinforcing Its Role As A Leading Plastic Surgery Clinic In Zaragoza Spain",
+        "published_at": "2026-01-02T23:30:00Z",
+        "url": "https://www.manilatimes.net/2026/01/03/tmt-newswire/globenewswire/clnica-garca-dihinx-celebrates-500-google-reviews-milestone-reinforcing-its-role-as-a-leading-plastic-surgery-clinic-in-zaragoza-spain/2252113",
+        "source": "gdelt-arch:manilatimes.net"
+      },
+      {
+        "id": "gdelt-arch-1vsm1ze",
+        "title": "Ais Sexually Explicit Side Surfaces Through Searc",
+        "published_at": "2026-01-02T23:30:00Z",
+        "url": "https://www.mediapost.com/publications/article/411745/ais-sexually-explicit-side-surfaces-through-searc.html",
+        "source": "gdelt-arch:mediapost.com"
+      },
+      {
+        "id": "gdelt-arch-cvoar1",
+        "title": "C1w9qe43x2qo",
+        "published_at": "2026-01-02T23:30:00Z",
+        "url": "https://www.bbc.com/news/articles/c1w9qe43x2qo",
+        "source": "gdelt-arch:bbc.com"
+      },
+      {
+        "id": "gdelt-arch-ouxqgw",
+        "title": "Ai Models Line Up To Mess With Games",
+        "published_at": "2026-01-02T22:30:00Z",
+        "url": "https://fudzilla.com/ai-models-line-up-to-mess-with-games/",
+        "source": "gdelt-arch:fudzilla.com"
+      },
+      {
+        "id": "gdelt-arch-1c6hpax",
+        "title": "Oneplus 16 Rumored For 2026 With 200mp Camera To Rival Samsung Google",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/oneplus-16-rumored-for-2026-with-200mp-camera-to-rival-samsung-google/",
+        "source": "gdelt-arch:webpronews.com"
+      },
+      {
+        "id": "gdelt-arch-qo46o4",
+        "title": "Samsung And Google Team Up To Bring Google Photos To Ai Powered Samsung Tvs",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://phandroid.com/2026/01/02/samsung-and-google-team-up-to-bring-google-photos-to-ai-powered-samsung-tvs/",
+        "source": "gdelt-arch:phandroid.com"
+      },
+      {
+        "id": "gdelt-arch-1p73687",
+        "title": "Google Ceo Pichai Ai To Eliminate Jobs But Retraining Offers New Paths",
+        "published_at": "2026-01-02T22:15:00Z",
+        "url": "https://www.webpronews.com/google-ceo-pichai-ai-to-eliminate-jobs-but-retraining-offers-new-paths/",
+        "source": "gdelt-arch:webpronews.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

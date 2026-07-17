@@ -3053,7 +3053,78 @@
       "prev_close": 285.239
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-1x4a7t4",
+        "title": "Micron Stock Jumps To Start 2026 Closes 10 Higher Friday",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://cnycentral.com/news/local/micron-stock-jumps-to-start-2026-closes-10-higher-friday",
+        "source": "gdelt-arch:cnycentral.com"
+      },
+      {
+        "id": "gdelt-arch-1r8v7aa",
+        "title": "Why Micron Stock Popped Today",
+        "published_at": "2026-01-02T21:15:00Z",
+        "url": "https://www.fool.com/investing/2026/01/02/why-micron-stock-popped-today/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-3xnsj2",
+        "title": "4536342 Micron Intel Amd Lead Chip Stocks Higher To Kick Off",
+        "published_at": "2026-01-02T20:00:00Z",
+        "url": "https://seekingalpha.com/news/4536342-micron-intel-amd-lead-chip-stocks-higher-to-kick-off-2026",
+        "source": "gdelt-arch:seekingalpha.com"
+      },
+      {
+        "id": "gdelt-arch-1bs2wwk",
+        "title": "Micron Secures 318 Million Taiwanese Subsidy For Hbm Rd As Ai Memory Arms Race Intensifies",
+        "published_at": "2026-01-02T17:45:00Z",
+        "url": "https://www.tomshardware.com/tech-industry/micron-secures-318-million-taiwanese-subsidy-for-hbm-rd-as-ai-memory-arms-race-intensifies",
+        "source": "gdelt-arch:tomshardware.com"
+      },
+      {
+        "id": "gdelt-arch-vyqi8",
+        "title": "Marketminute 2026 1 2 The Ai Memory Supercycle Why 2026 Is The Year The Sold Out Sign Became Permanent For Micron",
+        "published_at": "2026-01-02T17:30:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-the-ai-memory-supercycle-why-2026-is-the-year-the-sold-out-sign-became-permanent-for-micron",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-nei0j3",
+        "title": "Marketminute 2026 1 2 Bernstein Socgen Group Catapults Micron Target To 330 As Ai Supercycle Enters High Gear For",
+        "published_at": "2026-01-02T17:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-bernstein-socgen-group-catapults-micron-target-to-330-as-ai-supercycle-enters-high-gear-for-2026",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-10pr75a",
+        "title": "Stockstory 2026 1 2 Micron Mu Shares Skyrocket What You Need To Know",
+        "published_at": "2026-01-02T16:45:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/stockstory-2026-1-2-micron-mu-shares-skyrocket-what-you-need-to-know",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-1sfudst",
+        "title": "126309170.cms",
+        "published_at": "2026-01-02T16:45:00Z",
+        "url": "https://economictimes.indiatimes.com/news/international/us/micron-technology-stock-surges-7-whats-fueling-the-move-possible-reason/articleshow/126309170.cms",
+        "source": "gdelt-arch:indiatimes.com"
+      },
+      {
+        "id": "gdelt-arch-1x93axc",
+        "title": "Micron Technology Unusual Options Activity",
+        "published_at": "2026-01-02T16:15:00Z",
+        "url": "https://www.benzinga.com/insights/options/26/01/49667473/micron-technology-unusual-options-activity",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-1sqwqxn",
+        "title": "Inquiry Into Micron Technologys Competitor Dynamics In Semiconductors Amp Semiconductor Equipment I",
+        "published_at": "2026-01-02T16:15:00Z",
+        "url": "https://www.benzinga.com/insights/news/26/01/49667435/inquiry-into-micron-technologys-competitor-dynamics-in-semiconductors-amp-semiconductor-equipment-i",
+        "source": "gdelt-arch:benzinga.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

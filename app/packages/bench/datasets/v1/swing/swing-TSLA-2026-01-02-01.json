@@ -3055,6 +3055,76 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-1ert56q",
+        "title": "Article Ed979fdf F72c 5343 A4ba Deb27d26f7b2",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.rrdailyherald.com/news/national/tesla-loses-ev-crown-to-chinas-byd-in-2025-as-sales-slip/article_ed979fdf-f72c-5343-a4ba-deb27d26f7b2.html",
+        "source": "gdelt-arch:rrdailyherald.com"
+      },
+      {
+        "id": "gdelt-arch-8oq2lr",
+        "title": "Article 735550c9 9c6b 5e4c 8c60 C5e36101423e",
+        "published_at": "2026-01-03T00:00:00Z",
+        "url": "https://www.lebanondemocrat.com/maconcounty/news/national/tesla-loses-ev-crown-to-chinas-byd-in-2025-as-sales-slip/article_735550c9-9c6b-5e4c-8c60-c5e36101423e.html",
+        "source": "gdelt-arch:lebanondemocrat.com"
+      },
+      {
+        "id": "gdelt-arch-17g9e9a",
+        "title": "Article Aa778b20 9b5f 5dbd 9781 Dacafba88397",
+        "published_at": "2026-01-02T23:45:00Z",
+        "url": "https://www.mtdemocrat.com/news/national/tesla-loses-ev-crown-to-chinas-byd-in-2025-as-sales-slip/article_aa778b20-9b5f-5dbd-9781-dacafba88397.html",
+        "source": "gdelt-arch:mtdemocrat.com"
+      },
+      {
+        "id": "gdelt-arch-z8upyz",
+        "title": "Tesla Deliveries Plummet What You Need To Know",
+        "published_at": "2026-01-02T23:30:00Z",
+        "url": "https://www.fool.com/investing/2026/01/02/tesla-deliveries-plummet-what-you-need-to-know/",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1adr5hf",
+        "title": "Chinas BYD Electric Cars Beat Tesla Deliveries In",
+        "published_at": "2026-01-02T23:30:00Z",
+        "url": "https://www.upi.com/Top_News/US/2026/01/02/Chinas-BYD-electric-cars-beat-Tesla-deliveries-in-2025/1771767380936/",
+        "source": "gdelt-arch:upi.com"
+      },
+      {
+        "id": "gdelt-arch-3n2nwh",
+        "title": "Bmw Alpina Standalone Performance Brand Owned",
+        "published_at": "2026-01-02T23:15:00Z",
+        "url": "https://driving.ca:443/auto-news/news/bmw-alpina-standalone-performance-brand-owned-2026",
+        "source": "gdelt-arch:driving.ca"
+      },
+      {
+        "id": "gdelt-arch-1edgcbi",
+        "title": "Stock Market Today Jan 2",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://finance.yahoo.com/news/stock-market-today-jan-2-222826796.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-tgl3i4",
+        "title": "Tesla Loses Title Bestselling Ev To Byd",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://www.abc.net.au/news/2026-01-03/tesla-loses-title-bestselling-ev-to-byd/106196066",
+        "source": "gdelt-arch:abc.net.au"
+      },
+      {
+        "id": "gdelt-arch-vl8ixy",
+        "title": "Chinese Subsidized Byd Races Past Tesla As Worlds Top Ev Maker In 2025 Elon Musk",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://fox17.com/news/nation-world/chinese-subsidized-byd-races-past-tesla-as-worlds-top-ev-maker-in-2025-elon-musk",
+        "source": "gdelt-arch:fox17.com"
+      },
+      {
+        "id": "gdelt-arch-1t1sn0g",
+        "title": "Article 37f6da52 E399 5f3b B1a6 17ef53e38b74",
+        "published_at": "2026-01-02T23:00:00Z",
+        "url": "https://www.kten.com/news/tesla-loses-ev-crown-to-chinas-byd-in-2025-as-sales-slip/article_37f6da52-e399-5f3b-b1a6-17ef53e38b74.html",
+        "source": "gdelt-arch:kten.com"
+      },
+      {
         "id": "edgar-0001628280-26-000016",
         "title": "8-K filed 2026-01-02 (tsla-20260102.htm)",
         "published_at": "2026-01-02T00:00:00Z",

@@ -169,6 +169,83 @@ describe("runBackfillNews", () => {
     expect(gdeltCalls).toBe(2);
   });
 
+  function archiveRow(date: string, domain: string, url: string, organizations: string): string {
+    const cols = new Array(26).fill("");
+    cols[1] = date;
+    cols[3] = domain;
+    cols[4] = url;
+    cols[11] = organizations;
+    return cols.join("\t");
+  }
+
+  it("news-source archive: fetches org matches from the injected archive fetcher without calling DOC", async () => {
+    let gdeltCalls = 0;
+    let readCsvCalls = 0;
+    const { options } = makeDeps({
+      newsSource: "archive",
+      archiveThrottleMs: 0,
+      fetchGdelt: async () => {
+        gdeltCalls += 1;
+        return [];
+      },
+      fetchArchiveFile: async () => Buffer.from("stub"),
+      readArchiveCsv: async () => {
+        readCsvCalls += 1;
+        return archiveRow("20260319100000", "example.com", "https://example.com/micron-earnings-preview", "micron technology");
+      },
+    });
+    const result = await runBackfillNews(options);
+    const mu = result.processed.find((p) => p.symbol === "MU.US");
+    expect(mu?.archiveCount).toBe(1);
+    expect(gdeltCalls).toBe(0);
+    expect(readCsvCalls).toBeGreaterThan(0);
+
+    const rewritten = await loadQuestionFile(join(datasetsRoot, "v1", "swing", "swing-MU-2026-03-19-01.json"));
+    expect(rewritten.fixtures.news.some((item) => item.source === "gdelt-arch:example.com")).toBe(true);
+  });
+
+  it("news-source auto: uses DOC while healthy, falls back to archive after the circuit breaker trips, and scans a shared window only once", async () => {
+    await writeFile(
+      join(datasetsRoot, "v1", "swing", "swing-AMD-2026-03-19-01.json"),
+      JSON.stringify(baseQuestion("AMD.US", "swing-AMD-2026-03-19-01", "2026-03-19T20:00:00-04:00"), null, 2),
+      "utf8",
+    );
+    await writeFile(
+      join(datasetsRoot, "v1", "swing", "swing-NVDA-2026-03-19-01.json"),
+      JSON.stringify(baseQuestion("NVDA.US", "swing-NVDA-2026-03-19-01", "2026-03-19T20:00:00-04:00"), null, 2),
+      "utf8",
+    );
+    let gdeltCalls = 0;
+    let readCsvCalls = 0;
+    const { options } = makeDeps({
+      newsSource: "auto",
+      archiveThrottleMs: 0,
+      fetchGdelt: async () => {
+        gdeltCalls += 1;
+        throw new Error("simulated rate limit");
+      },
+      fetchArchiveFile: async () => Buffer.from("stub"),
+      readArchiveCsv: async () => {
+        readCsvCalls += 1;
+        return [
+          archiveRow("20260319100000", "example.com", "https://example.com/micron-earnings-preview", "micron technology"),
+          archiveRow("20260319100000", "example.com", "https://example.com/amd-rally-story", "advanced micro devices"),
+          archiveRow("20260319100000", "example.com", "https://example.com/nvidia-launch-story", "nvidia"),
+        ].join("\n");
+      },
+    });
+
+    const result = await runBackfillNews(options);
+    expect(result.gdeltCircuitTripped).toBe(true);
+    expect(gdeltCalls).toBe(2);
+
+    const nvda = result.processed.find((p) => p.symbol === "NVDA.US");
+    expect(nvda?.archiveCount).toBe(1);
+
+    const scanCallsForOneWindow = 192;
+    expect(readCsvCalls).toBe(scanCallsForOneWindow);
+  });
+
   it("warns when a results/ run already references the dataset version", async () => {
     const runDir = join(resultsRoot, "run-2026-01-01");
     await mkdir(runDir, { recursive: true });

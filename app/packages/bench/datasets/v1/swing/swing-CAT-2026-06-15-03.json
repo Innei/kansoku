@@ -3055,6 +3055,27 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-1zrtef",
+        "title": "Article 72343639 51be 5279 9b9c 4895662fa6af",
+        "published_at": "2026-06-15T16:30:00Z",
+        "url": "https://www.journalpatriot.com/news/gardeners-dealing-with-caterpillar-pests/article_72343639-51be-5279-9b9c-4895662fa6af.html",
+        "source": "gdelt-arch:journalpatriot.com"
+      },
+      {
+        "id": "gdelt-arch-1xau4no",
+        "title": "Mml Investors Services Llc Decreases Stake In Caterpillar Inc Cat",
+        "published_at": "2026-06-15T14:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/mml-investors-services-llc-decreases-stake-in-caterpillar-inc-cat.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-blr05z",
+        "title": "Nicolet Advisory Services Llc Buys 754 Shares Of Caterpillar Inc Cat",
+        "published_at": "2026-06-14T13:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/14/nicolet-advisory-services-llc-buys-754-shares-of-caterpillar-inc-cat.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
         "id": "edgar-0001104659-26-072929",
         "title": "8-K filed 2026-06-11 (tm2617177d1_8k.htm)",
         "published_at": "2026-06-11T00:00:00Z",

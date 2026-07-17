@@ -3053,7 +3053,78 @@
       "prev_close": 290.266
     },
     "capitalFlow": {},
-    "news": [],
+    "news": [
+      {
+        "id": "gdelt-arch-9p87jo",
+        "title": "Matt Brittin New Bbc Director General Ex Google Chief",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.channelnewsasia.com/world/matt-brittin-new-bbc-director-general-ex-google-chief-6017441",
+        "source": "gdelt-arch:channelnewsasia.com"
+      },
+      {
+        "id": "gdelt-arch-1s3r739",
+        "title": "Google And Metas Fate Hangs In The Balance As Jury Signals Deadlock In Social Media Addiction Trial",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.benzinga.com/news/26/03/51471804/google-and-metas-fate-hangs-in-the-balance-as-jury-signals-deadlock-in-social-media-addiction-trial",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-wrzsov",
+        "title": "Bhmarketer Ai Launches Google Review Removal Service",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.openpr.com/news/4440702/bhmarketer-ai-launches-google-review-removal-service",
+        "source": "gdelt-arch:openpr.com"
+      },
+      {
+        "id": "gdelt-arch-8t760l",
+        "title": "Stakeholders Talk To Press After Jury Finds Meta And Google Liable In Social Media Addiction Trial",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.theepochtimes.com/epochtv/stakeholders-talk-to-press-after-jury-finds-meta-and-google-liable-in-social-media-addiction-trial-6003696",
+        "source": "gdelt-arch:theepochtimes.com"
+      },
+      {
+        "id": "gdelt-arch-wwqiv8",
+        "title": "Meta Google Found Liable In Social Media Addiction Case",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.businessoffashion.com/news/media/meta-google-found-liable-in-social-media-addiction-case/",
+        "source": "gdelt-arch:businessoffashion.com"
+      },
+      {
+        "id": "gdelt-arch-gxtvgn",
+        "title": "Meta And Google Verdict Public Health Perspective",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.newswise.com/articles/meta-and-google-verdict-public-health-perspective",
+        "source": "gdelt-arch:newswise.com"
+      },
+      {
+        "id": "gdelt-arch-r8k4n5",
+        "title": "Search",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.geneamusings.com/search?updated-max=2026-03-24T12:10:00-07:00&max-results=10",
+        "source": "gdelt-arch:geneamusings.com"
+      },
+      {
+        "id": "gdelt-arch-g020xm",
+        "title": "Your Google Tv Is About To Get A Lot Smarter Heres How",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.pocket-lint.com/your-google-tv-is-about-to-get-a-lot-smarter-heres-how/",
+        "source": "gdelt-arch:pocket-lint.com"
+      },
+      {
+        "id": "gdelt-arch-19wklt7",
+        "title": "Apples Deal With Google Lets It Use Gemini To Train Smaller Ai Models",
+        "published_at": "2026-03-26T00:00:00Z",
+        "url": "https://www.theverge.com/ai-artificial-intelligence/901014/apples-deal-with-google-lets-it-use-gemini-to-train-smaller-ai-models",
+        "source": "gdelt-arch:theverge.com"
+      },
+      {
+        "id": "gdelt-arch-18l7jw7",
+        "title": "Google Predicts Q Day Is Happens In",
+        "published_at": "2026-03-25T23:45:00Z",
+        "url": "https://www.afterdawn.com/news/article.cfm/2026/03/25/google-predicts-q-day-is-happens-in-2029",
+        "source": "gdelt-arch:afterdawn.com"
+      }
+    ],
     "fundamentals": {},
     "calendar": {
       "events": [

@@ -3055,6 +3055,76 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-1ep1hvf",
+        "title": "Spacex Overtakes Palantir Wall Streets",
+        "published_at": "2026-06-15T20:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/spacex-overtakes-palantir-wall-streets-200458388.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-qodjsa",
+        "title": "Palantir Nasdaq Pltr Swiss Court Loss Sharpens European Data Sovereignty And Regulatory Risk",
+        "published_at": "2026-06-15T20:30:00Z",
+        "url": "https://www.foreignpolicyjournal.com/2026/06/15/palantir-nasdaq-pltr-swiss-court-loss-sharpens-european-data-sovereignty-and-regulatory-risk/",
+        "source": "gdelt-arch:foreignpolicyjournal.com"
+      },
+      {
+        "id": "gdelt-arch-18gex3n",
+        "title": "Palantir Rises 5 Cloudflare Pops",
+        "published_at": "2026-06-15T17:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/palantir-rises-5-cloudflare-pops-170351371.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-3p6hue",
+        "title": "Public Employees Retirement Association Of Colorado Reduces Holdings In Palantir Technologies Inc Pltr",
+        "published_at": "2026-06-15T15:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/public-employees-retirement-association-of-colorado-reduces-holdings-in-palantir-technologies-inc-pltr.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1mgjwd",
+        "title": "Trading Near Its 52 Week Low Is Palantir Technolog",
+        "published_at": "2026-06-15T14:15:00Z",
+        "url": "https://www.fool.com/investing/2026/06/15/trading-near-its-52-week-low-is-palantir-technolog/",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1u91lua",
+        "title": "Palantir Technologies Inc Pltr Shares Sold By Panagora Asset Management Inc",
+        "published_at": "2026-06-15T13:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/palantir-technologies-inc-pltr-shares-sold-by-panagora-asset-management-inc.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1s6vyvm",
+        "title": "19840 Shares In Palantir Technologies Inc Pltr Acquired By Sands Capital Management Llc",
+        "published_at": "2026-06-15T12:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/19840-shares-in-palantir-technologies-inc-pltr-acquired-by-sands-capital-management-llc.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-111pamx",
+        "title": "Palantir Ceo Alex Karp Rooting",
+        "published_at": "2026-06-15T02:45:00Z",
+        "url": "https://finance.yahoo.com/sectors/technology/articles/palantir-ceo-alex-karp-rooting-153125935.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1czax7i",
+        "title": "Palantir Pltr Stock Price Could Face Selling Pressure After Losing Legal Bid Against Swiss Magazine",
+        "published_at": "2026-06-15T00:45:00Z",
+        "url": "https://www.foreignpolicyjournal.com/2026/06/14/palantir-pltr-stock-price-could-face-selling-pressure-after-losing-legal-bid-against-swiss-magazine/",
+        "source": "gdelt-arch:foreignpolicyjournal.com"
+      },
+      {
+        "id": "gdelt-arch-v6ojcs",
+        "title": "Palantir Ceo Warned Tech Bosses Stop Celebrating Ai Layoffs",
+        "published_at": "2026-06-15T00:15:00Z",
+        "url": "https://memeburn.com/palantir-ceo-warned-tech-bosses-stop-celebrating-ai-layoffs/",
+        "source": "gdelt-arch:memeburn.com"
+      },
+      {
         "id": "edgar-0001321655-26-000033",
         "title": "8-K filed 2026-06-09 (pltr-20260603.htm)",
         "published_at": "2026-06-09T00:00:00Z",
