@@ -13,6 +13,8 @@ pnpm install        # 首次（从 workspace root）
 pnpm start          # http://localhost:5199
 ```
 
+第一次上手也可以直接跑 `app/scripts/init-dev.sh`：检查 node/pnpm 版本、按 `KANSOKU_PRO_REPO_URL`（没设就用默认地址）尝试拉/更新 `app/pro`（没权限或拉不到会提示一行「进入免费模式」后继续，不中断）、装依赖、跑一次 typecheck 冒烟，最后打印下一步命令。幂等，改了环境随时重跑。
+
 `pnpm start` 起 node 宿主单进程：kernel 绑在 5199 端口，同时托管 REST API、WS（`/api/ws`）和已构建好的前端静态资源（`web/dist`，没 build 过会提示先跑 `pnpm --filter @kansoku/web build`）。
 
 开发态是两个进程，`pnpm dev` 用 `concurrently` 并行拉起：web 起 Vite dev server（监听 5199，把 `/api`、`/legacy` 代理到 kernel）负责前端热更新；server 用 `vite-node --watch` 跑 kernel 本体（监听 `KERNEL_PORT`，默认 5200），改 server 代码自动重启，不需要单独的 build 步骤。
