@@ -98,6 +98,17 @@ jobs:
             app/pnpm-lock.yaml
             pnpm-lock.yaml
 
+      # app/pro (@kansoku/pro, the AI slot) has no remote yet and CI has no
+      # deploy key for it — this step is a no-op today (KANSOKU_PRO_REPO_URL
+      # unset) and the release stays free-only. Once the private repo exists,
+      # set KANSOKU_PRO_REPO_URL + a deploy key as repo secrets and this step
+      # starts pulling app/pro in before install, so pnpm picks it up as a
+      # workspace member.
+      - name: fetch pro slot (optional — free build until KANSOKU_PRO_REPO_URL is configured)
+        env:
+          KANSOKU_PRO_REPO_URL: ${{ secrets.KANSOKU_PRO_REPO_URL }}
+        run: app/scripts/fetch-pro.sh || echo "pro slot not configured, continuing with a free-only release build"
+
       - name: install dependencies
         working-directory: app
         run: pnpm install --frozen-lockfile
@@ -108,13 +119,14 @@ jobs:
       - name: restore third-party skills (skills-lock.json)
         run: pnpm install --frozen-lockfile
 
-      - name: typecheck (web, server, desktop)
+      - name: typecheck (pro-api, core, server, web, desktop)
         working-directory: app
         run: pnpm -r typecheck
 
-      - name: test — web, desktop
+      - name: test — core, web, desktop
         working-directory: app
         run: |
+          pnpm --filter @kansoku/core test
           pnpm --filter @kansoku/web test
           pnpm --filter @kansoku/desktop test
 
