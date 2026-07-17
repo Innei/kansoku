@@ -69,7 +69,7 @@ Phase 1/2 的 open-core 拆分把**所有** AI 代码搬进了私有仓 `app/pro
 - **QuickBar**：研究库、AI 对话图标无条件渲染，去掉 `pro &&` 与锁态。
 - **/research**：浏览对所有人开放；「AI 刷新」「AI 编辑审阅」「研究对话」入口按 capabilities 走隐藏（无 pro）或上锁（未订阅）。
 - **/chat、ChatDock、设置页 AI 卡片**：无条件解锁。
-- **个股页**：复评按钮免费可用；「自动跟踪」开关与 deep-dive 入口走付费门。关注在免费侧的语义 = 标记 + cockpit 分组；订阅后同一开关额外驱动 scheduler 自动跟踪。
+- **个股页**：复评按钮免费可用；「AI 跟进 / 自动跟踪」开关与 deep-dive 入口走付费门。跟进开关是一个整体的付费入口——未订阅时该开关在所有出现处（个股页 `FollowAction`、首页 `WatchBoard`）一律上锁，点击弹订阅框，不写关注标记；订阅后开关生效并驱动 scheduler 自动跟踪。（服务端 `setSymbolFollowing` 本身不设 license 门，仅作纵深防御——未订阅用户在 UI 上够不到这个开关。）
 - **LicenseModal / 设置「订阅与授权」区**：保留，文案改为只宣传三个付费功能。
 - `featureGuard` 的 `locked` 语义收窄为「付费功能锁」，不再用于免费 AI 入口。
 
