@@ -3062,15 +3062,8 @@
         "source": "gdelt-arch:tickerreport.com"
       },
       {
-        "id": "gdelt-arch-gaemwj",
-        "title": "Why Palantir Fell Hard To Start",
-        "published_at": "2026-01-02T21:15:00Z",
-        "url": "https://www.fool.com/investing/2026/01/02/why-palantir-fell-hard-to-start-2026/?source=iedfolrf0000001",
-        "source": "gdelt-arch:fool.com"
-      },
-      {
         "id": "gdelt-arch-24fqfe",
-        "title": "126311934.cms",
+        "title": "Palantir Stock Plunges More Than 5 Today Now 12 5 In Just One Week Why Theres Heavy Selling Pltr All Out Crash Imminent As February Earnings Report Nears",
         "published_at": "2026-01-02T19:45:00Z",
         "url": "https://economictimes.indiatimes.com/news/international/us/palantir-stock-plunges-more-than-5-today-now-12-5-in-just-one-week-why-theres-heavy-selling-pltr-all-out-crash-imminent-as-february-earnings-report-nears/articleshow/126311934.cms",
         "source": "gdelt-arch:indiatimes.com"
@@ -3081,13 +3074,6 @@
         "published_at": "2026-01-02T17:00:00Z",
         "url": "https://www.forbes.com/sites/greatspeculations/2026/01/02/risks-that-palantir-stock-investors-must-know/",
         "source": "gdelt-arch:forbes.com"
-      },
-      {
-        "id": "gdelt-arch-1qpk3r6",
-        "title": "4856724 Palantir Entering Second Half 2020s As Our Top Tech Pick",
-        "published_at": "2026-01-02T15:45:00Z",
-        "url": "https://seekingalpha.com/article/4856724-palantir-entering-second-half-2020s-as-our-top-tech-pick",
-        "source": "gdelt-arch:seekingalpha.com"
       },
       {
         "id": "gdelt-arch-724zxs",
@@ -3123,6 +3109,20 @@
         "published_at": "2026-01-02T11:15:00Z",
         "url": "https://www.benzinga.com/markets/equities/26/01/49662784/palantir-co-founder-joe-lonsdale-on-early-employee-stock-options-now-all-my-friends-are-too-rich",
         "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-l5f8cd",
+        "title": "Palantir Co Founder Joe Lonsdale On Early Employee Stock Options Now All My Friends Are Too Rich To Work",
+        "published_at": "2026-01-02T10:45:00Z",
+        "url": "https://www.benzinga.com/markets/equities/26/01/49662784/palantir-co-founder-joe-lonsdale-on-early-employee-stock-options-now-all-my-friends-are-too-rich-to-work",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-1dagvz2",
+        "title": "Marketminute 2026 1 1 The Ai Operating System Of 2026 How Palantir Became The Backbone Of The Modern Enterprise",
+        "published_at": "2026-01-01T16:15:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-1-the-ai-operating-system-of-2026-how-palantir-became-the-backbone-of-the-modern-enterprise",
+        "source": "gdelt-arch:financialcontent.com"
       }
     ],
     "fundamentals": {},

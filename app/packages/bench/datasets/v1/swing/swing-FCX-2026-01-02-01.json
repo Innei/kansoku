@@ -3069,13 +3069,6 @@
         "source": "gdelt-arch:pr-inside.com"
       },
       {
-        "id": "gdelt-arch-1kip7pv",
-        "title": "Harraseeket Freeport Maine Ice Bar",
-        "published_at": "2026-01-02T17:45:00Z",
-        "url": "https://wcyy.com/harraseeket-freeport-maine-ice-bar/",
-        "source": "gdelt-arch:wcyy.com"
-      },
-      {
         "id": "gdelt-arch-13f6ksf",
         "title": "Investor Alert Deadline Approaching To Join Freeport Mcmoran Inc R5160943",
         "published_at": "2026-01-02T16:15:00Z",
@@ -3090,20 +3083,6 @@
         "source": "gdelt-arch:pr-inside.com"
       },
       {
-        "id": "gdelt-arch-y2oeoq",
-        "title": "Article 73fc893a 292c 4a82 9c8f 06ee8b8efd6d",
-        "published_at": "2026-01-02T02:15:00Z",
-        "url": "https://www.beloitdailynews.com/news/local-news/mercyhealth-freeport-health-provider-finalize-agreement/article_73fc893a-292c-4a82-9c8f-06ee8b8efd6d.html",
-        "source": "gdelt-arch:beloitdailynews.com"
-      },
-      {
-        "id": "gdelt-arch-14ffup9",
-        "title": "Jobs Fair Set Jan 9 As Cdc Dole Extend Help To Charter Link Employees",
-        "published_at": "2026-01-01T18:00:00Z",
-        "url": "https://www.manilatimes.net/2026/01/02/tmt-newswire/jobs-fair-set-jan-9-as-cdc-dole-extend-help-to-charter-link-employees/2251681",
-        "source": "gdelt-arch:manilatimes.net"
-      },
-      {
         "id": "gdelt-arch-1c4ursg",
         "title": "Freeport Mcmoran Inc Nysefcx Short Interest Update",
         "published_at": "2026-01-01T17:30:00Z",
@@ -3111,18 +3090,39 @@
         "source": "gdelt-arch:tickerreport.com"
       },
       {
-        "id": "gdelt-arch-rlend4",
-        "title": "Article 0a5840ed 8922 4d44 97c6 685e7bdfdab7",
-        "published_at": "2026-01-01T17:30:00Z",
-        "url": "https://trinidadexpress.com/newsextra/police-say-overtaking-manoeuvre-triggered-deadly-freeport-crash/article_0a5840ed-8922-4d44-97c6-685e7bdfdab7.html",
-        "source": "gdelt-arch:trinidadexpress.com"
-      },
-      {
         "id": "gdelt-arch-1x3refu",
         "title": "Marketminute 2026 1 1 Institutional Rebalancing Amidst Record Metal Prices Ninety One Uk Ltd Trims Stake In Freeport Mcmoran",
         "published_at": "2026-01-01T15:30:00Z",
         "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-1-institutional-rebalancing-amidst-record-metal-prices-ninety-one-uk-ltd-trims-stake-in-freeport-mcmoran",
         "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-1kvmlve",
+        "title": "Fcx Deadline Rosen Recognized Investor Counsel Encourages Freeport Mcmoran R5160795",
+        "published_at": "2026-01-01T15:30:00Z",
+        "url": "https://www.pr-inside.com/fcx-deadline-rosen-recognized-investor-counsel-encourages-freeport-mcmoran-r5160795.htm",
+        "source": "gdelt-arch:pr-inside.com"
+      },
+      {
+        "id": "gdelt-arch-hdrzdp",
+        "title": "Shareholder Action Reminder Faruqi Faruqi Llp Announces That Freeport Mcmoran Systems Investors Ce7e59d9d98df72c",
+        "published_at": "2026-01-01T14:00:00Z",
+        "url": "https://www.marketscreener.com/news/shareholder-action-reminder-faruqi-faruqi-llp-announces-that-freeport-mcmoran-systems-investors-ce7e59d9d98df72c",
+        "source": "gdelt-arch:marketscreener.com"
+      },
+      {
+        "id": "gdelt-arch-wfbwiw",
+        "title": "Ninety One Uk Ltd Decreases Holdings In Freeport Mcmoran Inc Fcx",
+        "published_at": "2026-01-01T14:00:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/01/ninety-one-uk-ltd-decreases-holdings-in-freeport-mcmoran-inc-fcx.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-xbjkcq",
+        "title": "Balance Wealth Llc Buys Shares Of 11570 Freeport Mcmoran Inc Fcx",
+        "published_at": "2026-01-01T09:00:00Z",
+        "url": "https://www.defenseworld.net/2026/01/01/balance-wealth-llc-buys-shares-of-11570-freeport-mcmoran-inc-fcx.html",
+        "source": "gdelt-arch:defenseworld.net"
       }
     ],
     "fundamentals": {},

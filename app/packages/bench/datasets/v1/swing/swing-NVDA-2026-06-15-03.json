@@ -3055,34 +3055,6 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-ycj199",
-        "title": "Nvidia Joins Ai Borrowing Frenzy With 25 Million Bond Sale",
-        "published_at": "2026-06-16T00:00:00Z",
-        "url": "https://www.latimes.com/business/story/2026-06-15/nvidia-joins-ai-borrowing-frenzy-with-25-million-bond-sale",
-        "source": "gdelt-arch:latimes.com"
-      },
-      {
-        "id": "gdelt-arch-165bq9n",
-        "title": "Datacenters Outstripping Power Grid Forcing Nvidia Google Into A Radical 800v Dc Overhaul",
-        "published_at": "2026-06-15T23:45:00Z",
-        "url": "https://wccftech.com/datacenters-outstripping-power-grid-forcing-nvidia-google-into-a-radical-800v-dc-overhaul/",
-        "source": "gdelt-arch:wccftech.com"
-      },
-      {
-        "id": "gdelt-arch-ce7ljd",
-        "title": "Intel Serpent Lake Socs With Nvidia Rtx Gpu Tiles Reportedly Arrive In Q1",
-        "published_at": "2026-06-15T23:45:00Z",
-        "url": "https://wccftech.com/intel-serpent-lake-socs-with-nvidia-rtx-gpu-tiles-reportedly-arrive-in-q1-2028/",
-        "source": "gdelt-arch:wccftech.com"
-      },
-      {
-        "id": "gdelt-arch-1cfu6wv",
-        "title": "Hidden Siri Ai Features",
-        "published_at": "2026-06-15T23:00:00Z",
-        "url": "https://www.geeky-gadgets.com/hidden-siri-ai-features-2026/",
-        "source": "gdelt-arch:geeky-gadgets.com"
-      },
-      {
         "id": "gdelt-arch-12gxgqm",
         "title": "Stock Market Today June 15 Nvidia Jumps As Markets Soar On Peace Hopes",
         "published_at": "2026-06-15T22:30:00Z",
@@ -3097,32 +3069,60 @@
         "source": "gdelt-arch:insidermonkey.com"
       },
       {
-        "id": "gdelt-arch-1jxhs32",
-        "title": "Chipmaker Nvidia Seeks To Raise Over 25b In First Bond Deal Since",
-        "published_at": "2026-06-15T22:15:00Z",
-        "url": "https://arstechnica.com/ai/2026/06/chipmaker-nvidia-seeks-to-raise-over-25b-in-first-bond-deal-since-2021/",
-        "source": "gdelt-arch:arstechnica.com"
+        "id": "gdelt-arch-hk3qnu",
+        "title": "Nvidia 30 Last Year But This Stock",
+        "published_at": "2026-06-15T16:45:00Z",
+        "url": "https://investorplace.com/smartmoney/2026/06/nvidia-30-last-year-but-this-stock-1000/",
+        "source": "gdelt-arch:investorplace.com"
       },
       {
-        "id": "gdelt-arch-kr3trp",
-        "title": "Nvidia To Raise 20 Billion Source Says In First Co",
-        "published_at": "2026-06-15T22:00:00Z",
-        "url": "https://www.spokesman.com/stories/2026/jun/15/nvidia-to-raise-20-billion-source-says-in-first-co/",
-        "source": "gdelt-arch:spokesman.com"
+        "id": "gdelt-arch-6tohlp",
+        "title": "Move Over Nvidia Meta Chip",
+        "published_at": "2026-06-15T16:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/move-over-nvidia-meta-chip-161250001.html",
+        "source": "gdelt-arch:yahoo.com"
       },
       {
-        "id": "gdelt-arch-vx3u1",
-        "title": "Nvidia Plans To Raise About 20 Billion First Debt Sale In Ai Boom",
-        "published_at": "2026-06-15T20:45:00Z",
-        "url": "https://www.cnbc.com/2026/06/15/nvidia-plans-to-raise-about-20-billion-first-debt-sale-in-ai-boom.html",
+        "id": "gdelt-arch-1mbt3vj",
+        "title": "Forget Buying Nvidia Overlooked Etf",
+        "published_at": "2026-06-15T14:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/forget-buying-nvidia-overlooked-etf-140400924.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1k9cbz0",
+        "title": "Healthcare Of Ontario Pension Plan Trust Fund Raises Stock Holdings In Nvidia Corporation Nvda",
+        "published_at": "2026-06-15T14:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/healthcare-of-ontario-pension-plan-trust-fund-raises-stock-holdings-in-nvidia-corporation-nvda.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-5uzxsr",
+        "title": "Nvidia Targets 20 Billion First",
+        "published_at": "2026-06-15T13:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-targets-20-billion-first-130429552.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1egp00u",
+        "title": "Monday Biggest Stocks By Analyst Calls Like Nvidia",
+        "published_at": "2026-06-15T13:00:00Z",
+        "url": "https://www.cnbc.com/2026/06/15/monday-biggest-stocks-by-analyst-calls-like-nvidia.html",
         "source": "gdelt-arch:cnbc.com"
       },
       {
-        "id": "gdelt-arch-wairpu",
-        "title": "Nvidia Plans Massive 20 Billion Debt Offering Fuel Ai Expansion",
-        "published_at": "2026-06-15T20:45:00Z",
-        "url": "https://www.ibtimes.com/nvidia-plans-massive-20-billion-debt-offering-fuel-ai-expansion-3804131",
-        "source": "gdelt-arch:ibtimes.com"
+        "id": "gdelt-arch-1iwgu8x",
+        "title": "48449 Shares In Rtx Corporation Rtx Bought By Perryman Financial Advisory Inc Ad",
+        "published_at": "2026-06-15T12:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13476042/48449-shares-in-rtx-corporation-rtx-bought-by-perryman-financial-advisory-inc-ad.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-iivo3b",
+        "title": "As Demand Continues To Grow Nvidia Nvda Has 46 Upside According To Analysts",
+        "published_at": "2026-06-15T12:00:00Z",
+        "url": "https://www.insidermonkey.com/blog/as-demand-continues-to-grow-nvidia-nvda-has-46-upside-according-to-analysts-1781426/",
+        "source": "gdelt-arch:insidermonkey.com"
       }
     ],
     "fundamentals": {},

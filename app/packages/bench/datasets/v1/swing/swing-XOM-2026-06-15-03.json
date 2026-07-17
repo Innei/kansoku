@@ -3055,18 +3055,46 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-1rsajnj",
-        "title": "Exxon Reportedly Evaluates Woodside As Lng Acquisition Target",
-        "published_at": "2026-06-15T19:15:00Z",
-        "url": "https://www.oilandgas360.com/exxon-reportedly-evaluates-woodside-as-lng-acquisition-target/",
-        "source": "gdelt-arch:oilandgas360.com"
-      },
-      {
         "id": "gdelt-arch-ei3rsd",
         "title": "Exxon Mobil Shares Slide As Oil Declines On Iran Deal",
         "published_at": "2026-06-15T16:15:00Z",
         "url": "https://www.benzinga.com/trading-ideas/movers/26/06/53199502/exxon-mobil-shares-slide-as-oil-declines-on-iran-deal",
         "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-1xcyrx3",
+        "title": "Woodside Says No Takeover Offer From Exxonmobil 15 Jun 2026 183921 Article",
+        "published_at": "2026-06-15T15:15:00Z",
+        "url": "https://www.rigzone.com/news/wire/woodside_says_no_takeover_offer_from_exxonmobil-15-jun-2026-183921-article/",
+        "source": "gdelt-arch:rigzone.com"
+      },
+      {
+        "id": "gdelt-arch-1us9bj9",
+        "title": "Public Employees Retirement Association Of Colorado Sells 70069 Shares Of Exxonmobil Corporation Xom",
+        "published_at": "2026-06-15T13:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/public-employees-retirement-association-of-colorado-sells-70069-shares-of-exxonmobil-corporation-xom.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1kbommc",
+        "title": "Exxonmobil Early Stage Bid Woodside",
+        "published_at": "2026-06-15T13:30:00Z",
+        "url": "https://www.offshore-technology.com/news/exxonmobil-early-stage-bid-woodside/",
+        "source": "gdelt-arch:offshore-technology.com"
+      },
+      {
+        "id": "gdelt-arch-1dgqda7",
+        "title": "Exxonmobil Corporation Xom Shares Sold By Healthcare Of Ontario Pension Plan Trust Fund",
+        "published_at": "2026-06-15T13:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/exxonmobil-corporation-xom-shares-sold-by-healthcare-of-ontario-pension-plan-trust-fund.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1li7o74",
+        "title": "Resources Management Corp Ct Adv Buys 20376 Shares Of Exxonmobil Corporation Xom",
+        "published_at": "2026-06-15T12:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/resources-management-corp-ct-adv-buys-20376-shares-of-exxonmobil-corporation-xom.html",
+        "source": "gdelt-arch:themarketsdaily.com"
       },
       {
         "id": "gdelt-arch-1j8t8tj",
@@ -3076,53 +3104,25 @@
         "source": "gdelt-arch:bloomberg.com"
       },
       {
-        "id": "gdelt-arch-11hanib",
-        "title": "Woodside Denies Exxon Deal Talks Amid Takeover Speculation",
-        "published_at": "2026-06-15T04:45:00Z",
-        "url": "https://oilprice.com/Company-News/Woodside-Denies-Exxon-Deal-Talks-Amid-Takeover-Speculation.html",
-        "source": "gdelt-arch:oilprice.com"
+        "id": "gdelt-arch-3xxu3u",
+        "title": "540293 Woodside Denies Knowledge Of Reported Exxonmobil Takeover Interest",
+        "published_at": "2026-06-15T09:15:00Z",
+        "url": "https://www.oedigital.com/news/540293-woodside-denies-knowledge-of-reported-exxonmobil-takeover-interest",
+        "source": "gdelt-arch:oedigital.com"
       },
       {
-        "id": "gdelt-arch-9fphet",
-        "title": "68762481 Woodside Denies Talks With Exxon Mobil Amid Media Speculation",
-        "published_at": "2026-06-15T03:15:00Z",
-        "url": "https://www.finanznachrichten.de/nachrichten-2026-06/68762481-woodside-denies-talks-with-exxon-mobil-amid-media-speculation-020.htm",
-        "source": "gdelt-arch:finanznachrichten.de"
+        "id": "gdelt-arch-18ihqun",
+        "title": "Search For Safety",
+        "published_at": "2026-06-15T08:15:00Z",
+        "url": "https://maritime-executive.com/magazine/search-for-safety",
+        "source": "gdelt-arch:maritime-executive.com"
       },
       {
-        "id": "gdelt-arch-zgmij2",
-        "title": "Woodside Denies Exxon Deal Talks",
-        "published_at": "2026-06-15T03:00:00Z",
-        "url": "https://finance.yahoo.com/sectors/energy/articles/woodside-denies-exxon-deal-talks-022849120.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
-        "id": "gdelt-arch-w7yeex",
-        "title": "Exxon Weighs Woodside Deal Lng Becomes Strategic Priority",
-        "published_at": "2026-06-15T02:15:00Z",
-        "url": "https://www.zerohedge.com/markets/exxon-weighs-woodside-deal-lng-becomes-strategic-priority",
-        "source": "gdelt-arch:zerohedge.com"
-      },
-      {
-        "id": "gdelt-arch-1lt21mn",
-        "title": "Woodside Denies Talks With Exxon Mobil Amid Media Speculation",
-        "published_at": "2026-06-15T02:00:00Z",
-        "url": "https://www.finanzen.ch/nachrichten/aktien/woodside-denies-talks-with-exxon-mobil-amid-media-speculation-1036247897",
-        "source": "gdelt-arch:finanzen.ch"
-      },
-      {
-        "id": "gdelt-arch-4gjqf3",
-        "title": "Oil Iran War Big Winners Us Producers Chevron Exxon Shale Refiners",
-        "published_at": "2026-06-14T13:45:00Z",
-        "url": "https://fortune.com/2026/06/14/oil-iran-war-big-winners-us-producers-chevron-exxon-shale-refiners/",
-        "source": "gdelt-arch:fortune.com"
-      },
-      {
-        "id": "gdelt-arch-f548fg",
-        "title": "Exxon Refuses To Tell Guyana Cost For Gas Pipeline",
-        "published_at": "2026-06-14T08:45:00Z",
-        "url": "https://kaieteurnewsonline.com/2026/06/14/exxon-refuses-to-tell-guyana-cost-for-gas-pipeline/",
-        "source": "gdelt-arch:kaieteurnewsonline.com"
+        "id": "gdelt-arch-1585e31",
+        "title": "Exxonmobil Png Marks 10 Years Of The Png Lng Projects Focus On Biodiversity",
+        "published_at": "2026-06-15T06:00:00Z",
+        "url": "https://www.postcourier.com.pg/exxonmobil-png-marks-10-years-of-the-png-lng-projects-focus-on-biodiversity/",
+        "source": "gdelt-arch:postcourier.com.pg"
       }
     ],
     "fundamentals": {},

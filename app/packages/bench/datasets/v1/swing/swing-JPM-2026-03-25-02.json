@@ -3055,62 +3055,6 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-s7alap",
-        "title": "Nlpc To Challenge Bofa Ceo Moynihan Laggard Performance",
-        "published_at": "2026-03-25T23:00:00Z",
-        "url": "https://nlpc.org/corporate-integrity-project/nlpc-to-challenge-bofa-ceo-moynihan-laggard-performance/",
-        "source": "gdelt-arch:nlpc.org"
-      },
-      {
-        "id": "gdelt-arch-1vtvk3t",
-        "title": "Jpmorgan Diversified Return U S Small Cap Equity Etf Nysearcajpse Sees Unusually High Trading Volume Heres What Happened",
-        "published_at": "2026-03-25T22:30:00Z",
-        "url": "https://www.themarketsdaily.com/2026/03/25/jpmorgan-diversified-return-u-s-small-cap-equity-etf-nysearcajpse-sees-unusually-high-trading-volume-heres-what-happened.html",
-        "source": "gdelt-arch:themarketsdaily.com"
-      },
-      {
-        "id": "gdelt-arch-14ww7h",
-        "title": "Big Pipeline For Defense Ipos Jpmorgan S Marengo Ce7e5ed3de8ef527",
-        "published_at": "2026-03-25T21:00:00Z",
-        "url": "https://www.marketscreener.com/news/big-pipeline-for-defense-ipos-jpmorgan-s-marengo-ce7e5ed3de8ef527",
-        "source": "gdelt-arch:marketscreener.com"
-      },
-      {
-        "id": "gdelt-arch-ot7dlm",
-        "title": "Jpmorgan Lifts Pt On Vodafone Group Vod To 85 Gbp From 71 Gbp Heres Why",
-        "published_at": "2026-03-25T20:00:00Z",
-        "url": "https://www.insidermonkey.com/blog/jpmorgan-lifts-pt-on-vodafone-group-vod-to-85-gbp-from-71-gbp-heres-why-1723910/",
-        "source": "gdelt-arch:insidermonkey.com"
-      },
-      {
-        "id": "gdelt-arch-1mjdc2f",
-        "title": "Jpmorgan International Value Etf Nasdaqjive Sees Significant Growth In Short Interest",
-        "published_at": "2026-03-25T18:30:00Z",
-        "url": "https://www.themarketsdaily.com/2026/03/25/jpmorgan-international-value-etf-nasdaqjive-sees-significant-growth-in-short-interest.html",
-        "source": "gdelt-arch:themarketsdaily.com"
-      },
-      {
-        "id": "gdelt-arch-xrisph",
-        "title": "Jpmorgan Jamie Dimon Remote Work Gen Z Workers",
-        "published_at": "2026-03-25T18:15:00Z",
-        "url": "https://fortune.com/2026/03/25/jpmorgan-jamie-dimon-remote-work-gen-z-workers/",
-        "source": "gdelt-arch:fortune.com"
-      },
-      {
-        "id": "gdelt-arch-k54r19",
-        "title": "Trump Jpmorgan Lawsuit Florida",
-        "published_at": "2026-03-25T17:45:00Z",
-        "url": "https://windsorstar.com:443/fp-finance/banking/trump-jpmorgan-lawsuit-florida",
-        "source": "gdelt-arch:windsorstar.com"
-      },
-      {
-        "id": "gdelt-arch-hueza8",
-        "title": "Jpmorgan Traders Close Highly Profitable Tactical Bearish Trade",
-        "published_at": "2026-03-25T16:30:00Z",
-        "url": "https://www.zerohedge.com/markets/jpmorgan-traders-close-highly-profitable-tactical-bearish-trade",
-        "source": "gdelt-arch:zerohedge.com"
-      },
-      {
         "id": "gdelt-arch-dzfc8h",
         "title": "Buy Energy At Any Cost Jpmorgan S Sajjid Chinoy Warns Supply Crunch May Force Policy Shift",
         "published_at": "2026-03-25T16:15:00Z",
@@ -3118,11 +3062,67 @@
         "source": "gdelt-arch:moneycontrol.com"
       },
       {
-        "id": "gdelt-arch-15p2vd1",
-        "title": "2025 Jes Staley Jeffrey Epstein Fca",
-        "published_at": "2026-03-25T16:15:00Z",
-        "url": "https://www.bloomberg.com:443/features/2025-jes-staley-jeffrey-epstein-fca/",
-        "source": "gdelt-arch:bloomberg.com"
+        "id": "gdelt-arch-yp21qx",
+        "title": "Kraft Heinz Nasdaqkhc Given New 21 00 Price Target At Jpmorgan Chase Co",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13390775/kraft-heinz-nasdaqkhc-given-new-21-00-price-target-at-jpmorgan-chase-co.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-bi738c",
+        "title": "Jpmorgan Cuts Pt Conagra Brands",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-cuts-pt-conagra-brands-145256036.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-4i0zqy",
+        "title": "Jpmorgan Chase Co Lowers Kraft Heinz Nasdaqkhc Price Target To 21",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/jpmorgan-chase-co-lowers-kraft-heinz-nasdaqkhc-price-target-to-21-00.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1w21xgo",
+        "title": "Evgo Nasdaqevgo Earns Neutral Rating From Jpmorgan Chase Co",
+        "published_at": "2026-03-25T13:00:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13390602/evgo-nasdaqevgo-earns-neutral-rating-from-jpmorgan-chase-co.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-argxhp",
+        "title": "Evgo Nasdaqevgo Given Neutral Rating At Jpmorgan Chase Co",
+        "published_at": "2026-03-25T13:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/evgo-nasdaqevgo-given-neutral-rating-at-jpmorgan-chase-co.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1sxd8ch",
+        "title": "Jpmorgan Fundamental Data Science Small Core Etf Scds To Issue Quarterly Dividend Of 0 05 On March 26th",
+        "published_at": "2026-03-25T12:45:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13390569/jpmorgan-fundamental-data-science-small-core-etf-scds-to-issue-quarterly-dividend-of-0-05-on-march-26th.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1wxu9jm",
+        "title": "Jpmorgan Fundamental Data Science Mid Core Etf Mcds To Issue Quarterly Dividend Of 0 07 On March 26th",
+        "published_at": "2026-03-25T12:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/25/jpmorgan-fundamental-data-science-mid-core-etf-mcds-to-issue-quarterly-dividend-of-0-07-on-march-26th.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-12szza0",
+        "title": "Jpmorgan Chase Co Cuts Yougov Lonyou Price Target To Gbx",
+        "published_at": "2026-03-25T12:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/jpmorgan-chase-co-cuts-yougov-lonyou-price-target-to-gbx-350.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-m75b2p",
+        "title": "Jpmorgan Raises Its Price Target On Edison International Eix To 74 From 66",
+        "published_at": "2026-03-25T11:45:00Z",
+        "url": "https://www.insidermonkey.com/blog/jpmorgan-raises-its-price-target-on-edison-international-eix-to-74-from-66-1724327/",
+        "source": "gdelt-arch:insidermonkey.com"
       }
     ],
     "fundamentals": {},

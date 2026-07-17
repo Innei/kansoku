@@ -3055,27 +3055,6 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-h3yyhh",
-        "title": "Microsoft Says Its Listening On Windows 11 Users Arent Convinced Yet",
-        "published_at": "2026-03-25T22:15:00Z",
-        "url": "https://www.windowscentral.com/microsoft/windows-11/microsoft-says-its-listening-on-windows-11-users-arent-convinced-yet",
-        "source": "gdelt-arch:windowscentral.com"
-      },
-      {
-        "id": "gdelt-arch-120q01c",
-        "title": "Phil Spencer Great Job Microsoft Solid Ground Succeed",
-        "published_at": "2026-03-25T21:15:00Z",
-        "url": "https://wccftech.com/phil-spencer-great-job-microsoft-solid-ground-succeed/",
-        "source": "gdelt-arch:wccftech.com"
-      },
-      {
-        "id": "gdelt-arch-u2x229",
-        "title": "Rubrik Announces Integration Microsoft Defender",
-        "published_at": "2026-03-25T21:00:00Z",
-        "url": "https://finance.yahoo.com/sectors/technology/articles/rubrik-announces-integration-microsoft-defender-122319457.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
         "id": "gdelt-arch-sh1atm",
         "title": "Microsoft Price Target Lowered On M365 Copilot Questions",
         "published_at": "2026-03-25T20:30:00Z",
@@ -3083,46 +3062,67 @@
         "source": "gdelt-arch:proactiveinvestors.com"
       },
       {
-        "id": "gdelt-arch-1sn4nzw",
-        "title": "Ai Tools Unveiled At Microsoft Nonprofit Summit",
-        "published_at": "2026-03-25T20:15:00Z",
-        "url": "https://thenonprofittimes.com/npt_articles/ai-tools-unveiled-at-microsoft-nonprofit-summit/",
-        "source": "gdelt-arch:thenonprofittimes.com"
-      },
-      {
-        "id": "gdelt-arch-1uem0cl",
-        "title": "Microsoft Is Bringing Some Of Its Copilot Ai Swagger Back To Windows",
-        "published_at": "2026-03-25T18:30:00Z",
-        "url": "https://bioprepwatch.com/2025/microsoft-is-bringing-some-of-its-copilot-ai-swagger-back-to-windows/48225",
-        "source": "gdelt-arch:bioprepwatch.com"
-      },
-      {
-        "id": "gdelt-arch-emsjyb",
-        "title": "Microsoft Diversity Chief Ai Hr",
-        "published_at": "2026-03-25T18:15:00Z",
-        "url": "https://www.cnbc.com/2026/03/25/microsoft-diversity-chief-ai-hr.html",
-        "source": "gdelt-arch:cnbc.com"
-      },
-      {
-        "id": "gdelt-arch-1ios5yz",
-        "title": "Emergency Microsoft Oracle Patches Point To Wider Cyber Issues",
-        "published_at": "2026-03-25T18:15:00Z",
-        "url": "https://www.computerweekly.com/news/366640648/Emergency-Microsoft-Oracle-patches-point-to-wider-cyber-issues",
-        "source": "gdelt-arch:computerweekly.com"
-      },
-      {
-        "id": "gdelt-arch-66ujv2",
-        "title": "You Dont Need Microsoft Word Anymore These Free Apps Prove It",
-        "published_at": "2026-03-25T17:45:00Z",
-        "url": "https://www.howtogeek.com/you-dont-need-microsoft-word-anymore-these-free-apps-prove-it/",
-        "source": "gdelt-arch:howtogeek.com"
-      },
-      {
         "id": "gdelt-arch-1n1y8a3",
         "title": "Microsoft Price Target Lowered M365",
         "published_at": "2026-03-25T17:45:00Z",
         "url": "https://finance.yahoo.com/markets/stocks/articles/microsoft-price-target-lowered-m365-171200393.html",
         "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1pyq89",
+        "title": "Marketminute 2026 3 25 The Ai Reckoning Why Microsoft And The Software Giants Are Facing A 2026 Reality Check",
+        "published_at": "2026-03-25T16:30:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-3-25-the-ai-reckoning-why-microsoft-and-the-software-giants-are-facing-a-2026-reality-check",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-1idmukl",
+        "title": "Heres How Many Shares Of Microsoft Youd Need For",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/heres-how-many-shares-of-microsoft-youd-need-for-1/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-rp0x5a",
+        "title": "Is Microsoft Stock A Buy Right Now Heres What The",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/25/is-microsoft-stock-a-buy-right-now-heres-what-the/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-1w3eyk3",
+        "title": "Microsoft Stock Buy Now Heres",
+        "published_at": "2026-03-25T16:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/microsoft-stock-buy-now-heres-155000676.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-pxnx6x",
+        "title": "Openai Flags Microsoft Top Risk",
+        "published_at": "2026-03-25T16:00:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/openai-flags-microsoft-top-risk-152100320.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-n8av2w",
+        "title": "Microsoft Msft Declines Amid Investor",
+        "published_at": "2026-03-25T15:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/microsoft-msft-declines-amid-investor-151025673.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-ur22p4",
+        "title": "Microsoft Msft Declines Amid Investor Concerns Over Guidance And Capital Expenditure Intensity",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.insidermonkey.com/blog/microsoft-msft-declines-amid-investor-concerns-over-guidance-and-capital-expenditure-intensity-1724251/",
+        "source": "gdelt-arch:insidermonkey.com"
+      },
+      {
+        "id": "gdelt-arch-3casp8",
+        "title": "Msft Stock Slides Is Microsoft Quietly Becoming A Bargain",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://www.financial-news.co.uk/msft-stock-slides-is-microsoft-quietly-becoming-a-bargain/",
+        "source": "gdelt-arch:financial-news.co.uk"
       }
     ],
     "fundamentals": {},

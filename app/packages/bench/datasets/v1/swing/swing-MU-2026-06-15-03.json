@@ -3062,13 +3062,6 @@
         "source": "gdelt-arch:yahoo.com"
       },
       {
-        "id": "gdelt-arch-dkwma5",
-        "title": "Former Oswego Mayor Billy Barlow Joins Executive Mcmahons Administration Ryan Economic Development Economic Growth Micron Semiconductor Vice President Public Affairs Health",
-        "published_at": "2026-06-15T21:15:00Z",
-        "url": "https://cnycentral.com/news/local/former-oswego-mayor-billy-barlow-joins-executive-mcmahons-administration-ryan-economic-development-economic-growth-micron-semiconductor-vice-president-public-affairs-health",
-        "source": "gdelt-arch:cnycentral.com"
-      },
-      {
         "id": "gdelt-arch-1f6tj6l",
         "title": "4915106 Micron Technology Buy Ahead Of Earnings Preview",
         "published_at": "2026-06-15T19:45:00Z",
@@ -3111,18 +3104,25 @@
         "source": "gdelt-arch:dailypolitical.com"
       },
       {
-        "id": "gdelt-arch-12uilal",
-        "title": "4915006 Micron Q3 Preview Expecting Historical Run Up To Translate To Extraordinary Results",
-        "published_at": "2026-06-15T16:00:00Z",
-        "url": "https://seekingalpha.com/article/4915006-micron-q3-preview-expecting-historical-run-up-to-translate-to-extraordinary-results",
-        "source": "gdelt-arch:seekingalpha.com"
-      },
-      {
         "id": "gdelt-arch-15oah9",
         "title": "Micron Technology Inc Nasdaqmu Receives Consensus Rating Of Buy From Analysts",
         "published_at": "2026-06-15T15:45:00Z",
         "url": "https://www.dailypolitical.com/2026/06/15/micron-technology-inc-nasdaqmu-receives-consensus-rating-of-buy-from-analysts.html",
         "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-rmsxf6",
+        "title": "Micron Technology Inc Mu Shares Sold By Valliance Asset Management Ltd",
+        "published_at": "2026-06-15T15:15:00Z",
+        "url": "https://www.dailypolitical.com/2026/06/15/micron-technology-inc-mu-shares-sold-by-valliance-asset-management-ltd.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1vkt7q9",
+        "title": "Uss Investment Management Ltd Sells 4827 Shares Of Micron Technology Inc Mu",
+        "published_at": "2026-06-15T15:15:00Z",
+        "url": "https://www.themarketsdaily.com/2026/06/15/uss-investment-management-ltd-sells-4827-shares-of-micron-technology-inc-mu.html",
+        "source": "gdelt-arch:themarketsdaily.com"
       },
       {
         "id": "edgar-0001104659-26-071845",

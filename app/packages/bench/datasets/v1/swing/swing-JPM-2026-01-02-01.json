@@ -3055,25 +3055,11 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-vsmadn",
-        "title": "Ex Jpmorgan Advisor Gets U 5 Firing Expunged By Arb Panel",
-        "published_at": "2026-01-02T23:45:00Z",
-        "url": "https://www.financial-planning.com/news/ex-jpmorgan-advisor-gets-u-5-firing-expunged-by-arb-panel",
-        "source": "gdelt-arch:financial-planning.com"
-      },
-      {
         "id": "gdelt-arch-sxrtlu",
         "title": "Transaction In Own Shares",
         "published_at": "2026-01-02T19:00:00Z",
         "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-japanese-inv-trust--jfj/transaction-in-own-shares/9330889",
         "source": "gdelt-arch:investegate.co.uk"
-      },
-      {
-        "id": "gdelt-arch-1ao76mo",
-        "title": "Gtreasury Move On Xrp Ledger",
-        "published_at": "2026-01-02T18:00:00Z",
-        "url": "https://www.newsbtc.com/xrp-news/gtreasury-move-on-xrp-ledger/",
-        "source": "gdelt-arch:newsbtc.com"
       },
       {
         "id": "gdelt-arch-frgsw9",
@@ -3083,34 +3069,6 @@
         "source": "gdelt-arch:cnbc.com"
       },
       {
-        "id": "gdelt-arch-1q25dlz",
-        "title": "Closed Period Notification",
-        "published_at": "2026-01-02T16:00:00Z",
-        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-american-inv-trust--jam/closed-period-notification/9330696",
-        "source": "gdelt-arch:investegate.co.uk"
-      },
-      {
-        "id": "gdelt-arch-1vlcts3",
-        "title": "Jpmorgan Boosts Rating Recursion Pharmaceuticals",
-        "published_at": "2026-01-02T15:00:00Z",
-        "url": "https://finance.yahoo.com/news/jpmorgan-boosts-rating-recursion-pharmaceuticals-141023713.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
-        "id": "gdelt-arch-1cshjnk",
-        "title": "Jpmorgan Equity Premium Income Etf Jepi Is Mayfair Advisory Group Llcs 3rd Largest Position",
-        "published_at": "2026-01-02T13:45:00Z",
-        "url": "https://www.dailypolitical.com/2026/01/02/jpmorgan-equity-premium-income-etf-jepi-is-mayfair-advisory-group-llcs-3rd-largest-position.html",
-        "source": "gdelt-arch:dailypolitical.com"
-      },
-      {
-        "id": "gdelt-arch-uo2fh8",
-        "title": "Sterling Investment Counsel Llc Has 26 75 Million Stake In Jpmorgan Equity Premium Income Etf Jepi",
-        "published_at": "2026-01-02T13:00:00Z",
-        "url": "https://www.themarketsdaily.com/2026/01/02/sterling-investment-counsel-llc-has-26-75-million-stake-in-jpmorgan-equity-premium-income-etf-jepi.html",
-        "source": "gdelt-arch:themarketsdaily.com"
-      },
-      {
         "id": "gdelt-arch-9vpzxl",
         "title": "Retirement Guys Formula Llc Buys 24616 Shares Of Jpmorgan Ultra Short Income Etf Jpst",
         "published_at": "2026-01-02T12:45:00Z",
@@ -3118,11 +3076,53 @@
         "source": "gdelt-arch:dailypolitical.com"
       },
       {
-        "id": "gdelt-arch-162791s",
-        "title": "Closed Period Announcement",
+        "id": "gdelt-arch-1vvym7h",
+        "title": "Jpmorgan Core Plus Bond Etf Jcpb Shares Acquired By Sentinel Pension Advisors Llc",
         "published_at": "2026-01-02T12:30:00Z",
-        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-claverhouse-inv-trust--jch/closed-period-announcement/9330246",
+        "url": "https://www.tickerreport.com/banking-finance/13306936/jpmorgan-core-plus-bond-etf-jcpb-shares-acquired-by-sentinel-pension-advisors-llc.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1w01d5b",
+        "title": "Dividend Declaration",
+        "published_at": "2026-01-02T12:30:00Z",
+        "url": "https://www.investegate.co.uk/announcement/rns/jpmorgan-china-growth-income--jcgi/dividend-declaration/9330219",
         "source": "gdelt-arch:investegate.co.uk"
+      },
+      {
+        "id": "gdelt-arch-147gsjs",
+        "title": "Salomon Ludwin Llc Has 58 56 Million Stock Holdings In Jpmorgan Ultra Short Municipal Etf Jmst",
+        "published_at": "2026-01-02T11:45:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/02/salomon-ludwin-llc-has-58-56-million-stock-holdings-in-jpmorgan-ultra-short-municipal-etf-jmst.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-6rxrg6",
+        "title": "Jpmorgan Nasdaq Equity Premium Income Etf Jepq Shares Bought By Pinnacle Wealth Management Advisory Group Llc",
+        "published_at": "2026-01-01T13:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/01/jpmorgan-nasdaq-equity-premium-income-etf-jepq-shares-bought-by-pinnacle-wealth-management-advisory-group-llc.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-mgnke4",
+        "title": "10409 Shares In Jpmorgan Ultra Short Income Etf Jpst Acquired By Rvw Wealth Llc",
+        "published_at": "2026-01-01T13:30:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/10409-shares-in-jpmorgan-ultra-short-income-etf-jpst-acquired-by-rvw-wealth-llc.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1xwduh9",
+        "title": "Rvw Wealth Llc Boosts Stock Position In Jpmorgan U S Quality Factor Etf Jqua",
+        "published_at": "2026-01-01T13:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/rvw-wealth-llc-boosts-stock-position-in-jpmorgan-u-s-quality-factor-etf-jqua.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-1ukjlm6",
+        "title": "Pinnacle Wealth Management Advisory Group Llc Acquires 19385 Shares Of Jpmorgan Hedged Equity Laddered Overlay Etf Helo",
+        "published_at": "2026-01-01T13:00:00Z",
+        "url": "https://www.dailypolitical.com/2026/01/01/pinnacle-wealth-management-advisory-group-llc-acquires-19385-shares-of-jpmorgan-hedged-equity-laddered-overlay-etf-helo.html",
+        "source": "gdelt-arch:dailypolitical.com"
       }
     ],
     "fundamentals": {},

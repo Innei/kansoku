@@ -3076,13 +3076,6 @@
         "source": "gdelt-arch:seekingalpha.com"
       },
       {
-        "id": "gdelt-arch-1bs2wwk",
-        "title": "Micron Secures 318 Million Taiwanese Subsidy For Hbm Rd As Ai Memory Arms Race Intensifies",
-        "published_at": "2026-01-02T17:45:00Z",
-        "url": "https://www.tomshardware.com/tech-industry/micron-secures-318-million-taiwanese-subsidy-for-hbm-rd-as-ai-memory-arms-race-intensifies",
-        "source": "gdelt-arch:tomshardware.com"
-      },
-      {
         "id": "gdelt-arch-vyqi8",
         "title": "Marketminute 2026 1 2 The Ai Memory Supercycle Why 2026 Is The Year The Sold Out Sign Became Permanent For Micron",
         "published_at": "2026-01-02T17:30:00Z",
@@ -3105,7 +3098,7 @@
       },
       {
         "id": "gdelt-arch-1sfudst",
-        "title": "126309170.cms",
+        "title": "Micron Technology Stock Surges 7 Whats Fueling The Move Possible Reason",
         "published_at": "2026-01-02T16:45:00Z",
         "url": "https://economictimes.indiatimes.com/news/international/us/micron-technology-stock-surges-7-whats-fueling-the-move-possible-reason/articleshow/126309170.cms",
         "source": "gdelt-arch:indiatimes.com"
@@ -3118,11 +3111,18 @@
         "source": "gdelt-arch:benzinga.com"
       },
       {
-        "id": "gdelt-arch-1sqwqxn",
-        "title": "Inquiry Into Micron Technologys Competitor Dynamics In Semiconductors Amp Semiconductor Equipment I",
-        "published_at": "2026-01-02T16:15:00Z",
-        "url": "https://www.benzinga.com/insights/news/26/01/49667435/inquiry-into-micron-technologys-competitor-dynamics-in-semiconductors-amp-semiconductor-equipment-i",
-        "source": "gdelt-arch:benzinga.com"
+        "id": "gdelt-arch-16vbn6m",
+        "title": "Sanford C Bernstein Issues Positive Forecast For Micron Technology Nasdaqmu Stock Price",
+        "published_at": "2026-01-02T14:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/sanford-c-bernstein-issues-positive-forecast-for-micron-technology-nasdaqmu-stock-price.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-18hz7wm",
+        "title": "Merit Financial Group Llc Buys 14913 Shares Of Micron Technology Inc Mu",
+        "published_at": "2026-01-02T13:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/01/02/merit-financial-group-llc-buys-14913-shares-of-micron-technology-inc-mu.html",
+        "source": "gdelt-arch:themarketsdaily.com"
       }
     ],
     "fundamentals": {},

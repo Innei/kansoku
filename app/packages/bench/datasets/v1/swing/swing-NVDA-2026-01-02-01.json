@@ -3055,46 +3055,11 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-zju0zl",
-        "title": "Ces 2026 Lg Gram Pro",
-        "published_at": "2026-01-02T23:15:00Z",
-        "url": "https://www.zdnet.com/home-and-office/home-entertainment/ces-2026-lg-gram-pro/",
-        "source": "gdelt-arch:zdnet.com"
-      },
-      {
         "id": "gdelt-arch-q7dl4p",
         "title": "Marketminute 2026 1 2 Nvidia Ignites New Year Surge Semiconductor Rally Propels S And P 500 To Record Highs In Early",
         "published_at": "2026-01-02T22:45:00Z",
         "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-nvidia-ignites-new-year-surge-semiconductor-rally-propels-s-and-p-500-to-record-highs-in-early-2026",
         "source": "gdelt-arch:financialcontent.com"
-      },
-      {
-        "id": "gdelt-arch-qa6vb",
-        "title": "Nvidia Nasdaqnvda Trading 1 3 Higher Whats Next",
-        "published_at": "2026-01-02T22:45:00Z",
-        "url": "https://www.dailypolitical.com/2026/01/02/nvidia-nasdaqnvda-trading-1-3-higher-whats-next.html",
-        "source": "gdelt-arch:dailypolitical.com"
-      },
-      {
-        "id": "gdelt-arch-15cln2g",
-        "title": "Maxon Releases New Cinebench",
-        "published_at": "2026-01-02T22:30:00Z",
-        "url": "https://fudzilla.com/maxon-releases-new-cinebench-2026/",
-        "source": "gdelt-arch:fudzilla.com"
-      },
-      {
-        "id": "gdelt-arch-57iq1x",
-        "title": "Aws Grabs Nvidia Gear To Muscle Into The Big Ai Leagues",
-        "published_at": "2026-01-02T22:30:00Z",
-        "url": "https://fudzilla.com/aws-grabs-nvidia-gear-to-muscle-into-the-big-ai-leagues/",
-        "source": "gdelt-arch:fudzilla.com"
-      },
-      {
-        "id": "gdelt-arch-1673i37",
-        "title": "Ai Boom Adds 550b To Us Tech Elites Wealth In",
-        "published_at": "2026-01-02T22:15:00Z",
-        "url": "https://www.webpronews.com/ai-boom-adds-550b-to-us-tech-elites-wealth-in-2025/",
-        "source": "gdelt-arch:webpronews.com"
       },
       {
         "id": "gdelt-arch-w2a02a",
@@ -3118,11 +3083,46 @@
         "source": "gdelt-arch:tickerreport.com"
       },
       {
-        "id": "gdelt-arch-zigwkr",
-        "title": "Lgs New Gram Lineup Delivers The Worlds Lightest Laptop With Nvidia Rtx Graphics",
-        "published_at": "2026-01-02T21:00:00Z",
-        "url": "https://www.digitaltrends.com/computing/lgs-new-gram-lineup-delivers-the-worlds-lightest-laptop-with-nvidia-rtx-graphics/",
-        "source": "gdelt-arch:digitaltrends.com"
+        "id": "gdelt-arch-10l8azg",
+        "title": "Marketminute 2026 1 2 Silicon Surge Semiconductor Giants Propel Nasdaq To Record Highs To Kick Off",
+        "published_at": "2026-01-02T20:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-silicon-surge-semiconductor-giants-propel-nasdaq-to-record-highs-to-kick-off-2026",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-1r5dbt4",
+        "title": "10 Stock Market Predictions 2026",
+        "published_at": "2026-01-02T18:45:00Z",
+        "url": "https://finance.yahoo.com/news/10-stock-market-predictions-2026-092600693.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1hznz43",
+        "title": "Marketminute 2026 1 2 Chip Stocks Surge To Start 2026 Nvidia And Amd Drive Nasdaq To Record Highs",
+        "published_at": "2026-01-02T17:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-chip-stocks-surge-to-start-2026-nvidia-and-amd-drive-nasdaq-to-record-highs",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-x3f6rz",
+        "title": "Marketminute 2026 1 2 The 600 Billion Silicon Supercycle How Ai Infrastructure Is Powering The 2026 Market Surge",
+        "published_at": "2026-01-02T17:00:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-the-600-billion-silicon-supercycle-how-ai-infrastructure-is-powering-the-2026-market-surge",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-6cpy6d",
+        "title": "Marketminute 2026 1 2 Nvidia Sparks 2026 Rally Ai Giant Surges On New Years First Bell",
+        "published_at": "2026-01-02T15:30:00Z",
+        "url": "https://markets.financialcontent.com/stocks/article/marketminute-2026-1-2-nvidia-sparks-2026-rally-ai-giant-surges-on-new-years-first-bell",
+        "source": "gdelt-arch:financialcontent.com"
+      },
+      {
+        "id": "gdelt-arch-zai0br",
+        "title": "Stocks From Analyst Calls Friday Like Nvidia",
+        "published_at": "2026-01-02T15:15:00Z",
+        "url": "https://www.cnbc.com/2026/01/02/stocks-from-analyst-calls-friday-like-nvidia.html",
+        "source": "gdelt-arch:cnbc.com"
       }
     ],
     "fundamentals": {},

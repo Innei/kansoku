@@ -3076,18 +3076,25 @@
         "source": "gdelt-arch:dailypolitical.com"
       },
       {
-        "id": "gdelt-arch-c503q6",
-        "title": "Exxon Is Breaking Out At The Turn Of The New Year Why Jay Woods Thinks Its A Buy",
-        "published_at": "2026-01-02T17:15:00Z",
-        "url": "https://www.cnbc.com/2026/01/02/exxon-is-breaking-out-at-the-turn-of-the-new-year-why-jay-woods-thinks-its-a-buy.html",
-        "source": "gdelt-arch:cnbc.com"
-      },
-      {
         "id": "gdelt-arch-1i1daq2",
         "title": "Weaver Capital Management Llc Purchases 4253 Shares Of Exxon Mobil Corporation Xom",
         "published_at": "2026-01-02T13:30:00Z",
         "url": "https://www.tickerreport.com/banking-finance/13307028/weaver-capital-management-llc-purchases-4253-shares-of-exxon-mobil-corporation-xom.html",
         "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-usr343",
+        "title": "Regulatory Reform Transforms Africas Oil And Gas Sector",
+        "published_at": "2026-01-02T08:45:00Z",
+        "url": "https://www.newsghana.com.gh/regulatory-reform-transforms-africas-oil-and-gas-sector/",
+        "source": "gdelt-arch:newsghana.com.gh"
+      },
+      {
+        "id": "gdelt-arch-1y7rpwo",
+        "title": "Regulation That Brings Results The Impact Of Reform On Africas Oil And Gas Markets",
+        "published_at": "2026-01-01T20:45:00Z",
+        "url": "https://www.ieyenews.com/regulation-that-brings-results-the-impact-of-reform-on-africas-oil-and-gas-markets/",
+        "source": "gdelt-arch:ieyenews.com"
       },
       {
         "id": "gdelt-arch-11k5moi",

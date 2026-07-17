@@ -230,7 +230,7 @@ describe("runBackfillNews", () => {
         return [
           archiveRow("20260319100000", "example.com", "https://example.com/micron-earnings-preview", "micron technology"),
           archiveRow("20260319100000", "example.com", "https://example.com/amd-rally-story", "advanced micro devices"),
-          archiveRow("20260319100000", "example.com", "https://example.com/nvidia-launch-story", "nvidia"),
+          archiveRow("20260319100000", "example.com", "https://example.com/nvidia-launch-story", "nvidia corp"),
         ].join("\n");
       },
     });

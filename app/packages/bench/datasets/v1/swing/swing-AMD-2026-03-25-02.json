@@ -3055,6 +3055,13 @@
     "capitalFlow": {},
     "news": [
       {
+        "id": "gdelt-arch-1cgbe2b",
+        "title": "Stock Market Today March 25 Advanced Micro Devices Rises After Reports Of Cpu Price Increases",
+        "published_at": "2026-03-25T23:30:00Z",
+        "url": "https://www.fool.com/coverage/stock-market-today/2026/03/25/stock-market-today-march-25-advanced-micro-devices-rises-after-reports-of-cpu-price-increases/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
         "id": "gdelt-arch-xvr7kh",
         "title": "Amd Intel Rally On Ai Chip Shortage Semiconductor Etfs Gain But Risks Linger",
         "published_at": "2026-03-25T22:45:00Z",
@@ -3062,8 +3069,15 @@
         "source": "gdelt-arch:benzinga.com"
       },
       {
+        "id": "gdelt-arch-5ybzh2",
+        "title": "Advanced Micro Devices Nasdaqamd Shares Up 7 3 Heres Why",
+        "published_at": "2026-03-25T22:45:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/advanced-micro-devices-nasdaqamd-shares-up-7-3-heres-why.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
         "id": "gdelt-arch-gl672j",
-        "title": "N82E16883151782",
+        "title": "Msi Gaming Desktop Pc Geforce Rtx 5070 Amd Ryzen 7 8700f 32gb Ddr5 1tb Nvme Ssd Aegis Z2 C8nvp 1656us",
         "published_at": "2026-03-25T21:15:00Z",
         "url": "https://www.newegg.com/msi-gaming-desktop-pc-geforce-rtx-5070-amd-ryzen-7-8700f-32gb-ddr5-1tb-nvme-ssd-aegis-z2-c8nvp-1656us/p/N82E16883151782?Item=N82E16883151782&cm_sp=Homepage_SS-_-P3_83-151-782-_-03252026",
         "source": "gdelt-arch:newegg.com"
@@ -3105,24 +3119,10 @@
       },
       {
         "id": "gdelt-arch-rvor9z",
-        "title": "AMD ROCm 7.2.1",
+        "title": "AMD ROCm 7.2",
         "published_at": "2026-03-25T17:00:00Z",
         "url": "https://www.phoronix.com/news/AMD-ROCm-7.2.1",
         "source": "gdelt-arch:phoronix.com"
-      },
-      {
-        "id": "gdelt-arch-5sq6vt",
-        "title": "Pc Makers Face Shortages Of Intel And Amd Cpus That Stretch Up To Six Months Lead Time For Orders Jumps From Just Two Weeks In The Face Of Ai Demand",
-        "published_at": "2026-03-25T16:15:00Z",
-        "url": "https://www.tomshardware.com/pc-components/cpus/pc-makers-face-shortages-of-intel-and-amd-cpus-that-stretch-up-to-six-months-lead-time-for-orders-jumps-from-just-two-weeks-in-the-face-of-ai-demand",
-        "source": "gdelt-arch:tomshardware.com"
-      },
-      {
-        "id": "gdelt-arch-1htf26q",
-        "title": "Tech Stock Add My Portfolio Everyone Panic Amd",
-        "published_at": "2026-03-25T16:15:00Z",
-        "url": "https://www.fool.com/investing/2026/03/25/tech-stock-add-my-portfolio-everyone-panic-amd/?source=iedfolrf0000001",
-        "source": "gdelt-arch:fool.com"
       }
     ],
     "fundamentals": {},

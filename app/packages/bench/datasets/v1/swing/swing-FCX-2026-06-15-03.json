@@ -3055,20 +3055,6 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-1vqunjk",
-        "title": "Scottish Green Freeport Project Unlocks Funding, Targets Renewable Energy Hub Status 427b0",
-        "published_at": "2026-06-15T22:30:00Z",
-        "url": "https://myfinancereporter.com/news/scottish-green-freeport-project-unlocks-funding,-targets-renewable-energy-hub-status_427b0/",
-        "source": "gdelt-arch:myfinancereporter.com"
-      },
-      {
-        "id": "gdelt-arch-13abnqj",
-        "title": "Freeport Woman Dead After Single Car Rollover Crash",
-        "published_at": "2026-06-15T16:45:00Z",
-        "url": "https://www.wifr.com/2026/06/15/freeport-woman-dead-after-single-car-rollover-crash/",
-        "source": "gdelt-arch:wifr.com"
-      },
-      {
         "id": "gdelt-arch-1jk2hyy",
         "title": "Thornburg Investment Management Inc Increases Stock Holdings In Freeport Mcmoran Inc Fcx",
         "published_at": "2026-06-15T15:00:00Z",
@@ -3090,13 +3076,6 @@
         "source": "gdelt-arch:dailypolitical.com"
       },
       {
-        "id": "gdelt-arch-e47gy3",
-        "title": "Freeport Secures 31m Build Well",
-        "published_at": "2026-06-15T09:15:00Z",
-        "url": "https://www.yahoo.com/news/us/articles/freeport-secures-31m-build-well-084045987.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
         "id": "gdelt-arch-1l8z0np",
         "title": "Bornite Capital Management Lp Makes New Investment In Freeport Mcmoran Inc Fcx",
         "published_at": "2026-06-14T13:45:00Z",
@@ -3109,13 +3088,6 @@
         "published_at": "2026-06-14T13:15:00Z",
         "url": "https://www.dailypolitical.com/2026/06/14/analysts-set-freeport-mcmoran-inc-nysefcx-pt-at-66-04.html",
         "source": "gdelt-arch:dailypolitical.com"
-      },
-      {
-        "id": "gdelt-arch-1arpcqi",
-        "title": "Freeport Church Hosts Community Outreach Drive",
-        "published_at": "2026-06-14T07:45:00Z",
-        "url": "https://www.wifr.com/2026/06/14/freeport-church-hosts-community-outreach-drive/",
-        "source": "gdelt-arch:wifr.com"
       },
       {
         "id": "edgar-0000831259-26-000030",

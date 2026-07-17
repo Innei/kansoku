@@ -3055,32 +3055,11 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-ee4tey",
-        "title": "62742 Caterpillar Challenges Doosan Bobcat Patent Lawsuit Alleges Industrial Espionage",
-        "published_at": "2026-03-25T21:30:00Z",
-        "url": "https://www.enr.com/articles/62742-caterpillar-challenges-doosan-bobcat-patent-lawsuit-alleges-industrial-espionage",
-        "source": "gdelt-arch:enr.com"
-      },
-      {
         "id": "gdelt-arch-s5ldyf",
         "title": "Analysts Remain Mixed On Caterpillar Cat Amid Power Generation Equipment Agreement With Atlas Energy",
         "published_at": "2026-03-25T20:15:00Z",
         "url": "https://www.insidermonkey.com/blog/analysts-remain-mixed-on-caterpillar-cat-amid-power-generation-equipment-agreement-with-atlas-energy-1724774/",
         "source": "gdelt-arch:insidermonkey.com"
-      },
-      {
-        "id": "gdelt-arch-39ncnt",
-        "title": "Advocates Praise Wa For Selling Off 62m In Caterpillar Bonds",
-        "published_at": "2026-03-25T17:45:00Z",
-        "url": "https://www.seattletimes.com/seattle-news/politics/advocates-praise-wa-for-selling-off-62m-in-caterpillar-bonds/",
-        "source": "gdelt-arch:seattletimes.com"
-      },
-      {
-        "id": "gdelt-arch-iud3q8",
-        "title": "Caterpillar Countersues Bobcat Alleging Patent Infringement",
-        "published_at": "2026-03-25T17:15:00Z",
-        "url": "https://www.equipmentworld.com/business/article/15820505/caterpillar-countersues-bobcat-alleging-patent-infringement",
-        "source": "gdelt-arch:equipmentworld.com"
       },
       {
         "id": "gdelt-arch-pzbwfj",
@@ -3095,13 +3074,6 @@
         "published_at": "2026-03-25T00:00:00Z",
         "url": "https://www.defenseworld.net/2026/03/24/diversified-trust-co-purchases-2404-shares-of-caterpillar-inc-cat.html",
         "source": "gdelt-arch:defenseworld.net"
-      },
-      {
-        "id": "gdelt-arch-1yr151c",
-        "title": "Fortescue Extends Autonomous Mining Truck Agreement With Caterpillar",
-        "published_at": "2026-03-24T14:30:00Z",
-        "url": "https://www.canadianminingjournal.com/news/fortescue-extends-autonomous-mining-truck-agreement-with-caterpillar/",
-        "source": "gdelt-arch:canadianminingjournal.com"
       }
     ],
     "fundamentals": {},

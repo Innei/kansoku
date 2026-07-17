@@ -3055,32 +3055,11 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-vqsy4c",
-        "title": "Trump Names Zuckerberg Huang Ellison White House Ai Council",
-        "published_at": "2026-03-25T23:45:00Z",
-        "url": "https://www.androidheadlines.com/2026/03/trump-names-zuckerberg-huang-ellison-white-house-ai-council.html",
-        "source": "gdelt-arch:androidheadlines.com"
-      },
-      {
         "id": "gdelt-arch-fcga3n",
         "title": "Heres What Could Send Nvidia Stock To New All Time",
         "published_at": "2026-03-25T23:30:00Z",
         "url": "https://www.fool.com/investing/2026/03/25/heres-what-could-send-nvidia-stock-to-new-all-time/?source=iedfolrf0000001",
         "source": "gdelt-arch:fool.com"
-      },
-      {
-        "id": "gdelt-arch-1h60ocd",
-        "title": "Feds Arrest Trio For Nvidia Gpu Smuggling Scheme Involving Supermicro Servers",
-        "published_at": "2026-03-25T23:15:00Z",
-        "url": "https://www.pcmag.com/news/feds-arrest-trio-for-nvidia-gpu-smuggling-scheme-involving-supermicro-servers",
-        "source": "gdelt-arch:pcmag.com"
-      },
-      {
-        "id": "gdelt-arch-28v4ao",
-        "title": "Trump Appoints Nvidia Meta Oracle Leaders To His Council",
-        "published_at": "2026-03-25T23:00:00Z",
-        "url": "https://americanbazaaronline.com/2026/03/25/trump-appoints-nvidia-meta-oracle-leaders-to-his-council-477542/",
-        "source": "gdelt-arch:americanbazaaronline.com"
       },
       {
         "id": "gdelt-arch-p3qrre",
@@ -3104,24 +3083,45 @@
         "source": "gdelt-arch:yahoo.com"
       },
       {
-        "id": "gdelt-arch-1ouuolb",
-        "title": "Razer Blade 16 2026 Intel Panther Lake Brighter Oled",
-        "published_at": "2026-03-25T22:00:00Z",
-        "url": "https://www.cnet.com/tech/computing/razer-blade-16-2026-intel-panther-lake-brighter-oled/",
-        "source": "gdelt-arch:cnet.com"
-      },
-      {
-        "id": "gdelt-arch-v60ehp",
-        "title": "4885905 Nvidia Sky Isnt The Limit Anymore",
-        "published_at": "2026-03-25T22:00:00Z",
-        "url": "https://seekingalpha.com/article/4885905-nvidia-sky-isnt-the-limit-anymore",
-        "source": "gdelt-arch:seekingalpha.com"
-      },
-      {
         "id": "gdelt-arch-1817gvf",
         "title": "Nvidia Gtc Developments Were Far",
         "published_at": "2026-03-25T21:45:00Z",
         "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-gtc-developments-were-far-131614897.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1raxfv8",
+        "title": "Best Large Cap Stocks To Keep An Eye On March 25th",
+        "published_at": "2026-03-25T20:30:00Z",
+        "url": "https://www.tickerreport.com/banking-finance/13390989/best-large-cap-stocks-to-keep-an-eye-on-march-25th.html",
+        "source": "gdelt-arch:tickerreport.com"
+      },
+      {
+        "id": "gdelt-arch-1ba3mh7",
+        "title": "Tigress Financial Raises Nvidia Nvda",
+        "published_at": "2026-03-25T20:00:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/tigress-financial-raises-nvidia-nvda-112714011.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-nfunqs",
+        "title": "Top Technology Stocks To Follow Today March 25th",
+        "published_at": "2026-03-25T19:30:00Z",
+        "url": "https://www.themarketsdaily.com/2026/03/25/top-technology-stocks-to-follow-today-march-25th.html",
+        "source": "gdelt-arch:themarketsdaily.com"
+      },
+      {
+        "id": "gdelt-arch-1tibz3a",
+        "title": "Nvidia Ceo Delivers Curt 10",
+        "published_at": "2026-03-25T18:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-ceo-delivers-curt-10-171700225.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-12v20wb",
+        "title": "Many Employees Does Nvidia R",
+        "published_at": "2026-03-25T15:30:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/many-employees-does-nvidia-r-145900596.html",
         "source": "gdelt-arch:yahoo.com"
       }
     ],

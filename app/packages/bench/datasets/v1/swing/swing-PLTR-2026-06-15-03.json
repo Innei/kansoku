@@ -3083,13 +3083,6 @@
         "source": "gdelt-arch:dailypolitical.com"
       },
       {
-        "id": "gdelt-arch-1mgjwd",
-        "title": "Trading Near Its 52 Week Low Is Palantir Technolog",
-        "published_at": "2026-06-15T14:15:00Z",
-        "url": "https://www.fool.com/investing/2026/06/15/trading-near-its-52-week-low-is-palantir-technolog/",
-        "source": "gdelt-arch:fool.com"
-      },
-      {
         "id": "gdelt-arch-1u91lua",
         "title": "Palantir Technologies Inc Pltr Shares Sold By Panagora Asset Management Inc",
         "published_at": "2026-06-15T13:45:00Z",
@@ -3104,13 +3097,6 @@
         "source": "gdelt-arch:themarketsdaily.com"
       },
       {
-        "id": "gdelt-arch-111pamx",
-        "title": "Palantir Ceo Alex Karp Rooting",
-        "published_at": "2026-06-15T02:45:00Z",
-        "url": "https://finance.yahoo.com/sectors/technology/articles/palantir-ceo-alex-karp-rooting-153125935.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
         "id": "gdelt-arch-1czax7i",
         "title": "Palantir Pltr Stock Price Could Face Selling Pressure After Losing Legal Bid Against Swiss Magazine",
         "published_at": "2026-06-15T00:45:00Z",
@@ -3118,11 +3104,25 @@
         "source": "gdelt-arch:foreignpolicyjournal.com"
       },
       {
-        "id": "gdelt-arch-v6ojcs",
-        "title": "Palantir Ceo Warned Tech Bosses Stop Celebrating Ai Layoffs",
-        "published_at": "2026-06-15T00:15:00Z",
-        "url": "https://memeburn.com/palantir-ceo-warned-tech-bosses-stop-celebrating-ai-layoffs/",
-        "source": "gdelt-arch:memeburn.com"
+        "id": "gdelt-arch-t1l90f",
+        "title": "Palantir Swiss Court Defeat Raises",
+        "published_at": "2026-06-14T23:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/palantir-swiss-court-defeat-raises-231649047.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-tqig3d",
+        "title": "Palantir Pltr Debt Free Ai",
+        "published_at": "2026-06-14T20:45:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/palantir-pltr-debt-free-ai-194437119.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1kln2n3",
+        "title": "Palantir Pltr Debt Free Ai Growth Shows Why Its Software Story Still Has Financial Firepower",
+        "published_at": "2026-06-14T20:30:00Z",
+        "url": "https://www.insidermonkey.com/blog/palantir-pltr-debt-free-ai-growth-shows-why-its-software-story-still-has-financial-firepower-1781635/",
+        "source": "gdelt-arch:insidermonkey.com"
       },
       {
         "id": "edgar-0001321655-26-000033",

@@ -3055,52 +3055,10 @@
     "capitalFlow": {},
     "news": [
       {
-        "id": "gdelt-arch-fojxjn",
-        "title": "Rivian Filled Void Electric Suv Market Tesla Couldnt Compete",
-        "published_at": "2026-03-25T23:45:00Z",
-        "url": "https://www.torquenews.com/1/rivian-filled-void-electric-suv-market-tesla-couldnt-compete",
-        "source": "gdelt-arch:torquenews.com"
-      },
-      {
-        "id": "gdelt-arch-l4q0ig",
-        "title": "Tesla",
-        "published_at": "2026-03-25T23:45:00Z",
-        "url": "https://www.torquenews.com/tesla-0",
-        "source": "gdelt-arch:torquenews.com"
-      },
-      {
-        "id": "gdelt-arch-a0ksac",
-        "title": "Tesla Nasdaqtsla Trading Up 3 5 Still A Buy",
-        "published_at": "2026-03-25T23:45:00Z",
-        "url": "https://www.tickerreport.com/banking-finance/13391110/tesla-nasdaqtsla-trading-up-3-5-still-a-buy.html",
-        "source": "gdelt-arch:tickerreport.com"
-      },
-      {
-        "id": "gdelt-arch-1eculjd",
-        "title": "Were Still Only Seeing Ais First Order Effects Former Tesla Head States",
-        "published_at": "2026-03-25T23:45:00Z",
-        "url": "https://www.forbes.com/sites/joemckendrick/2026/03/25/were-still-only-seeing-ais-first-order-effects-former-tesla-head-states/",
-        "source": "gdelt-arch:forbes.com"
-      },
-      {
         "id": "gdelt-arch-1sv490l",
         "title": "Amazon Zoox Expanding Robotaxi San",
         "published_at": "2026-03-25T23:15:00Z",
         "url": "https://finance.yahoo.com/markets/stocks/articles/amazon-zoox-expanding-robotaxi-san-145625970.html",
-        "source": "gdelt-arch:yahoo.com"
-      },
-      {
-        "id": "gdelt-arch-1u8iue6",
-        "title": "Elon Musk Left Out Of Trumps Tech Bro Council",
-        "published_at": "2026-03-25T21:30:00Z",
-        "url": "https://www.thedailybeast.com/elon-musk-left-out-of-trumps-tech-bro-council/",
-        "source": "gdelt-arch:thedailybeast.com"
-      },
-      {
-        "id": "gdelt-arch-1ijnvr4",
-        "title": "Inside Cybertruck Fire Lawsuit Happened",
-        "published_at": "2026-03-25T21:15:00Z",
-        "url": "https://autos.yahoo.com/policy-and-environment/articles/inside-cybertruck-fire-lawsuit-happened-204500176.html",
         "source": "gdelt-arch:yahoo.com"
       },
       {
@@ -3111,18 +3069,60 @@
         "source": "gdelt-arch:banklesstimes.com"
       },
       {
-        "id": "gdelt-arch-df7x50",
-        "title": "Ivanna Ortiz Pleads Not Guilty To Beverly Hills Shooting",
-        "published_at": "2026-03-25T21:15:00Z",
-        "url": "https://www.canyon-news.com/ivanna-ortiz-pleads-not-guilty-to-beverly-hills-shooting/",
-        "source": "gdelt-arch:canyon-news.com"
+        "id": "gdelt-arch-1sxhyf1",
+        "title": "Tesla Tsla Accelerates Its Autonomous Driving Roadmap By Vertically Integrating Its Semiconductor Production",
+        "published_at": "2026-03-25T20:15:00Z",
+        "url": "https://www.insidermonkey.com/blog/tesla-tsla-accelerates-its-autonomous-driving-roadmap-by-vertically-integrating-its-semiconductor-production-1724772/",
+        "source": "gdelt-arch:insidermonkey.com"
       },
       {
-        "id": "gdelt-arch-5k5ece",
-        "title": "Our Founder",
-        "published_at": "2026-03-25T21:00:00Z",
-        "url": "https://fetzer.org/our-founder/",
-        "source": "gdelt-arch:fetzer.org"
+        "id": "gdelt-arch-9bljre",
+        "title": "Tesla Stock True Believers Could Be Losing Faith",
+        "published_at": "2026-03-25T20:15:00Z",
+        "url": "https://www.cnbc.com/2026/03/25/tesla-stock-true-believers-could-be-losing-faith.html",
+        "source": "gdelt-arch:cnbc.com"
+      },
+      {
+        "id": "gdelt-arch-oyqtyb",
+        "title": "Why Are Tesla Shares Surging Higher On Wednesday",
+        "published_at": "2026-03-25T15:15:00Z",
+        "url": "https://www.benzinga.com/trading-ideas/movers/26/03/51458899/why-are-tesla-shares-surging-higher-on-wednesday",
+        "source": "gdelt-arch:benzinga.com"
+      },
+      {
+        "id": "gdelt-arch-1t1gvmk",
+        "title": "Capital Asset Advisory Services Llc Sells 2667 Shares Of Tesla Inc Tsla",
+        "published_at": "2026-03-25T10:00:00Z",
+        "url": "https://www.defenseworld.net/2026/03/25/capital-asset-advisory-services-llc-sells-2667-shares-of-tesla-inc-tsla.html",
+        "source": "gdelt-arch:defenseworld.net"
+      },
+      {
+        "id": "gdelt-arch-1hs5uo2",
+        "title": "Regulatory Blow Could Change Tesla",
+        "published_at": "2026-03-25T05:15:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/regulatory-blow-could-change-tesla-171600234.html",
+        "source": "gdelt-arch:yahoo.com"
+      },
+      {
+        "id": "gdelt-arch-1e6l8yw",
+        "title": "Rivian Vs Lucid Which Ev Stock Is The Better Buy",
+        "published_at": "2026-03-24T22:15:00Z",
+        "url": "https://www.fool.com/investing/2026/03/24/rivian-vs-lucid-which-ev-stock-is-the-better-buy/?source=iedfolrf0000001",
+        "source": "gdelt-arch:fool.com"
+      },
+      {
+        "id": "gdelt-arch-13yym8b",
+        "title": "Financial Management Network Inc Grows Holdings In Tesla Inc Tsla",
+        "published_at": "2026-03-24T18:30:00Z",
+        "url": "https://www.dailypolitical.com/2026/03/24/financial-management-network-inc-grows-holdings-in-tesla-inc-tsla.html",
+        "source": "gdelt-arch:dailypolitical.com"
+      },
+      {
+        "id": "gdelt-arch-ninm7o",
+        "title": "Gary Black Warns Tesla Spacex",
+        "published_at": "2026-03-24T17:00:00Z",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/gary-black-warns-tesla-spacex-163110303.html",
+        "source": "gdelt-arch:yahoo.com"
       }
     ],
     "fundamentals": {},

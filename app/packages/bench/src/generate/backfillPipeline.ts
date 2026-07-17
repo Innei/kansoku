@@ -289,10 +289,10 @@ function buildWindowRequests(questions: Question[]): Map<string, ArchiveWindowRe
   const windowRequests = new Map<string, ArchiveWindowRequest[]>();
   for (const question of questions) {
     const spec = specForSymbol(question.symbol);
-    if (!spec.archiveOrgTerm) continue;
+    if (!spec.archiveTerms) continue;
     const requests = windowRequests.get(question.cutoff) ?? [];
     if (!requests.some((request) => request.symbol === question.symbol)) {
-      requests.push({ symbol: question.symbol, matchTerm: spec.archiveOrgTerm });
+      requests.push({ symbol: question.symbol, terms: spec.archiveTerms });
     }
     windowRequests.set(question.cutoff, requests);
   }
