@@ -19,13 +19,13 @@
 ## 3. 测试模式
 
 - **盲盘（blind）**：只给盘面数据——多周期 K 线（OHLCV + 成交额）、资金流分层（主力/散户，属盘面推算数据不算消息）、服务端算好的标准指标数值。无新闻、无基本面、无财报日历。
-- **实盘（live）**：盲盘全部内容 + cutoff 前 48h 新闻 + 基本面快照 + 财报日历 + 市场情绪。噪音本身是考点。
+- **实盘（live）**：盲盘全部内容 + cutoff 前 48h 新闻 + 基本面快照 + 财报日历 + 市场情绪。噪音本身是考点。（2026-07-17 补充：`news` fixture 的数据源是 GDELT + SEC EDGAR 历史回填，见 `backfill-news` 子命令；`fundamentals`/`capitalFlow` 仍留空，未接入历史归档源。）
 - 同一份题文件服务两种模式（mock 层决定挂哪些 fixture）。成对得分差 = 该模型的**抗噪分**（被消息面污染的程度）。
 - **对抗题**（`adversarial: true`）：新闻情绪与后续走势相反的时点（如 2026-07-14 MRVL：长桥报「指引不及预期」而 8-K 实为超预期、当日 +32.5%）。来源：journal 真实案例 + 脚本筛选。
 
 ## 4. 题库
 
-### 4.1 选股（18 只，五层）
+### 4.1 选股（20 只，五层）
 
 | 层 | 标的 | 作用 |
 |---|---|---|
@@ -160,7 +160,7 @@ pnpm bench run --models anthropic/claude-sonnet-5,deepseek/deepseek-chat \
 
 ## 10. 一期范围
 
-1. 波段题库：18 只 × 每只 2~3 个不重叠窗口 ≈ 40~50 题。
+1. 波段题库：20 只 × 每只 2~3 个不重叠窗口 ≈ 40~50 题。
 2. 模型 3 个（Claude / DeepSeek / Kimi 各一档），盲/实 × 3 重复 ≈ 每模型 300 次会话，验证成本与稳定性。
 3. 管线全链路：generate → datasets → runner（含 trace、断点续跑、错误分类）→ score（含 gold 自检）→ report。
 
@@ -175,3 +175,15 @@ pnpm bench run --models anthropic/claude-sonnet-5,deepseek/deepseek-chat \
 - `submit_prediction`（`ai/analyst.ts`）— 现成结构化答题卡
 
 已知缺口（bench 包内解决，不动 core）：core `getKline` 不支持日期区间——出题管线直接用 `longbridge kline` CLI 历史区间模式；逐工具调用 trace 无现成落库——bench 自带 JSONL 落盘。
+
+## 开源边界拆分（2026-07-17 补记）
+
+原始设计把整个 bench 放在公开的 `@kansoku/bench` 一个包里。此后仓库做了 open-core 拆分：core 里的 AI 实现（`analyst` / `agentSession` / `dataTools` / `modelsRuntime` 等）整体搬进了私有包 `@kansoku/pro`。bench 里驱动模型的那一半依赖这些实现，所以 bench 也跟着按同一条边界拆开：
+
+- **公开框架（留在 `@kansoku/bench`）**：schema、dataset 加载、generate、backfill-news、score（含 gold）、report、baseline 答卷生成，以及这些部分的测试。这些只吃写死的 fixture 和被物理隔离的 `replay.bars`，不碰任何 LLM，谁都能跑。CLI 保留 `generate` / `backfill-news` / `score` / `gold` / `report` / `baseline` 六个子命令；`run` 只打印一句指路（真正执行在 pro）。baseline 虽然逻辑上属于「跑一轮」，但它是机械生成答卷、不调用模型，所以留在公开侧（代码从 `runner/` 挪到纯净的 `baseline/` 目录）。
+
+- **私有 runner（搬进 `@kansoku/pro` 的 `src/bench/`）**：mock 工具链（`read_data_pack` / `fetch_news` / `fetch_kline` / `run_code` / `submit_prediction` 的假数据实现）、`run_code` 的 quickjs 沙箱、`BENCH_ADAPTER_PROMPT`、agent 会话拼装、cell 执行器、并发池、trace 落盘、`run` 子命令（`bench:run` script）。它 import 公开 bench 走仓库里 pro 触达 `packages/*` 的同一套相对路径约定，import AI 实现走 pro 自己的 `src/ai/`。驱动模型的端到端链路测试也一并搬到 pro，在 pro 的 vitest 下跑。
+
+- **公开侧的端到端替身**：原来跨 runner 的 `test/e2e/chain.test.ts` 依赖 runner，随之搬走；公开包换成一个纯链路集成测试（`test/integration/scoreReport.test.ts`）——写死的 predictions 答卷 → score → report 断言，覆盖公开侧能独立验证的那段。
+
+判分口径、fixture 隔离、数据集冻结这些核心设计一个字没变，拆的只是「谁 import 闭源 AI」这条物理边界。
