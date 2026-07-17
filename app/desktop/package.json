@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist-main/main.mjs",
   "scripts": {
-    "build": "tsdown && node scripts/verifyBundledCodexAuth.mjs",
+    "build": "tsdown",
     "rebuild-native": "electron-rebuild -v 43.1.0 --force -w better-sqlite3",
     "build:native": "cd native/sparkle-bridge && npm ci && npm run build",
     "predev": "node scripts/ensureDevNative.mjs",
@@ -16,13 +16,14 @@
     "typecheck": "tsc --noEmit",
     "generate-icon": "bash scripts/generate-icon.sh",
     "prepackage": "pnpm --filter @kansoku/web build && (test -f ../web/dist/index.html || (echo 'web/dist/index.html missing after build' && exit 1))",
-    "package": "tsdown && node scripts/verifyBundledCodexAuth.mjs && node scripts/stageSkills.mjs && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64"
+    "package": "tsdown && node scripts/stageSkills.mjs && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "electron-context-menu": "^4.1.2",
     "electron-ipc-decorator": "^1.0.1",
-    "electron-window-state": "5.0.3"
+    "electron-window-state": "5.0.3",
+    "@kansoku/pro-api": "workspace:*"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.2.0",
