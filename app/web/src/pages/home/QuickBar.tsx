@@ -56,30 +56,42 @@ export function QuickBar({
       {showGlobalActions ? (
         <span className="quickbar-actions">
           {pro && (
-            <Tooltip content={locked ? "订阅解锁 AI 功能" : undefined}>
-              <button
-                type="button"
-                className={`icon-action${locked ? " icon-action--locked" : ""}`}
-                aria-label={locked ? "研究库（需订阅授权）" : "研究库"}
-                onClick={() => guard(() => navigate("/research?view=journal"))}
-              >
+            locked ? (
+              <Tooltip content="订阅解锁 AI 功能">
+                <button
+                  type="button"
+                  className="icon-action icon-action--locked"
+                  aria-label="研究库（需订阅授权）"
+                  onClick={() => guard(() => navigate("/research?view=journal"))}
+                >
+                  <Library size={16} />
+                  <Lock className="icon-action-lock-badge" size={9} />
+                </button>
+              </Tooltip>
+            ) : (
+              <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
                 <Library size={16} />
-                {locked && <Lock className="icon-action-lock-badge" size={9} />}
-              </button>
-            </Tooltip>
+              </a>
+            )
           )}
           {pro && (
-            <Tooltip content={locked ? "订阅解锁 AI 功能" : undefined}>
-              <button
-                type="button"
-                className={`icon-action${locked ? " icon-action--locked" : ""}`}
-                aria-label={locked ? "AI 对话（需订阅授权）" : "AI 对话"}
-                onClick={() => guard(() => navigate("/chat"))}
-              >
+            locked ? (
+              <Tooltip content="订阅解锁 AI 功能">
+                <button
+                  type="button"
+                  className="icon-action icon-action--locked"
+                  aria-label="AI 对话（需订阅授权）"
+                  onClick={() => guard(() => navigate("/chat"))}
+                >
+                  <MessageCircle size={16} />
+                  <Lock className="icon-action-lock-badge" size={9} />
+                </button>
+              </Tooltip>
+            ) : (
+              <a className="icon-action" href="/chat" aria-label="AI 对话" title="AI 对话">
                 <MessageCircle size={16} />
-                {locked && <Lock className="icon-action-lock-badge" size={9} />}
-              </button>
-            </Tooltip>
+              </a>
+            )
           )}
           <a className="icon-action" href="/settings" aria-label="设置" title="设置">
             <Settings size={16} />

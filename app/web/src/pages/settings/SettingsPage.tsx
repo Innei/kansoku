@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "../../apiHooks";
 import { useCapabilities } from "../../capabilitiesStore";
@@ -201,11 +201,6 @@ export function SettingsPage() {
     reloadLobeHubAccount();
     reloadLobeHubCredits();
   };
-
-  useEffect(() => {
-    if (window.location.hash !== "#license-section") return;
-    document.getElementById("license-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [pro, licensed, settings, catalog]);
 
   if (pro === null) {
     return (

@@ -32,13 +32,21 @@ describe("QuickBar AI entry lock affordance", () => {
     expect(screen.queryByLabelText(/需订阅授权/)).toBeNull();
   });
 
-  it("navigates directly when pro and licensed", () => {
+  it("renders a native anchor (not a guarded button) for the licensed case, preserving ctrl/middle-click and right-click", () => {
     capabilities = { pro: true, licensed: true };
     render(<QuickBar shortcuts={[]} />);
 
-    fireEvent.click(screen.getByLabelText("研究库"));
+    const research = screen.getByLabelText("研究库");
+    const chat = screen.getByLabelText("AI 对话");
 
-    expect(navigate).toHaveBeenCalledWith("/research?view=journal");
+    expect(research.tagName).toBe("A");
+    expect(research.getAttribute("href")).toBe("/research?view=journal");
+    expect(chat.tagName).toBe("A");
+    expect(chat.getAttribute("href")).toBe("/chat");
+
+    fireEvent.click(research);
+
+    expect(navigate).not.toHaveBeenCalled();
     expect(getLicenseModalStateForTests().open).toBe(false);
   });
 
