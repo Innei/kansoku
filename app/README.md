@@ -229,9 +229,21 @@ pnpm typecheck      # 两个包的 tsc
 
 **接口约定**：`packages/pro-api`（`@kansoku/pro-api`，公开、纯类型包）定义了 pro 包要交出什么——`tsukiModules`（server 路由模块）、`ipcServiceClasses`（desktop IPC）、`channels`（realtime 频道注册）、`hooks`（非 AI 代码需要反查的东西，比如宏观事件过滤、跟进状态、点评列表）、`aiSettings`（设置页 AI 分节的委托对象）、`startScheduler`、`initRuntime`。`packages/core/src/pro/registry.ts` 持有当前注册的 pro 模块，`hooks` 每一项都有免费模式下的默认实现（宏观过滤直通、跟进/点评列表返回空、scheduler 空转）——所以就算 pro 缺失，调用这些 hook 的代码也不用到处判空。
 
-**能力广播**：`GET /api/capabilities` 返回 `{ pro, licensed }`（IPC 下同名方法），web 启动时拉一次存进 `capabilitiesStore`，QuickBar、cockpit 的 ChatDock、settings 的 AI 分节等入口都按这个 store 显隐——`pro` 为 false 时整个 AI 相关 UI 都不出现，不会看到一个点了没用的按钮。当前阶段 pro 包加载成功就直接 `{pro: true, licensed: true}`，订阅授权（licensed 的真实语义）是后续阶段的事。
+**能力广播**：`GET /api/capabilities` 返回 `{ pro, licensed, license? }`（IPC 下同名方法），web 启动时拉一次存进 `capabilitiesStore`，QuickBar、cockpit 的 ChatDock、settings 的 AI 分节等入口都按这个 store 显隐——`pro` 为 false 时整个 AI 相关 UI 都不出现，不会看到一个点了没用的按钮；`pro: true, licensed: false` 会渲染成上锁态 + 订阅引导，而不是直接隐藏（区别对待"没装"和"装了但没订阅"）。`license.state` 是五态之一：`unlicensed`/`licensed`/`grace`/`expired`/`invalid`，详见 spec 第 3 节。
 
 **官方构建怎么把 pro 接进来**：`app/scripts/fetch-pro.sh` 是一个幂等的 clone/pull 脚本，读 `KANSOKU_PRO_REPO_URL` 环境变量决定拉哪个仓库；变量没设时脚本直接退出、留在免费模式（这也是社区贡献者的默认状态）。`desktop-release.yml` 里挂了这一步，但门槛是这个变量——今天还没配置，所以桌面发行版目前也是社区构建。
+
+### 订阅与授权（Dodo License）
+
+Pro 包内含一个基于 [Dodo Payments](https://docs.dodopayments.com/features/license-keys) license key 的订阅闸门——授权判断全部代码住在私有仓库,公开侧只消费 `capabilities.licensed` 这一个布尔值,不含任何判断逻辑。
+
+- **激活**：设置页输入 license key → `POST /api/license/activate` → 内部调 Dodo 的 `activate` 端点换取 `license_key_instance_id`,与 key 一起加密落盘。停用同理走 `deactivate`,即使 Dodo 侧调用失败也不阻塞本地清空。
+- **状态机**：`unlicensed → licensed`(激活/复验成功)、离线 14 天宽限期内算 `grace`(对外仍是 `licensed=true`)、宽限期耗尽降级 `expired`(**之后一次复验成功会自动恢复,不需要重新输入 key**)、Dodo 判定 key 失效(退订/换档)是 `invalid`(需要重新输入新 key)。复验时机：启动后异步一次 + 每 24 小时一次,激活/停用后立即刷新一次。
+- **降级行为**：未授权时 AI 相关 HTTP 路由与 IPC 方法统一返回 **403**、错误码 `LICENSE_REQUIRED`；`reassess`/`deep-dive` 同样 403；`GET /overview/recap` 是例外——它必须始终成功返回,未授权时把里面的 usage 字段降级为全零,不整体报错。图表/行情/journal 完全不受影响。
+- **环境变量**：
+  - `KANSOKU_DODO_TEST=1` —— Dodo client 走 test 环境（`test.dodopayments.com`）而非 live,配合 Dodo 后台的测试模式 key 联调用。
+  - `KANSOKU_LICENSE_BYPASS=1` —— **仅供开发使用**的逃生舱,直接让 `licensed` 判定短路为 `true`,免去每次开发都要走一遍真实激活流程。**打包后的桌面构建里这个开关是死的**：判定逻辑会先检测 Electron 的 `app.isPackaged`,只要是打包产物就无视这个变量强制走真实授权路径；非 Electron 宿主（server）退回看 `NODE_ENV!=="production"` 兜底。
+  - `KANSOKU_SUBSCRIBE_URL` —— 设置页"订阅"按钮的跳转链接,不设置则该入口不出现。
 
 ## 后续规划
 
