@@ -15,6 +15,11 @@ export interface ServerRuntimeOptions {
   credentialProvider?: CredentialProvider;
   secretBox?: SecretBox;
   openAuthUrl?: AuthUrlOpener;
+  // Electron bundles this whole call chain into one file at a different
+  // directory depth (see pro/loader.ts) — the desktop host passes its own
+  // app root here so the pro slot still resolves; the Tsuki server host runs
+  // TS directly and leaves this unset.
+  proAppDir?: string;
 }
 
 export async function initServerRuntime(opts?: ServerRuntimeOptions): Promise<void> {
@@ -28,6 +33,6 @@ export async function initServerRuntime(opts?: ServerRuntimeOptions): Promise<vo
   initAuthUrlOpener(opts?.openAuthUrl);
   setActiveWatchedMarketsStore(createWatchedMarketsStore(getDb()));
 
-  await loadPro();
+  await loadPro(opts?.proAppDir);
   await getPro()?.initRuntime?.(getDb(), opts?.secretBox);
 }
