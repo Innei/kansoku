@@ -64,4 +64,20 @@ describe("NoteTab deep-dive license gate", () => {
     await waitFor(() => expect(deepDive).toHaveBeenCalledWith({ sym: "MRVL.US" }));
     expect(getLicenseModalStateForTests().open).toBe(false);
   });
+
+  it("still attempts the direct call for a community build (pro:false), without a locked badge or modal", async () => {
+    capabilities = { pro: false, licensed: false };
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    note.mockResolvedValue({ markdown: null });
+    deepDiveStatus.mockResolvedValue({ running: false });
+    deepDive.mockResolvedValue({});
+
+    render(<NoteTab symbol="MRVL.US" />);
+    const button = await screen.findByRole("button", { name: /跑一次深度分析/ });
+    fireEvent.click(button);
+
+    expect(confirmSpy).toHaveBeenCalled();
+    await waitFor(() => expect(deepDive).toHaveBeenCalledWith({ sym: "MRVL.US" }));
+    expect(getLicenseModalStateForTests().open).toBe(false);
+  });
 });

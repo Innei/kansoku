@@ -40,7 +40,10 @@ export function NoteTab({ symbol }: { symbol: string }) {
   }
 
   const button = (
-    <Button onClick={() => guard(confirmAndStart)} disabled={deepDive.pending || deepDive.running || deepDive.disabled}>
+    <Button
+      onClick={locked ? () => guard(() => {}) : confirmAndStart}
+      disabled={deepDive.pending || deepDive.running || deepDive.disabled}
+    >
       {(deepDive.pending || deepDive.running) && <Spinner />}
       {locked && <Lock size={13} />}
       {buttonLabel}

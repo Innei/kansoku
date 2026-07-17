@@ -26,7 +26,7 @@ export function FollowAction({ symbol, revision }: { symbol: string; revision?: 
         ariaLabel="持续跟进 AI 点评"
         checked={following ?? false}
         disabled={busy}
-        onCheckedChange={(checked) => guard(() => void change(checked))}
+        onCheckedChange={locked ? () => guard(() => {}) : (checked) => void change(checked)}
       />
     </span>
   );

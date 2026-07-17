@@ -66,4 +66,18 @@ describe("FollowAction license gate", () => {
     expect(startFollow).toHaveBeenCalledWith({ sym: "MRVL.US" });
     expect(getLicenseModalStateForTests().open).toBe(false);
   });
+
+  it("still attempts the direct call for a community build (pro:false), without a locked badge or modal", async () => {
+    capabilities = { pro: false, licensed: false };
+    followStatus.mockResolvedValue({ following: false });
+    startFollow.mockResolvedValue({ following: true });
+    renderWithClient(<FollowAction symbol="MRVL.US" />);
+
+    const toggle = await screen.findByLabelText("持续跟进 AI 点评");
+    await waitFor(() => expect(toggle.getAttribute("data-disabled")).toBeNull());
+    fireEvent.click(toggle);
+
+    expect(startFollow).toHaveBeenCalledWith({ sym: "MRVL.US" });
+    expect(getLicenseModalStateForTests().open).toBe(false);
+  });
 });
