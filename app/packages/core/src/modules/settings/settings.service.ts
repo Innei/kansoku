@@ -47,4 +47,9 @@ export const settingsService: SettingsApi = {
     store.set(validateWatchedMarkets(input.markets));
     return { markets: store.get() };
   },
+
+  async getSubscribeUrl() {
+    const raw = process.env.KANSOKU_SUBSCRIBE_URL?.trim();
+    return { subscribeUrl: raw ? raw : null };
+  },
 };

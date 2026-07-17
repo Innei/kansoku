@@ -1012,6 +1012,18 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .chat-dock .input:focus-visible { border-color: transparent; box-shadow: none; }
 .chat-dock .chat-composer { padding: 6px 6px 6px 12px; }
 .chat-dock .chat-composer-action { border-radius: var(--radius-full); }
+.chat-dock--locked { padding: 8px 12px; }
+
+.locked-ai-notice {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  color: var(--text-secondary); font-size: var(--fs-sm);
+}
+.locked-ai-notice .icon { color: var(--accent); flex-shrink: 0; }
+.locked-ai-notice-cta {
+  margin-left: auto; padding: 4px 10px; border: 1px solid var(--accent); border-radius: var(--radius);
+  background: none; color: var(--accent); font-size: var(--fs-sm); cursor: pointer; white-space: nowrap;
+}
+.locked-ai-notice-cta:hover { background: var(--accent); color: var(--bg-surface); }
 
 .chat-shell {
   z-index: 20; display: flex; flex-direction: column; min-height: 0;
@@ -1146,6 +1158,12 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   border-radius: var(--radius);
 }
 .icon-action:hover { color: var(--text-primary); background: var(--bg-hover); }
+.icon-action--locked { position: relative; border: none; cursor: pointer; opacity: 0.55; }
+.icon-action--locked:hover { opacity: 1; }
+.icon-action-lock-badge {
+  position: absolute; right: 1px; bottom: 1px; color: var(--accent);
+  background: var(--bg-surface); border-radius: var(--radius-full);
+}
 .scroll-area { position: relative; min-width: 0; min-height: 0; }
 .scroll-area-viewport { width: 100%; height: 100%; outline: none; }
 .scroll-area[data-orientation="horizontal"] > .scroll-area-viewport { overflow-x: auto; overflow-y: hidden; }
@@ -1680,6 +1698,13 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   color: var(--down); font-size: var(--fs-sm); overflow-wrap: anywhere;
 }
 .settings-cred-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 12px; }
+
+.settings-ai-locked { padding: 0; }
+.license-activate-row { flex-direction: column; align-items: stretch; gap: 8px; }
+.license-input-row { display: flex; gap: 8px; }
+.license-input-row .input { min-width: 0; flex: 1; }
+.license-invalid-notice { color: var(--down); }
+.license-subscribe-link { color: var(--accent); font-size: var(--fs-sm); }
 
 .logs-page { display: flex; flex-direction: column; min-height: 0; gap: 10px; }
 .logs-page-header {
