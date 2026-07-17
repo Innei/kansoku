@@ -27,6 +27,7 @@ export async function bootKernel() {
     openAuthUrl: (url) => {
       shell.openExternal(url).catch(() => {});
     },
+    proAppDir: app.getAppPath(),
   });
   // bootstrap.js is imported lazily, after initServerRuntime() has awaited
   // loadPro() above, so AppModule's registry-derived AI module composition
