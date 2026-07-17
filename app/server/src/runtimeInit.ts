@@ -20,6 +20,10 @@ export interface ServerRuntimeOptions {
   // app root here so the pro slot still resolves; the Tsuki server host runs
   // TS directly and leaves this unset.
   proAppDir?: string;
+  // Entry file within the pro slot, relative to app/pro. Desktop dev loads the
+  // TS source directly (via a tsx loader hook), packaged desktop loads the
+  // built output; the Tsuki host leaves this unset and uses the default.
+  proEntry?: string;
 }
 
 export async function initServerRuntime(opts?: ServerRuntimeOptions): Promise<void> {
@@ -33,6 +37,6 @@ export async function initServerRuntime(opts?: ServerRuntimeOptions): Promise<vo
   initAuthUrlOpener(opts?.openAuthUrl);
   setActiveWatchedMarketsStore(createWatchedMarketsStore(getDb()));
 
-  await loadPro(opts?.proAppDir);
+  await loadPro(opts?.proAppDir, opts?.proEntry);
   await getPro()?.initRuntime?.(getDb(), opts?.secretBox);
 }
