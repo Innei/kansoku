@@ -182,6 +182,18 @@ describe("bench generate-episode-case argument validation", () => {
   });
 });
 
+describe("bench generate-episode-dataset argument validation", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("requires a plan file", async () => {
+    const result = await runMain(["generate-episode-dataset"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("--plan is required");
+  });
+});
+
 describe("bench verify-episode-case argument validation", () => {
   afterEach(() => {
     vi.restoreAllMocks();

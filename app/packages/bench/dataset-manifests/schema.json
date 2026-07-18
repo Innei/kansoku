@@ -22,6 +22,15 @@
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
     "revision": { "type": "string", "pattern": "^r[1-9][0-9]*$" },
     "kind": { "enum": ["single-shot", "episode"] },
+    "status": { "enum": ["pilot", "production"] },
+    "modes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "enum": ["blind", "live"] }
+    },
+    "cohort": { "enum": ["live-2026", "blind-anonymous"] },
     "visibility": { "const": "private" },
     "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
     "release": {

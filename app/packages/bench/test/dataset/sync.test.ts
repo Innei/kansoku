@@ -18,6 +18,9 @@ function manifestFor(payload: Buffer, sha256 = createHash("sha256").update(paylo
     id: "demo",
     revision: "r1",
     kind: "single-shot",
+    status: "pilot",
+    modes: ["live"],
+    cohort: "live-2026",
     visibility: "private",
     repository: "kansoku-trade/kansoku-bench-data",
     release: {
@@ -69,6 +72,9 @@ describe("dataset synchronization", () => {
       revision: "r1",
       sha256: manifest.release.sha256,
       installedAt: "2026-07-18T01:02:03.000Z",
+      status: "pilot",
+      modes: ["live"],
+      cohort: "live-2026",
     });
   });
 

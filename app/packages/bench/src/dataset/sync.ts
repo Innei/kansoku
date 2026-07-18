@@ -14,6 +14,9 @@ export interface DatasetInstallMarker {
   revision: string;
   sha256: string;
   installedAt: string;
+  status?: DatasetManifest["status"];
+  modes?: DatasetManifest["modes"];
+  cohort?: DatasetManifest["cohort"];
 }
 
 export interface SyncDatasetOptions {
@@ -167,6 +170,9 @@ export async function syncDataset(
       revision: manifest.revision,
       sha256,
       installedAt: deps.now().toISOString(),
+      ...(manifest.status ? { status: manifest.status } : {}),
+      ...(manifest.modes ? { modes: manifest.modes } : {}),
+      ...(manifest.cohort ? { cohort: manifest.cohort } : {}),
     };
     await fs.writeFile(join(extractedRoot, INSTALL_MARKER), `${JSON.stringify(marker, null, 2)}\n`, "utf8");
     await fs.rename(extractedRoot, target);

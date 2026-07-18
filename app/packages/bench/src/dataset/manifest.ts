@@ -17,6 +17,17 @@ export const datasetManifestSchema = Type.Object(
     id: Type.String({ pattern: DATASET_ID_PATTERN }),
     revision: Type.String({ pattern: "^r[1-9][0-9]*$" }),
     kind: Type.Union([Type.Literal("single-shot"), Type.Literal("episode")]),
+    status: Type.Optional(Type.Union([Type.Literal("pilot"), Type.Literal("production")])),
+    modes: Type.Optional(
+      Type.Array(Type.Union([Type.Literal("blind"), Type.Literal("live")]), {
+        minItems: 1,
+        maxItems: 2,
+        uniqueItems: true,
+      }),
+    ),
+    cohort: Type.Optional(
+      Type.Union([Type.Literal("live-2026"), Type.Literal("blind-anonymous")]),
+    ),
     visibility: Type.Literal("private"),
     repository: Type.String({ pattern: REPOSITORY_PATTERN }),
     release: Type.Object(

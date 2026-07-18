@@ -7,6 +7,12 @@ import { runBackfillNews } from "./generate/backfillPipeline.js";
 import type { NewsSourceMode } from "./generate/backfillPipeline.js";
 import { fetchArchiveFileLive, readArchiveCsvLive } from "./generate/archiveSource.js";
 import { generateEpisodeCase } from "./episode/generate.js";
+import {
+  buildEpisodeDataset,
+  finalizeEpisodeDataset,
+  hydrateLiveEpisodeNewsFromCache,
+} from "./episode/dataset.js";
+import { loadEpisodeDatasetPlan } from "./episode/datasetPlan.js";
 import { auditEpisodeQuestionLive } from "./episode/audit.js";
 import { readEpisodeAnswers } from "./episode/results.js";
 import {
@@ -32,6 +38,7 @@ import { runScore } from "./score/score.js";
 const SUBCOMMANDS = [
   "generate",
   "generate-episode-case",
+  "generate-episode-dataset",
   "verify-episode-case",
   "run",
   "baseline",
@@ -49,6 +56,8 @@ Commands:
   generate       Build benchmark question datasets
   generate-episode-case
                  Build one multi-timeframe episode case (1h/day/week)
+  generate-episode-dataset
+                 Build and audit a planned live or anonymous-blind Episode cohort
   verify-episode-case
                  Audit one episode case against fresh Longbridge CLI data
   run            (moved) drive models against the question bank — run from app/pro
@@ -340,6 +349,43 @@ async function runGenerateEpisodeCaseCommand(argv: string[], paths: DatasetPaths
   process.stdout.write(`\nwritten: ${result.file}\n`);
 }
 
+function parseGenerateEpisodeDatasetArgs(argv: string[]): { planFile: string; fresh: boolean } {
+  let planFile: string | undefined;
+  let fresh = false;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--plan") {
+      planFile = argv[++i];
+      continue;
+    }
+    if (arg === "--fresh") {
+      fresh = true;
+      continue;
+    }
+    throw new Error(`unknown generate-episode-dataset option: ${arg}`);
+  }
+  if (!planFile) throw new Error("--plan is required");
+  return { planFile, fresh };
+}
+
+async function runGenerateEpisodeDatasetCommand(argv: string[], paths: DatasetPaths): Promise<void> {
+  const args = parseGenerateEpisodeDatasetArgs(argv);
+  const plan = await loadEpisodeDatasetPlan(args.planFile);
+  await buildEpisodeDataset({
+    plan,
+    datasetsRoot: paths.datasetsRoot,
+    sourceCacheRoot: paths.sourceCacheRoot,
+    fresh: args.fresh,
+    fetchKlineHistory: fetchKlineHistoryLive,
+    log: (line) => process.stdout.write(`${line}\n`),
+  });
+  await hydrateLiveEpisodeNewsFromCache(plan, paths.datasetsRoot, paths.sourceCacheRoot);
+  const quality = await finalizeEpisodeDataset(plan, paths.datasetsRoot);
+  process.stdout.write(
+    `\ndataset ${plan.id}: ${quality.cases.length} ${plan.cohort} cases, quality ${quality.passed ? "PASS" : "FAIL"}\n`,
+  );
+}
+
 interface VerifyEpisodeCaseArgs {
   datasetVersion: string;
   bank: string;
@@ -623,6 +669,7 @@ async function main(argv: string[]): Promise<void> {
   const handlers: Partial<Record<Subcommand, (argv: string[], paths: DatasetPaths) => Promise<void>>> = {
     generate: runGenerateCommand,
     "generate-episode-case": runGenerateEpisodeCaseCommand,
+    "generate-episode-dataset": runGenerateEpisodeDatasetCommand,
     "verify-episode-case": runVerifyEpisodeCaseCommand,
     run: async () => runRunCommand(),
     baseline: runBaselineCommand,
