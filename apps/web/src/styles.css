@@ -1168,6 +1168,8 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
   border-radius: var(--radius);
 }
 .icon-action:hover { color: var(--text-primary); background: var(--bg-hover); }
+.quickbar-trial { color: var(--accent); }
+.quickbar-trial:hover { color: var(--accent); }
 .icon-action--locked { position: relative; opacity: 0.55; }
 .icon-action--locked:hover { opacity: 1; }
 .icon-action-lock-badge {
@@ -1715,7 +1717,11 @@ a.zone-item:hover { text-decoration: none; background: var(--bg-hover); }
 .license-input-row .input { min-width: 0; flex: 1; }
 .license-invalid-notice { color: var(--down); }
 .license-expired-notice { color: var(--accent); }
-.license-subscribe-link { color: var(--accent); font-size: var(--fs-sm); }
+.license-subscribe-link {
+  align-self: flex-start; padding: 0; background: none; border: none; cursor: pointer;
+  color: var(--accent); font-size: var(--fs-sm);
+}
+.license-subscribe-link:hover { text-decoration: underline; }
 
 .license-modal-panel { width: min(440px, 100%); }
 .license-paywall { display: flex; flex-direction: column; gap: 16px; }

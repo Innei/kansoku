@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Library, MessageCircle, Settings } from "lucide-react";
+import { Library, MessageCircle, Settings, Sparkles } from "lucide-react";
+import { useCapabilities } from "../../capabilitiesStore";
+import { openLicenseModal } from "../../licenseModalStore";
 import { normalizeSymbol } from "../../lib/symbol";
 import { navigate } from "../../router";
 import { listRecentSymbols } from "../../recentCharts";
@@ -13,6 +15,7 @@ export function QuickBar({
   showGlobalActions?: boolean;
 }) {
   const [input, setInput] = useState("");
+  const { pro, licensed } = useCapabilities();
   const shortcutSet = new Set(shortcuts);
   const recent = listRecentSymbols().filter((s) => !shortcutSet.has(s.symbol));
 
@@ -51,6 +54,17 @@ export function QuickBar({
       )}
       {showGlobalActions ? (
         <span className="quickbar-actions">
+          {pro && !licensed ? (
+            <button
+              type="button"
+              className="icon-action quickbar-trial"
+              aria-label="Kansoku AI"
+              title="Kansoku AI · 免费试用 7 天"
+              onClick={() => openLicenseModal("guard")}
+            >
+              <Sparkles size={16} />
+            </button>
+          ) : null}
           <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
             <Library size={16} />
           </a>

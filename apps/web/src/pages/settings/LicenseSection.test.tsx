@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetCapabilitiesStoreForTests } from "../../capabilitiesStore";
+import { getLicenseModalStateForTests, resetLicenseModalStoreForTests } from "../../licenseModalStore";
 
 const capabilitiesGet = vi.fn();
 const subscribeUrlGet = vi.fn();
@@ -32,6 +33,7 @@ describe("LicenseSection", () => {
   afterEach(() => {
     cleanup();
     resetCapabilitiesStoreForTests();
+    resetLicenseModalStoreForTests();
     capabilitiesGet.mockReset();
     subscribeUrlGet.mockReset();
     activate.mockReset();
@@ -57,6 +59,19 @@ describe("LicenseSection", () => {
 
     expect(await screen.findByText("还没有授权码？免费试用 7 天")).toBeTruthy();
     expect(screen.queryByText("还没有授权码？前往订阅")).toBeNull();
+  });
+
+  it("opens the license paywall modal from the subscribe entry instead of direct checkout", async () => {
+    capabilitiesGet.mockResolvedValue({ pro: true, licensed: false, license: { state: "unlicensed" } });
+    subscribeUrlGet.mockResolvedValue({ subscribeUrl: "https://buy.example.com", trialDays: 7 });
+
+    renderWithClient(<LicenseSection />);
+
+    const entry = await screen.findByText("还没有授权码？免费试用 7 天");
+    expect(entry.closest("a")).toBeNull();
+    fireEvent.click(entry);
+
+    expect(getLicenseModalStateForTests()).toEqual({ open: true, trigger: "guard" });
   });
 
   it("shows the status row and deactivate button when licensed", async () => {

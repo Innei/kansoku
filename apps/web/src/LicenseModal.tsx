@@ -9,7 +9,7 @@ const FEATURES = [
   { name: "研究库 AI", desc: "AI 刷新研究文档、AI 编辑审阅、与研究资料对话" },
 ];
 
-function Paywall({ notice, onActivated }: { notice?: "invalid" | "expired"; onActivated: () => void }) {
+export function Paywall({ notice, onActivated }: { notice?: "invalid" | "expired"; onActivated: () => void }) {
   const subscribe = useSubscribeInfo();
   const [showActivate, setShowActivate] = useState(notice !== undefined);
 
