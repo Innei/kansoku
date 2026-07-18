@@ -14,6 +14,8 @@ export interface LicenseRecord {
   deviceName: string;
   lastValidatedAt: string;
   lastOutcome: LicenseOutcome;
+  bundleKey?: string;
+  keyId?: string;
 }
 
 export interface LicenseStore {

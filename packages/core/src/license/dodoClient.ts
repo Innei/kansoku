@@ -1,12 +1,14 @@
-import { isDodoTestMode } from "./dodoEnv.js";
-
 export interface DodoInstance {
   id: string;
+  bundleKey?: string;
+  keyId?: string;
   [key: string]: unknown;
 }
 
 export interface DodoValidateResult {
   valid: boolean;
+  bundleKey?: string;
+  keyId?: string;
 }
 
 export type DodoResult<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -25,16 +27,15 @@ export interface DodoClientOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 10_000;
-const LIVE_BASE_URL = "https://live.dodopayments.com";
-const TEST_BASE_URL = "https://test.dodopayments.com";
+const DEFAULT_LICENSE_API_URL = "https://license.kansoku.app";
 
-export function resolveDodoBaseUrl(env: NodeJS.ProcessEnv = process.env, production?: boolean): string {
-  return isDodoTestMode(env, production) ? TEST_BASE_URL : LIVE_BASE_URL;
+export function resolveLicenseApiUrl(env: NodeJS.ProcessEnv = process.env): string {
+  return env.KANSOKU_LICENSE_API_URL ?? DEFAULT_LICENSE_API_URL;
 }
 
 export function createDodoClient(opts: DodoClientOptions = {}): DodoClient {
   const fetchImpl = opts.fetch ?? globalThis.fetch;
-  const baseUrl = opts.baseUrl ?? resolveDodoBaseUrl(opts.env ?? process.env);
+  const baseUrl = opts.baseUrl ?? resolveLicenseApiUrl(opts.env ?? process.env);
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
   async function request<T>(path: string, body: Record<string, unknown>, parseJson: boolean): Promise<DodoResult<T>> {

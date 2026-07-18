@@ -1,22 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createDodoClient, resolveDodoBaseUrl } from "../src/license/dodoClient.js";
+import { createDodoClient, resolveLicenseApiUrl } from "../src/license/dodoClient.js";
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 }
 
-describe("resolveDodoBaseUrl", () => {
-  it("defaults dev hosts to test and production hosts to live", () => {
-    expect(resolveDodoBaseUrl({} as NodeJS.ProcessEnv, false)).toBe("https://test.dodopayments.com");
-    expect(resolveDodoBaseUrl({} as NodeJS.ProcessEnv, true)).toBe("https://live.dodopayments.com");
+describe("resolveLicenseApiUrl", () => {
+  it("defaults to the placeholder Worker URL when the env var is unset", () => {
+    expect(resolveLicenseApiUrl({} as NodeJS.ProcessEnv)).toBe("https://license.kansoku.app");
   });
 
-  it("env flags override the host default", () => {
-    expect(resolveDodoBaseUrl({ KANSOKU_DODO_TEST: "1" } as NodeJS.ProcessEnv, true)).toBe(
-      "https://test.dodopayments.com",
-    );
-    expect(resolveDodoBaseUrl({ KANSOKU_DODO_LIVE: "1" } as NodeJS.ProcessEnv, false)).toBe(
-      "https://live.dodopayments.com",
+  it("uses KANSOKU_LICENSE_API_URL when set", () => {
+    expect(resolveLicenseApiUrl({ KANSOKU_LICENSE_API_URL: "https://staging.example.com" } as NodeJS.ProcessEnv)).toBe(
+      "https://staging.example.com",
     );
   });
 });
@@ -45,6 +41,24 @@ describe("dodoClient", () => {
     const result = await client.validate({ licenseKey: "lic_1", instanceId: "lki_abc" });
 
     expect(result).toEqual({ ok: true, data: { valid: false } });
+  });
+
+  it("activate surfaces bundleKey/keyId appended by the Worker", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(201, { id: "lki_abc", bundleKey: "b".repeat(64), keyId: "key-1" }));
+    const client = createDodoClient({ fetch: fetchMock, baseUrl: "https://worker.example" });
+
+    const result = await client.activate({ licenseKey: "lic_1", name: "my-mac" });
+
+    expect(result).toEqual({ ok: true, data: { id: "lki_abc", bundleKey: "b".repeat(64), keyId: "key-1" } });
+  });
+
+  it("validate surfaces bundleKey/keyId appended by the Worker when valid", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { valid: true, bundleKey: "b".repeat(64), keyId: "key-1" }));
+    const client = createDodoClient({ fetch: fetchMock, baseUrl: "https://worker.example" });
+
+    const result = await client.validate({ licenseKey: "lic_1", instanceId: "lki_abc" });
+
+    expect(result).toEqual({ ok: true, data: { valid: true, bundleKey: "b".repeat(64), keyId: "key-1" } });
   });
 
   it("deactivate posts license_key/instance_id and does not require a JSON body", async () => {

@@ -57,4 +57,13 @@ describe("licenseStore", () => {
     store.clear();
     expect(store.read()).toBeNull();
   });
+
+  it("round-trips bundleKey/keyId, encrypted at rest", () => {
+    const withKey: LicenseRecord = { ...record, bundleKey: "b".repeat(64), keyId: "key-1" };
+    store.write(withKey);
+    expect(store.read()).toEqual(withKey);
+
+    const row = db.select().from(providerCredentials).all()[0];
+    expect(row.secret).not.toContain(withKey.bundleKey);
+  });
 });

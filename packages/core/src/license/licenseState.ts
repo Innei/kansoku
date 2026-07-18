@@ -65,6 +65,8 @@ export function createLicenseManager(deps: LicenseManagerDeps): LicenseManager {
         deviceName,
         lastValidatedAt: new Date(deps.now()).toISOString(),
         lastOutcome: "success",
+        bundleKey: result.data.bundleKey,
+        keyId: result.data.keyId,
       });
       return { activated: true };
     },
@@ -90,10 +92,16 @@ export function createLicenseManager(deps: LicenseManagerDeps): LicenseManager {
         return;
       }
       if (!result.data.valid) {
-        deps.store.write({ ...record, lastOutcome: "invalid" });
+        deps.store.write({ ...record, lastOutcome: "invalid", bundleKey: undefined, keyId: undefined });
         return;
       }
-      deps.store.write({ ...record, lastValidatedAt: new Date(deps.now()).toISOString(), lastOutcome: "success" });
+      deps.store.write({
+        ...record,
+        lastValidatedAt: new Date(deps.now()).toISOString(),
+        lastOutcome: "success",
+        bundleKey: result.data.bundleKey ?? record.bundleKey,
+        keyId: result.data.keyId ?? record.keyId,
+      });
     },
   };
 }

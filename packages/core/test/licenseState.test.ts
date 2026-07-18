@@ -149,8 +149,27 @@ describe("licenseState activate", () => {
       deviceName: "my-mac",
       lastValidatedAt: new Date(now()).toISOString(),
       lastOutcome: "success",
+      bundleKey: undefined,
+      keyId: undefined,
     });
     expect(manager.getLicenseSnapshot().state).toBe("licensed");
+  });
+
+  it("saves bundleKey/keyId from the Worker response on activate success", async () => {
+    const client = fakeClient({
+      activate: vi.fn(
+        async () => ({ ok: true, data: { id: "lki_new", bundleKey: "b".repeat(64), keyId: "key-1" } }) as DodoResult<{
+          id: string;
+          bundleKey: string;
+          keyId: string;
+        }>,
+      ),
+    });
+    const { manager, store } = harness({ client, hostname: () => "my-mac" });
+
+    await manager.activate("lic_1234567890");
+
+    expect(store.read()).toMatchObject({ bundleKey: "b".repeat(64), keyId: "key-1" });
   });
 
   it("does not write the store when Dodo activate fails", async () => {
@@ -172,6 +191,16 @@ describe("licenseState deactivate", () => {
     lastValidatedAt: "2026-07-14T00:00:00.000Z",
     lastOutcome: "success",
   };
+
+  it("clears bundleKey/keyId along with the rest of the record on deactivate", async () => {
+    const recordWithKey: LicenseRecord = { ...record, bundleKey: "b".repeat(64), keyId: "key-1" };
+    const client = fakeClient({ deactivate: vi.fn(async () => ({ ok: true, data: undefined }) as DodoResult<void>) });
+    const { manager, store } = harness({ store: fakeStore(recordWithKey), client });
+
+    await manager.deactivate();
+
+    expect(store.read()).toBeNull();
+  });
 
   it("calls Dodo deactivate and clears the store on success", async () => {
     const client = fakeClient({ deactivate: vi.fn(async () => ({ ok: true, data: undefined }) as DodoResult<void>) });
@@ -285,5 +314,58 @@ describe("licenseState revalidate", () => {
 
     expect(store.read()).toEqual({ ...invalidRecord, lastValidatedAt: new Date(now()).toISOString(), lastOutcome: "success" });
     expect(manager.getLicenseSnapshot().state).toBe("licensed");
+  });
+
+  it("refreshes bundleKey/keyId when the revalidate response carries them (recovery after machine swap/DB wipe)", async () => {
+    const recordWithoutKey: LicenseRecord = { ...record };
+    const now = () => Date.parse("2026-07-15T00:00:00.000Z");
+    const client = fakeClient({
+      validate: vi.fn(
+        async () => ({ ok: true, data: { valid: true, bundleKey: "b".repeat(64), keyId: "key-2" } }) as DodoResult<{
+          valid: boolean;
+          bundleKey: string;
+          keyId: string;
+        }>,
+      ),
+    });
+    const { manager, store } = harness({ store: fakeStore({ ...recordWithoutKey }), client, now });
+
+    await manager.revalidate();
+
+    expect(store.read()).toMatchObject({ bundleKey: "b".repeat(64), keyId: "key-2" });
+  });
+
+  it("keeps the existing bundleKey when a revalidate success response omits it", async () => {
+    const recordWithKey: LicenseRecord = { ...record, bundleKey: "b".repeat(64), keyId: "key-1" };
+    const client = fakeClient({ validate: vi.fn(async () => ({ ok: true, data: { valid: true } }) as DodoResult<{ valid: boolean }>) });
+    const { manager, store } = harness({ store: fakeStore({ ...recordWithKey }), client });
+
+    await manager.revalidate();
+
+    expect(store.read()).toMatchObject({ bundleKey: "b".repeat(64), keyId: "key-1" });
+  });
+
+  it("clears bundleKey/keyId on a valid:false revalidate", async () => {
+    const recordWithKey: LicenseRecord = { ...record, bundleKey: "b".repeat(64), keyId: "key-1" };
+    const client = fakeClient({ validate: vi.fn(async () => ({ ok: true, data: { valid: false } }) as DodoResult<{ valid: boolean }>) });
+    const { manager, store } = harness({ store: fakeStore({ ...recordWithKey }), client });
+
+    await manager.revalidate();
+
+    const stored = store.read();
+    expect(stored?.bundleKey).toBeUndefined();
+    expect(stored?.keyId).toBeUndefined();
+    expect(stored?.lastOutcome).toBe("invalid");
+  });
+
+  it("does not touch bundleKey/keyId on a network failure (offline grace stays usable)", async () => {
+    const recordWithKey: LicenseRecord = { ...record, bundleKey: "b".repeat(64), keyId: "key-1" };
+    const now = () => Date.parse(record.lastValidatedAt) + DAY_MS;
+    const client = fakeClient({ validate: vi.fn(async () => ({ ok: false, error: "timeout" }) as DodoResult<{ valid: boolean }>) });
+    const { manager, store } = harness({ store: fakeStore({ ...recordWithKey }), client, now });
+
+    await manager.revalidate();
+
+    expect(store.read()).toMatchObject({ bundleKey: "b".repeat(64), keyId: "key-1" });
   });
 });

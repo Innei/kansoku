@@ -2,6 +2,7 @@ packages:
   - packages/core
   - packages/bench
   - packages/pro-api
+  - apps/license-worker
   - apps/pro
   - apps/server
   - apps/web
@@ -15,6 +16,8 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   protobufjs: false
+  sharp: true
+  workerd: true
 minimumReleaseAgeExclude:
   - '@earendil-works/pi-ai@0.80.6'
   - '@earendil-works/pi-agent-core@0.80.6'
