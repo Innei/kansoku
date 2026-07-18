@@ -1,7 +1,7 @@
 # Bench v2 pilot 数据集设计
 
 日期：2026-07-18  
-状态：两组 pilot 已生成并通过发布前审计，等待不可变 Release 封装。
+状态：两组 pilot 已生成、通过审计并发布为不可变 prerelease。
 
 ## 1. 决策
 
@@ -123,3 +123,12 @@ pnpm --filter @kansoku/bench cli generate-episode-dataset \
 - Blind 的 provenance 和质量报告属于评估方私有审计材料；模型运行时只加载 `swing/*.json`，QuickJS 沙箱没有文件系统或网络能力。
 
 正式 v2 数据集发布前，应扩大标的、行业、波动状态和 cutoff 分布，并补齐可按虚拟时钟逐步公开的 point-in-time 事件流。
+
+## 9. 发布结果
+
+| Dataset | Release | 大小 | SHA-256 |
+| --- | --- | ---: | --- |
+| `v2-live-pilot@r1` | `dataset-v2-live-pilot-r1` | 280,770 bytes | `0bcedc42aa259f3511cce7e71a20497ddd6a39a630212301a52741b4ec539504` |
+| `v2-blind-pilot@r1` | `dataset-v2-blind-pilot-r1` | 433,721 bytes | `a3d1d3d4930e3f34acb259097178c369fdee31dd4164cd1b954959a7dc7ac68b` |
+
+两个资产均从 GitHub Release 重新下载并复核字节数、SHA-256、压缩包根目录、bank 题数和质量报告。生成器固定为 `kansoku@36987d43be22df9fd81b341f87292c2e3ad8e4aa`。

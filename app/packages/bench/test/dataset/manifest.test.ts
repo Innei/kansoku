@@ -23,6 +23,18 @@ describe("dataset manifests", () => {
     expect(manifest.banks.swing).toBeGreaterThan(0);
   });
 
+  it("loads pilot mode and cohort restrictions", async () => {
+    const live = await loadDatasetManifest("v2-live-pilot");
+    const blind = await loadDatasetManifest("v2-blind-pilot");
+
+    expect(live).toMatchObject({ status: "pilot", modes: ["live"], cohort: "live-2026" });
+    expect(blind).toMatchObject({
+      status: "pilot",
+      modes: ["blind"],
+      cohort: "blind-anonymous",
+    });
+  });
+
   it("rejects ids that could escape the manifest directory", async () => {
     await expect(loadDatasetManifest("../v1")).rejects.toThrow(DatasetManifestError);
   });
