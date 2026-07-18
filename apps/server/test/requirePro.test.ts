@@ -28,6 +28,7 @@ describe("requirePro guard", () => {
       pro: false,
       licensed: false,
       license: { state: "unlicensed" },
+      hasEncBundle: false,
     });
   });
 });
