@@ -5,6 +5,7 @@ import { tsukiRequest } from "./helpers.js";
 function fakeManager(overrides: Partial<LicenseManager> = {}): LicenseManager {
   return {
     getLicenseSnapshot: () => ({ state: "unlicensed" }),
+    getBundleKey: () => undefined,
     activate: async () => ({ activated: true }),
     deactivate: async () => {},
     revalidate: async () => {},

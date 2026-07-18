@@ -17,6 +17,7 @@ export type ActivateResult = { activated: true } | { activated: false; error: st
 
 export interface LicenseManager {
   getLicenseSnapshot(): LicenseSnapshot;
+  getBundleKey(): string | undefined;
   activate(key: string): Promise<ActivateResult>;
   deactivate(): Promise<void>;
   revalidate(): Promise<void>;
@@ -53,6 +54,10 @@ export function createLicenseManager(deps: LicenseManagerDeps): LicenseManager {
   return {
     getLicenseSnapshot(): LicenseSnapshot {
       return snapshotFromRecord(deps.store.read(), deps.now());
+    },
+
+    getBundleKey(): string | undefined {
+      return deps.store.read()?.bundleKey;
     },
 
     async activate(key: string): Promise<ActivateResult> {
@@ -121,6 +126,10 @@ export function initLicenseManager(
   });
   active = manager;
   return manager;
+}
+
+export function getActiveBundleKey(): string | undefined {
+  return active?.getBundleKey();
 }
 
 export function getLicenseManager(): LicenseManager {

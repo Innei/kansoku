@@ -12,6 +12,7 @@ function fakeProModule(overrides: Partial<ProModule> = {}): ProModule {
 function fakeLicenseManager(overrides: Partial<LicenseManager> = {}): LicenseManager {
   return {
     getLicenseSnapshot: () => ({ state: "unlicensed" }),
+    getBundleKey: () => undefined,
     activate: async () => ({ activated: true }),
     deactivate: async () => ({}) as never,
     revalidate: async () => {},

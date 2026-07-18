@@ -5,6 +5,7 @@ import type { LicenseManager } from "../src/license/licenseState.js";
 function fakeManager(revalidate: () => Promise<void>): LicenseManager {
   return {
     getLicenseSnapshot: () => ({ state: "unlicensed" }),
+    getBundleKey: () => undefined,
     activate: async () => ({ activated: true }),
     deactivate: async () => {},
     revalidate,
