@@ -1,11 +1,19 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const navigate = vi.fn();
+const openLicenseModal = vi.fn();
+const capabilities = { pro: false, licensed: false };
 
 vi.mock("../../router", () => ({
   navigate: (...args: unknown[]) => navigate(...args),
+}));
+vi.mock("../../capabilitiesStore", () => ({
+  useCapabilities: () => capabilities,
+}));
+vi.mock("../../licenseModalStore", () => ({
+  openLicenseModal: (...args: unknown[]) => openLicenseModal(...args),
 }));
 
 const { QuickBar } = await import("./QuickBar");
@@ -13,6 +21,9 @@ const { QuickBar } = await import("./QuickBar");
 afterEach(() => {
   cleanup();
   navigate.mockReset();
+  openLicenseModal.mockReset();
+  capabilities.pro = false;
+  capabilities.licensed = false;
 });
 
 describe("QuickBar AI entries", () => {
@@ -34,5 +45,28 @@ describe("QuickBar AI entries", () => {
     expect(screen.queryByLabelText("研究库")).toBeNull();
     expect(screen.queryByLabelText("AI 对话")).toBeNull();
     expect(screen.queryByLabelText("设置")).toBeNull();
+  });
+
+  it("shows the trial icon only when pro is present but unlicensed, opening the paywall", () => {
+    capabilities.pro = true;
+    render(<QuickBar shortcuts={[]} />);
+
+    const trial = screen.getByLabelText("Kansoku AI");
+    fireEvent.click(trial);
+
+    expect(openLicenseModal).toHaveBeenCalledWith("guard");
+  });
+
+  it("hides the trial icon when licensed and on free builds", () => {
+    capabilities.pro = true;
+    capabilities.licensed = true;
+    const { unmount } = render(<QuickBar shortcuts={[]} />);
+    expect(screen.queryByLabelText("Kansoku AI")).toBeNull();
+    unmount();
+
+    capabilities.pro = false;
+    capabilities.licensed = false;
+    render(<QuickBar shortcuts={[]} />);
+    expect(screen.queryByLabelText("Kansoku AI")).toBeNull();
   });
 });

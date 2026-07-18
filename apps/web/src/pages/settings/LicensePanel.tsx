@@ -3,6 +3,7 @@ import { errorMessage } from "../../api";
 import { useQuery } from "../../apiHooks";
 import { refreshCapabilities, useCapabilities } from "../../capabilitiesStore";
 import { client } from "../../client";
+import { openLicenseModal } from "../../licenseModalStore";
 import { Badge, Button, Input, openModal } from "../../ui";
 
 function activateErrorMessage(raw: string): string {
@@ -113,9 +114,9 @@ export function ActivateForm({
       </div>
       {error ? <div className="settings-test-result settings-test-result--fail">{error}</div> : null}
       {showSubscribeLink && subscribeData?.subscribeUrl ? (
-        <a className="license-subscribe-link" href={subscribeData.subscribeUrl} target="_blank" rel="noreferrer">
+        <button type="button" className="license-subscribe-link" onClick={() => openLicenseModal("guard")}>
           还没有授权码？{subscribeData.trialDays ? `免费试用 ${subscribeData.trialDays} 天` : "前往订阅"}
-        </a>
+        </button>
       ) : null}
     </div>
   );
