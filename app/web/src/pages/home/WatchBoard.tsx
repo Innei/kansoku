@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Lock, RadioTower } from "lucide-react";
 import type { OverviewBoard, OverviewRow } from "../../../../shared/types";
 import { errorMessage } from "../../api";
+import { useCapabilities } from "../../capabilitiesStore";
 import { client } from "../../client";
 import { useFeatureGuard } from "../../featureGuard";
 import { fmt, signed } from "../../format";
@@ -24,9 +25,11 @@ function FollowToggle({
   initialFollowing: boolean;
   compact?: boolean;
 }) {
+  const { pro } = useCapabilities();
   const { following, busy, statusError, change } = useSymbolFollow({ symbol, initialFollowing });
   const { locked, guard } = useFeatureGuard();
   const active = following ?? initialFollowing;
+  if (pro !== true) return null;
   const className = [
     "symbol-card-follow",
     active && "symbol-card-follow--active",

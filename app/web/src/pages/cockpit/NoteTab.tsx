@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { ReactNode } from "react";
 import { Lock, Maximize2 } from "lucide-react";
 import { Button, Empty, ErrorBox, MarketTime, Spinner, TimeAgo } from "../../ui";
+import { useCapabilities } from "../../capabilitiesStore";
 import { useFeatureGuard } from "../../featureGuard";
 import { marketOfSymbol } from "../../lib/market";
 import { Markdown, openMarkdownModal } from "./markdown";
@@ -14,6 +15,7 @@ export function NoteTab({ symbol }: { symbol: string }) {
   const onNoteReady = useCallback(() => reload(), [reload]);
   const deepDive = useDeepDive(symbol, onNoteReady);
   const { locked, guard } = useFeatureGuard();
+  const { pro } = useCapabilities();
 
   const confirmAndStart = () => {
     const confirmed = window.confirm(
@@ -39,16 +41,17 @@ export function NoteTab({ symbol }: { symbol: string }) {
     );
   }
 
-  const button = (
-    <Button
-      onClick={locked ? () => guard(() => {}) : confirmAndStart}
-      disabled={deepDive.pending || deepDive.running || deepDive.disabled}
-    >
-      {(deepDive.pending || deepDive.running) && <Spinner />}
-      {locked && <Lock size={13} />}
-      {buttonLabel}
-    </Button>
-  );
+  const button =
+    pro === true ? (
+      <Button
+        onClick={locked ? () => guard(() => {}) : confirmAndStart}
+        disabled={deepDive.pending || deepDive.running || deepDive.disabled}
+      >
+        {(deepDive.pending || deepDive.running) && <Spinner />}
+        {locked && <Lock size={13} />}
+        {buttonLabel}
+      </Button>
+    ) : null;
 
   const openFullscreen = () => {
     if (!note?.markdown) return;
@@ -75,9 +78,7 @@ export function NoteTab({ symbol }: { symbol: string }) {
       ) : (
         <>
           <Empty>还没有 {symbol} 的研究笔记</Empty>
-          <div className="note-tab-header note-tab-header--center">
-            {button}
-          </div>
+          {button && <div className="note-tab-header note-tab-header--center">{button}</div>}
           {deepDive.inlineMessage && <span className="ai-hint">{deepDive.inlineMessage}</span>}
           {deepDive.successNote && <span className="ai-hint">{deepDive.successNote}</span>}
         </>

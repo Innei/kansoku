@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Library, MessageCircle, Settings } from "lucide-react";
-import { useCapabilities } from "../../capabilitiesStore";
 import { normalizeSymbol } from "../../lib/symbol";
 import { navigate } from "../../router";
 import { listRecentSymbols } from "../../recentCharts";
@@ -14,7 +13,6 @@ export function QuickBar({
   showGlobalActions?: boolean;
 }) {
   const [input, setInput] = useState("");
-  const { pro } = useCapabilities();
   const shortcutSet = new Set(shortcuts);
   const recent = listRecentSymbols().filter((s) => !shortcutSet.has(s.symbol));
 
@@ -53,16 +51,12 @@ export function QuickBar({
       )}
       {showGlobalActions ? (
         <span className="quickbar-actions">
-          {pro && (
-            <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
-              <Library size={16} />
-            </a>
-          )}
-          {pro && (
-            <a className="icon-action" href="/chat" aria-label="AI 对话" title="AI 对话">
-              <MessageCircle size={16} />
-            </a>
-          )}
+          <a className="icon-action" href="/research?view=journal" aria-label="研究库" title="研究库">
+            <Library size={16} />
+          </a>
+          <a className="icon-action" href="/chat" aria-label="AI 对话" title="AI 对话">
+            <MessageCircle size={16} />
+          </a>
           <a className="icon-action" href="/settings" aria-label="设置" title="设置">
             <Settings size={16} />
           </a>

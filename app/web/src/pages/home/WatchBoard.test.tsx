@@ -84,15 +84,22 @@ describe("WatchBoard follow toggle license gate", () => {
     expect(getLicenseModalStateForTests().open).toBe(false);
   });
 
-  it("still attempts the direct call for a community build (pro:false), without a locked badge or modal", async () => {
+  it("hides the follow toggle for a community build (pro:false) while the card still renders", async () => {
     capabilities = { pro: false, licensed: false };
     startFollow.mockResolvedValue({ following: true });
     renderWithClient(<WatchBoard board={board} error={null} compact={false} />);
 
-    const toggle = await screen.findByLabelText("持续跟进 MRVL.US 的 AI 点评");
-    fireEvent.click(toggle);
-
-    await waitFor(() => expect(startFollow).toHaveBeenCalledWith({ sym: "MRVL.US" }));
+    expect(await screen.findByText("MRVL.US")).toBeTruthy();
+    expect(screen.queryByLabelText("持续跟进 MRVL.US 的 AI 点评")).toBeNull();
+    expect(startFollow).not.toHaveBeenCalled();
     expect(getLicenseModalStateForTests().open).toBe(false);
+  });
+
+  it("hides the follow toggle while capabilities are still loading (pro:null)", async () => {
+    capabilities = { pro: null, licensed: false };
+    renderWithClient(<WatchBoard board={board} error={null} compact={false} />);
+
+    expect(await screen.findByText("MRVL.US")).toBeTruthy();
+    expect(screen.queryByLabelText("持续跟进 MRVL.US 的 AI 点评")).toBeNull();
   });
 });

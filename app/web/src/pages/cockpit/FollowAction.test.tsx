@@ -67,17 +67,24 @@ describe("FollowAction license gate", () => {
     expect(getLicenseModalStateForTests().open).toBe(false);
   });
 
-  it("still attempts the direct call for a community build (pro:false), without a locked badge or modal", async () => {
+  it("renders nothing for a community build (pro:false) and fires no follow query", async () => {
     capabilities = { pro: false, licensed: false };
     followStatus.mockResolvedValue({ following: false });
-    startFollow.mockResolvedValue({ following: true });
     renderWithClient(<FollowAction symbol="MRVL.US" />);
 
-    const toggle = await screen.findByLabelText("持续跟进 AI 点评");
-    await waitFor(() => expect(toggle.getAttribute("data-disabled")).toBeNull());
-    fireEvent.click(toggle);
-
-    expect(startFollow).toHaveBeenCalledWith({ sym: "MRVL.US" });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.queryByLabelText("持续跟进 AI 点评")).toBeNull();
+    expect(followStatus).not.toHaveBeenCalled();
+    expect(startFollow).not.toHaveBeenCalled();
     expect(getLicenseModalStateForTests().open).toBe(false);
+  });
+
+  it("renders nothing while capabilities are still loading (pro:null)", async () => {
+    capabilities = { pro: null, licensed: false };
+    renderWithClient(<FollowAction symbol="MRVL.US" />);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.queryByLabelText("持续跟进 AI 点评")).toBeNull();
+    expect(followStatus).not.toHaveBeenCalled();
   });
 });

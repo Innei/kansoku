@@ -111,6 +111,31 @@ describe("ResearchAssistant license gate", () => {
     expect(getChat).not.toHaveBeenCalled();
   });
 
+  it("renders the browse card only for a community build (pro:false), no locked notice, zero AI fetches", async () => {
+    capabilities = { pro: false, licensed: false };
+
+    renderWithClient(
+      <ResearchAssistant
+        document={document}
+        selected={document}
+        related={related}
+        onSelect={vi.fn()}
+        onDocumentChanged={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/关联资料/)).toBeTruthy();
+    expect(screen.queryByText(/研究库 AI/)).toBeNull();
+    expect(screen.queryByText("订阅解锁")).toBeNull();
+    expect(screen.queryByLabelText("刷新研究")).toBeNull();
+    expect(screen.queryByTestId("chat-composer")).toBeNull();
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(listEdits).not.toHaveBeenCalled();
+    expect(getRefresh).not.toHaveBeenCalled();
+    expect(getChat).not.toHaveBeenCalled();
+  });
+
   it("renders the real AI panel and fires the AI-subroute fetches when licensed", async () => {
     capabilities = { pro: true, licensed: true };
 

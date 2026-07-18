@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight, FileDiff, History, RefreshCw, Square } from "lucide-react";
 import type { ResearchDocument, ResearchDocumentMeta, ResearchEditProposal } from "../../../../packages/core/src/contract";
 import { useQuery } from "../../apiHooks";
+import { useCapabilities } from "../../capabilitiesStore";
 import { client } from "../../client";
 import { useFeatureGuard } from "../../featureGuard";
 import { MarketTime, openModal, Spinner } from "../../ui";
@@ -186,17 +187,19 @@ export function ResearchAssistant({
   onDocumentChanged: (document?: ResearchDocument) => void;
 }) {
   const { locked } = useFeatureGuard();
-  const conversation = useResearchChatSession(document.path, !locked);
+  const { pro } = useCapabilities();
+  const aiEnabled = pro === true && !locked;
+  const conversation = useResearchChatSession(document.path, aiEnabled);
   const [text, setText] = useState("");
   const previousBusyRef = useRef(false);
   const pendingCardRefs = useRef(new Map<string, HTMLButtonElement>());
   const [bannerVisible, setBannerVisible] = useState(false);
   const { data: edits, reload: reloadEdits } = useQuery<ResearchEditProposal[]>(
-    locked ? null : `research.edits:${document.path}`,
+    aiEnabled ? `research.edits:${document.path}` : null,
     () => client.research.listEdits({ path: document.path }),
     { cache: false },
   );
-  const refresh = useResearchRefresh(document.path, reloadEdits, !locked);
+  const refresh = useResearchRefresh(document.path, reloadEdits, aiEnabled);
 
   useEffect(() => {
     if (conversation.loaded && !conversation.session) conversation.ensureSuggestions();
@@ -307,6 +310,14 @@ export function ResearchAssistant({
     }
     return list;
   }, [refresh.task, pending, history, handleChanged]);
+
+  if (pro !== true) {
+    return (
+      <div className="research-assistant research-assistant--locked">
+        <RelatedMaterialsCard selected={selected} related={related} onSelect={onSelect} />
+      </div>
+    );
+  }
 
   if (locked) {
     return (

@@ -1,9 +1,16 @@
 import { Lock, RadioTower } from "lucide-react";
+import { useCapabilities } from "../../capabilitiesStore";
 import { useFeatureGuard } from "../../featureGuard";
 import { Switch } from "../../ui";
 import { useSymbolFollow } from "../../useSymbolFollow";
 
 export function FollowAction({ symbol, revision }: { symbol: string; revision?: string }) {
+  const { pro } = useCapabilities();
+  if (pro !== true) return null;
+  return <FollowControl symbol={symbol} revision={revision} />;
+}
+
+function FollowControl({ symbol, revision }: { symbol: string; revision?: string }) {
   const { following, busy, statusError, change } = useSymbolFollow({ symbol, revision });
   const { locked, guard } = useFeatureGuard();
 
