@@ -202,7 +202,16 @@ export const ipcServiceClasses = [
 - [ ] **Step 6（双门）:** Run `cd app && pnpm --filter @kansoku/core typecheck && pnpm --filter @kansoku/core test` **且** `cd app/pro && pnpm test`。Expected: 两侧全 PASS（pro 重新完整编译）。
 - [ ] **Step 7:** 双仓各自 commit：core `"feat(core): absorb AI base + free feature layer from pro"`；pro `"refactor: import AI base from core, rehome moved tests"`。
 
-### Task B2: 免费服务/控制器/IPC 搬迁 + 摘 requirePro
+### Task B2: 免费服务/控制器/IPC 搬迁 + 摘 requirePro + AI 运行时启动接线
+
+> **侦察补充（2026-07-18，B1 之后）**：
+> - pro 的四组免费 service（assistant/chat/lobehub/settings-AI）B1 后已是薄壳，全部 import 指向 core——搬迁即「移动 + import 缩短」。
+> - server 挂载点：`app/server/src/modules/app.module.ts:14` 由 `getPro()?.tsukiModules` 合并 AI 模块——free 控制器搬入 server 后改为一等模块注册，pro 的 `tsukiModules` 剩 `[ResearchModule, LicenseModule]`。
+> - desktop 合并点：`app/desktop/src/ipc/index.ts` 的 `nonAiIpcServiceClasses ⊕ getPro()?.ipcServiceClasses`——Assistant/Chat/LobeHub IPC 搬入 desktop 后加入前者，pro 的 `ipcServiceClasses` 剩 `[gateLicensedIpc(ResearchIpc,[11 AI 方法]), LicenseIpc]`。`groups.ts` 是纯名字白名单，组名不变则无需改（以 contract-parity 测试为准）。
+> - core 的 `settings.service.ts` 现经 `getPro()?.aiSettings` 委托——改为直接 import 搬入 core 的 aiSettings service；`ProModule.aiSettings` 字段与 pro-api 类型的删除留到 B4（本任务里 pro 可暂时继续导出，无消费者）。
+> - **启动接线（新子任务，纯开源构建能跑免费 AI 的关键）**：`initAiSettings` 目前只被 pro 的 `initRuntime` 调用。改为 `app/server/src/runtimeInit.ts` 在 `loadPro` **之前**无条件调用 `initAiSettings(getDb(), { secretBox: opts?.secretBox })`（pro 缺席时免费 AI 仍初始化）。
+> - **跨副本一致性（dev 下 pro 跑自己的 core 拷贝，单例按副本各一份）**：`settingsStore` 有内存缓存（Map+revision），B2 后 kernel 写设置、pro 的 scheduler 读设置，若各持缓存必失同步。沿用 watchedMarkets 的实例收养先例：host 对象新增 `aiSettingsStore`（kernel 的 active SettingsStore 实例，`getActiveSettingsStore()`），pro 的 `initRuntime` 在自己副本里照常 `initAiSettings` 后，用 `setActiveSettingsStore(host.aiSettingsStore)` 收养 kernel 实例。credentialStore/lobehub/models 为 db/文件直读或无缓存态，按副本各持无碍。pro-api 的 host 类型随之扩一个可选字段（向后兼容，旧 pro 忽略之）。
+> - reassess 路由摘 `requirePro()` 后，pro 缺席时经 `freeHooks.reassessSymbol` 返回 `{started:false}`（不 404 不崩）；真正 pro 缺席可用要等 B4 hooks 直调化——可接受的中间态。
 
 **Files:**
 - Create: `app/packages/core/src/modules/{settings-ai,chat,assistant,lobehub}/*.service.ts`（自 pro `modules/`）
