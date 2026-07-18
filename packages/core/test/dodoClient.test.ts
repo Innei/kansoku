@@ -7,7 +7,7 @@ function jsonResponse(status: number, body: unknown): Response {
 
 describe("resolveLicenseApiUrl", () => {
   it("defaults to the placeholder Worker URL when the env var is unset", () => {
-    expect(resolveLicenseApiUrl({} as NodeJS.ProcessEnv)).toBe("https://license.kansoku.app");
+    expect(resolveLicenseApiUrl({} as NodeJS.ProcessEnv)).toBe("https://kansoku-portal.innei.dev");
   });
 
   it("uses KANSOKU_LICENSE_API_URL when set", () => {

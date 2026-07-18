@@ -27,7 +27,7 @@ export interface DodoClientOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 10_000;
-const DEFAULT_LICENSE_API_URL = "https://license.kansoku.app";
+const DEFAULT_LICENSE_API_URL = "https://kansoku-portal.innei.dev";
 
 export function resolveLicenseApiUrl(env: NodeJS.ProcessEnv = process.env): string {
   return env.KANSOKU_LICENSE_API_URL ?? DEFAULT_LICENSE_API_URL;

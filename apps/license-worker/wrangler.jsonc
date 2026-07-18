@@ -8,6 +8,7 @@
   },
   "env": {
     "production": {
+      "routes": [{ "pattern": "kansoku-portal.innei.dev", "custom_domain": true }],
       "vars": {
         "DODO_BASE_URL": "https://live.dodopayments.com"
       }
