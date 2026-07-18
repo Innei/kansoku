@@ -1,10 +1,10 @@
-import { existsSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
-import { pathToFileURL } from "node:url";
-import type { ProModule } from "@kansoku/pro-api";
-import { getActiveBundleKey } from "../license/licenseState.js";
-import { loadEncryptedModule } from "./encLoader.js";
-import { registerProModule, setEncBundlePresent } from "./registry.js";
+import { existsSync } from 'node:fs';
+import { isAbsolute, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import type { ProModule } from '@kansoku/pro-api';
+import { getActiveBundleKey } from '../license/licenseState.js';
+import { loadEncryptedModule } from './encLoader.js';
+import { registerProModule, setEncBundlePresent } from './registry.js';
 
 // Relative filesystem path to the gitignored slot rather than a bare package
 // specifier: nothing declares @kansoku/pro as a dependency (public code must
@@ -19,14 +19,14 @@ import { registerProModule, setEncBundlePresent } from "./registry.js";
 // different directory depth (the Electron main process, via tsdown), that
 // relative arithmetic breaks — such hosts must pass their own app root as
 // `appDir` (e.g. Electron's `app.getAppPath()`) instead.
-function proEntryUrl(appDir?: string, entryFile = "src/index.js"): string {
+function proEntryUrl(appDir?: string, entryFile = 'src/index.js'): string {
   if (isAbsolute(entryFile)) {
     return pathToFileURL(entryFile).href;
   }
   if (appDir) {
-    return pathToFileURL([appDir, "..", "pro", entryFile].join("/")).href;
+    return pathToFileURL([appDir, '..', 'pro', entryFile].join('/')).href;
   }
-  return ["..", "..", "..", "..", "apps", "pro", entryFile].join("/");
+  return ['..', '..', '..', '..', 'apps', 'pro', entryFile].join('/');
 }
 
 // Node's ERR_MODULE_NOT_FOUND message is "Cannot find module '<missing>' imported
@@ -37,7 +37,7 @@ function proEntryUrl(appDir?: string, entryFile = "src/index.js"): string {
 function isProEntryNotFound(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const code = (error as NodeJS.ErrnoException).code;
-  if (code !== "ERR_MODULE_NOT_FOUND" && code !== "MODULE_NOT_FOUND") return false;
+  if (code !== 'ERR_MODULE_NOT_FOUND' && code !== 'MODULE_NOT_FOUND') return false;
   const missing = /Cannot find module '([^']+)'/.exec(error.message)?.[1];
   return missing !== undefined && /\/pro\/(src|dist)\/index\.m?[jt]s$/.test(missing);
 }
@@ -48,7 +48,7 @@ function isProEntryNotFound(error: unknown): boolean {
 // node_modules. Source hosts (no appDir) never carry an enc payload.
 function proEncLayout(appDir?: string): { encPath: string; virtualDir: string } | undefined {
   if (!appDir) return undefined;
-  return { encPath: join(appDir, "pro", "pro.enc"), virtualDir: join(appDir, "pro", "__enc__") };
+  return { encPath: join(appDir, 'pro', 'pro.enc'), virtualDir: join(appDir, 'pro', '__enc__') };
 }
 
 export async function loadPro(appDir?: string, entryFile?: string): Promise<boolean> {
@@ -73,7 +73,7 @@ export async function loadPro(appDir?: string, entryFile?: string): Promise<bool
         return false;
       }
     }
-    console.info("pro slot: encrypted pro present but no bundle key, running in free mode");
+    console.info('pro slot: encrypted pro present but no bundle key, running in free mode');
   }
 
   const entryUrl = proEntryUrl(appDir, entryFile);
@@ -84,7 +84,7 @@ export async function loadPro(appDir?: string, entryFile?: string): Promise<bool
     return true;
   } catch (error) {
     if (isProEntryNotFound(error)) {
-      console.info("pro slot: @kansoku/pro not found, running in free mode");
+      console.info('pro slot: @kansoku/pro not found, running in free mode');
     } else {
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`pro slot: @kansoku/pro failed to load, running in free mode: ${message}`);

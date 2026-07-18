@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { errorMessage } from "../../api";
-import { useQuery } from "../../apiHooks";
-import { refreshCapabilities, useCapabilities } from "../../capabilitiesStore";
-import { client } from "../../client";
-import { Badge, Button, Input, openModal } from "../../ui";
+import { useState } from 'react';
+import { errorMessage } from '@web/api';
+import { useQuery } from '@web/apiHooks';
+import { refreshCapabilities, useCapabilities } from '@web/capabilitiesStore';
+import { client } from '@web/client';
+import { openLicenseModal } from '@web/licenseModalStore';
+import { Badge, Button, Input, openModal } from '@web/ui';
 
 function activateErrorMessage(raw: string): string {
-  if (/responded (401|404)/.test(raw)) return "授权码无效，请检查后重新输入";
-  if (/responded (409|422)/.test(raw)) return "此授权码的设备数已达上限，请先在其他设备停用后再试";
+  if (/responded (401|404)/.test(raw)) return '授权码无效，请检查后重新输入';
+  if (/responded (409|422)/.test(raw)) return '此授权码的设备数已达上限，请先在其他设备停用后再试';
   return `激活失败：${raw}`;
 }
 
@@ -32,13 +33,15 @@ function DeactivateConfirm({ closeModal }: { closeModal: () => void }) {
   return (
     <div className="settings-reset-confirm">
       <p>停用后本机将失去 AI 功能授权，可随时用授权码重新激活。确定继续吗？</p>
-      {error ? <div className="settings-test-result settings-test-result--fail">{error}</div> : null}
+      {error ? (
+        <div className="settings-test-result settings-test-result--fail">{error}</div>
+      ) : null}
       <div className="settings-cred-actions">
         <Button disabled={busy} onClick={closeModal}>
           取消
         </Button>
         <Button accent disabled={busy} onClick={() => void deactivate()}>
-          {busy ? "停用中…" : "确认停用"}
+          {busy ? '停用中…' : '确认停用'}
         </Button>
       </div>
     </div>
@@ -46,7 +49,7 @@ function DeactivateConfirm({ closeModal }: { closeModal: () => void }) {
 }
 
 export function useSubscribeInfo() {
-  const { data } = useQuery("settings.getSubscribeUrl", () => client.settings.getSubscribeUrl());
+  const { data } = useQuery('settings.getSubscribeUrl', () => client.settings.getSubscribeUrl());
   return data ?? null;
 }
 
@@ -55,11 +58,11 @@ export function ActivateForm({
   showSubscribeLink = true,
   onActivated,
 }: {
-  notice?: "invalid" | "expired";
+  notice?: 'invalid' | 'expired';
   showSubscribeLink?: boolean;
   onActivated?: () => void;
 }) {
-  const [key, setKey] = useState("");
+  const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const subscribeData = useSubscribeInfo();
@@ -76,7 +79,7 @@ export function ActivateForm({
         return;
       }
       const caps = await refreshCapabilities();
-      setKey("");
+      setKey('');
       // When pro doesn't hot-mount (encrypted slot, key just became available),
       // stay put so the caller re-renders into LicensePanel's licensed view,
       // which carries the restart-required notice — closing here would hide it.
@@ -91,14 +94,15 @@ export function ActivateForm({
 
   return (
     <div className="settings-time-preference license-activate-row">
-      {notice === "invalid" ? (
+      {notice === 'invalid' ? (
         <div className="settings-preference-description license-invalid-notice">
           此授权码已失效（可能是退订或更换了套餐），请重新输入有效的授权码。
         </div>
       ) : null}
-      {notice === "expired" ? (
+      {notice === 'expired' ? (
         <div className="settings-preference-description license-expired-notice">
-          授权已过期：超过 14 天未能联网验证。请检查网络连接——恢复联网后会自动重新验证；若订阅已到期，请重新订阅或输入新的授权码。
+          授权已过期：超过 14
+          天未能联网验证。请检查网络连接——恢复联网后会自动重新验证；若订阅已到期，请重新订阅或输入新的授权码。
         </div>
       ) : null}
       <div className="license-input-row">
@@ -107,26 +111,40 @@ export function ActivateForm({
           value={key}
           onChange={(e) => setKey(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") void activate();
+            if (e.key === 'Enter') void activate();
           }}
           disabled={busy}
         />
         <Button accent disabled={busy || !key.trim()} onClick={() => void activate()}>
-          {busy ? "激活中…" : "激活"}
+          {busy ? '激活中…' : '激活'}
         </Button>
       </div>
-      {error ? <div className="settings-test-result settings-test-result--fail">{error}</div> : null}
+      {error ? (
+        <div className="settings-test-result settings-test-result--fail">{error}</div>
+      ) : null}
       {showSubscribeLink && subscribeData?.subscribeUrl ? (
-        <a className="license-subscribe-link" href={subscribeData.subscribeUrl} target="_blank" rel="noreferrer">
-          还没有授权码？前往订阅
-        </a>
+        <button
+          type="button"
+          className="license-subscribe-link"
+          onClick={() => openLicenseModal('guard')}
+        >
+          还没有授权码？
+          {subscribeData.trialDays ? `免费试用 ${subscribeData.trialDays} 天` : '前往订阅'}
+        </button>
       ) : null}
     </div>
   );
 }
 
-function LicensedStatus({ state, deviceName, maskedKey, graceUntil, restartRequired, proUnavailable }: {
-  state: "licensed" | "grace";
+function LicensedStatus({
+  state,
+  deviceName,
+  maskedKey,
+  graceUntil,
+  restartRequired,
+  proUnavailable,
+}: {
+  state: 'licensed' | 'grace';
   deviceName?: string;
   maskedKey?: string;
   graceUntil?: string;
@@ -137,12 +155,16 @@ function LicensedStatus({ state, deviceName, maskedKey, graceUntil, restartRequi
     <div className="settings-time-preference license-status-row">
       <div className="settings-preference-copy">
         <div className="settings-preference-name">
-          {state === "grace" ? <Badge tone="accent">离线宽限中</Badge> : <Badge tone="up">已授权</Badge>}
+          {state === 'grace' ? (
+            <Badge tone="accent">离线宽限中</Badge>
+          ) : (
+            <Badge tone="up">已授权</Badge>
+          )}
         </div>
         <div className="settings-preference-description">
           {maskedKey ? `授权码 ${maskedKey}` : null}
           {deviceName ? ` · 设备 ${deviceName}` : null}
-          {state === "grace" && graceUntil
+          {state === 'grace' && graceUntil
             ? ` · 离线宽限至 ${new Date(graceUntil).toLocaleString()}`
             : null}
         </div>
@@ -160,7 +182,7 @@ function LicensedStatus({ state, deviceName, maskedKey, graceUntil, restartRequi
       <Button
         onClick={() =>
           openModal({
-            title: "停用本机",
+            title: '停用本机',
             body: (closeModal) => <DeactivateConfirm closeModal={closeModal} />,
           })
         }
@@ -177,7 +199,7 @@ export function LicensePanel() {
   if (licensed) {
     return (
       <LicensedStatus
-        state={license?.state === "grace" ? "grace" : "licensed"}
+        state={license?.state === 'grace' ? 'grace' : 'licensed'}
         deviceName={license?.deviceName}
         maskedKey={license?.maskedKey}
         graceUntil={license?.graceUntil}
@@ -187,6 +209,7 @@ export function LicensePanel() {
     );
   }
 
-  const notice = license?.state === "invalid" ? "invalid" : license?.state === "expired" ? "expired" : undefined;
+  const notice =
+    license?.state === 'invalid' ? 'invalid' : license?.state === 'expired' ? 'expired' : undefined;
   return <ActivateForm notice={notice} />;
 }

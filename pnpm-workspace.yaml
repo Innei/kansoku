@@ -2,6 +2,7 @@ packages:
   - packages/core
   - packages/bench
   - packages/pro-api
+  - packages/shared
   - apps/license-worker
   - apps/pro
   - apps/server
@@ -14,13 +15,16 @@ ignoredOptionalDependencies:
 allowBuilds:
   '@google/genai': false
   better-sqlite3: true
+  electron-sparkle-updater: true
   esbuild: true
   protobufjs: false
   sharp: true
+  unrs-resolver: false
   workerd: true
 minimumReleaseAgeExclude:
   - '@earendil-works/pi-ai@0.80.6'
   - '@earendil-works/pi-agent-core@0.80.6'
   - tsdown@0.22.5
+  - electron-sparkle-updater@0.1.0
 patchedDependencies:
   app-builder-lib@26.15.3: patches/app-builder-lib@26.15.3.patch

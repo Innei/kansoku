@@ -1,22 +1,25 @@
-import type { SecretBox } from "@kansoku/pro-api";
-import { getAiRuntime, initAiSettings } from "../../../packages/core/src/ai/initAiSettings.js";
-import { getActiveSettingsStore } from "../../../packages/core/src/ai/settingsStore.js";
-import { getDb } from "../../../packages/core/src/db/index.js";
-import { setProductionHost } from "../../../packages/core/src/license/dodoEnv.js";
-import { isLicensed } from "../../../packages/core/src/license/licenseGate.js";
-import { startLicenseRevalidation } from "../../../packages/core/src/license/licenseSchedule.js";
-import { initLicenseManager } from "../../../packages/core/src/license/licenseState.js";
-import { loadPro } from "../../../packages/core/src/pro/loader.js";
-import { getPro } from "../../../packages/core/src/pro/registry.js";
+import type { SecretBox } from '@kansoku/pro-api';
+import { getAiRuntime, initAiSettings } from '@kansoku/core/ai/initAiSettings';
+import { getActiveSettingsStore } from '@kansoku/core/ai/settingsStore';
+import { getDb } from '@kansoku/core/db/index';
+import { setProductionHost } from '@kansoku/core/license/dodoEnv';
+import { isLicensed } from '@kansoku/core/license/licenseGate';
+import { startLicenseRevalidation } from '@kansoku/core/license/licenseSchedule';
+import { initLicenseManager } from '@kansoku/core/license/licenseState';
+import { loadPro } from '@kansoku/core/pro/loader';
+import { getPro } from '@kansoku/core/pro/registry';
 import {
   createWatchedMarketsStore,
   getActiveWatchedMarketsStore,
   setActiveWatchedMarketsStore,
-} from "../../../packages/core/src/services/watchedMarketsStore.js";
-import { loadDotenv } from "./dotenv.js";
-import { initAuthUrlOpener, type AuthUrlOpener } from "../../../packages/core/src/services/credentials/authUrlOpener.js";
-import { initCredentialProvider } from "../../../packages/core/src/services/credentials/registry.js";
-import type { CredentialProvider } from "../../../packages/core/src/services/credentials/types.js";
+} from '@kansoku/core/services/watchedMarketsStore';
+import { loadDotenv } from './dotenv.js';
+import {
+  initAuthUrlOpener,
+  type AuthUrlOpener,
+} from '@kansoku/core/services/credentials/authUrlOpener';
+import { initCredentialProvider } from '@kansoku/core/services/credentials/registry';
+import type { CredentialProvider } from '@kansoku/core/services/credentials/types';
 
 export interface ServerRuntimeOptions {
   credentialProvider?: CredentialProvider;
@@ -41,14 +44,14 @@ export async function initServerRuntime(opts?: ServerRuntimeOptions): Promise<vo
 
   // 1h prompt-cache TTL: commentator sessions re-run at 5-min heartbeats, the
   // default 5-min ephemeral TTL expires right at the boundary and misses.
-  process.env.PI_CACHE_RETENTION ??= "long";
+  process.env.PI_CACHE_RETENTION ??= 'long';
 
   initCredentialProvider(opts?.credentialProvider);
   initAuthUrlOpener(opts?.openAuthUrl);
   setActiveWatchedMarketsStore(createWatchedMarketsStore(getDb()));
   initAiSettings(getDb(), { secretBox: opts?.secretBox });
 
-  const productionHost = opts?.productionHost ?? process.env.NODE_ENV === "production";
+  const productionHost = opts?.productionHost ?? process.env.NODE_ENV === 'production';
   setProductionHost(productionHost);
   // The host passes no secretBox in dev (plaintext keyfile mode) —
   // initAiSettings resolves the fallback box, so the license store must take

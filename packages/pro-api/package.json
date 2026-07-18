@@ -1,19 +1,24 @@
 {
   "name": "@kansoku/pro-api",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
-  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts"
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./features": {
+      "types": "./src/features.ts",
+      "default": "./src/features.ts"
     }
   },
+  "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
     "typescript": "^7.0.2"
-  },
-  "license": "SEE LICENSE IN LICENSE"
+  }
 }

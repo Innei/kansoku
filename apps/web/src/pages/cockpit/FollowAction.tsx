@@ -1,29 +1,38 @@
-import { Lock, RadioTower } from "lucide-react";
-import { useCapabilities } from "../../capabilitiesStore";
-import { useFeatureGuard } from "../../featureGuard";
-import { Switch } from "../../ui";
-import { useSymbolFollow } from "../../useSymbolFollow";
+import { Lock, RadioTower } from 'lucide-react';
+import { Switch } from '@web/ui';
+import { useFeature } from '@web/useFeature';
+import { useSymbolFollow } from '@web/useSymbolFollow';
 
 export function FollowAction({ symbol, revision }: { symbol: string; revision?: string }) {
-  const { pro } = useCapabilities();
-  if (pro !== true) return null;
-  return <FollowControl symbol={symbol} revision={revision} />;
+  const { state } = useFeature('symbol-follow');
+  if (state === 'absent') return null;
+  return <FollowControl symbol={symbol} revision={revision} locked={state === 'locked'} />;
 }
 
-function FollowControl({ symbol, revision }: { symbol: string; revision?: string }) {
+function FollowControl({
+  symbol,
+  revision,
+  locked,
+}: {
+  symbol: string;
+  revision?: string;
+  locked: boolean;
+}) {
   const { following, busy, statusError, change } = useSymbolFollow({ symbol, revision });
-  const { locked, guard } = useFeatureGuard();
+  const { guard } = useFeature('symbol-follow');
 
   return (
     <span
-      className={`follow-control${statusError ? " follow-control--error" : ""}${locked ? " follow-control--locked" : ""}`}
+      className={`follow-control${statusError ? ' follow-control--error' : ''}${locked ? ' follow-control--locked' : ''}`}
       title={
         locked
-          ? "AI 跟进需要有效授权，点击开关订阅解锁"
-          : statusError ??
+          ? following
+            ? '授权已失效，AI 跟进已暂停；可关闭开关，重新开启需订阅'
+            : 'AI 跟进需要有效授权，点击开关订阅解锁'
+          : (statusError ??
             (following
-              ? "AI 评论员会在后台持续跟进；关闭此图表不会停止"
-              : "AI 评论员已停止跟进此标的")
+              ? 'AI 评论员会在后台持续跟进；关闭此图表不会停止'
+              : 'AI 评论员已停止跟进此标的'))
       }
     >
       <RadioTower size={13} />
@@ -33,7 +42,13 @@ function FollowControl({ symbol, revision }: { symbol: string; revision?: string
         ariaLabel="持续跟进 AI 点评"
         checked={following ?? false}
         disabled={busy}
-        onCheckedChange={locked ? () => guard(() => {}) : (checked) => void change(checked)}
+        onCheckedChange={(checked) => {
+          if (locked && checked) {
+            guard(() => {});
+            return;
+          }
+          void change(checked);
+        }}
       />
     </span>
   );

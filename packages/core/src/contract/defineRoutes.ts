@@ -1,4 +1,6 @@
-export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+import type { FeatureKey } from '@kansoku/pro-api/features';
+
+export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface RouteMeta {
   method: HttpMethod;
@@ -6,7 +8,8 @@ export interface RouteMeta {
   withMeta?: true;
   // "body": HTTP response body IS the return value directly, not wrapped in {ok,data}.
   // "statusBody": the return type is itself {status,body} — caller branches on the HTTP status.
-  raw?: "body" | "statusBody";
+  raw?: 'body' | 'statusBody';
+  feature?: FeatureKey;
 }
 
 export type RouteTable<Api> = { [K in keyof Api]: RouteMeta };
@@ -28,4 +31,3 @@ export interface WithMeta<T> {
 export type TransportEnvelope<T> =
   | { ok: true; data: T; meta?: Record<string, unknown> }
   | { ok: false; error: string; code?: string; hint?: string; status?: number };
-

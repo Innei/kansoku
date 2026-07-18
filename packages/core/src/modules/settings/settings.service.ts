@@ -1,7 +1,10 @@
-import { resolveSubscription } from "../../license/subscription.js";
-import { getActiveWatchedMarketsStore, validateWatchedMarkets } from "../../services/watchedMarketsStore.js";
-import type { SettingsApi } from "../../contract/settings.js";
-import { aiSettingsService } from "./aiSettings.service.js";
+import { resolveSubscription } from '../../license/subscription.js';
+import {
+  getActiveWatchedMarketsStore,
+  validateWatchedMarkets,
+} from '../../services/watchedMarketsStore.js';
+import type { SettingsApi } from '../../contract/settings.js';
+import { aiSettingsService } from './aiSettings.service.js';
 
 export const settingsService: SettingsApi = {
   getAi() {
@@ -47,6 +50,13 @@ export const settingsService: SettingsApi = {
     return {
       subscribeUrl: subscription.url,
       priceLabel: subscription.priceLabel,
+      trialDays: subscription.trialDays,
+      yearly: {
+        subscribeUrl: subscription.yearly.url,
+        priceLabel: subscription.yearly.priceLabel,
+        trialDays: subscription.yearly.trialDays,
+        savingsLabel: subscription.yearly.savingsLabel,
+      },
     };
   },
 };

@@ -1,25 +1,31 @@
-import { defineConfig } from "tsdown";
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'tsdown';
 
-const isDev = process.env.KANSOKU_DESKTOP_DEV === "1";
+const isDev = process.env.KANSOKU_DESKTOP_DEV === '1';
+const desktopAlias = {
+  '@desktop': fileURLToPath(new URL('./src', import.meta.url)),
+  '@server': fileURLToPath(new URL('../server/src', import.meta.url)),
+};
 
 export default defineConfig([
   {
-    entry: "src/main.ts",
-    outDir: "dist-main",
-    format: "esm",
-    platform: "node",
+    entry: 'src/main.ts',
+    outDir: 'dist-main',
+    format: 'esm',
+    platform: 'node',
+    alias: desktopAlias,
     define: {
       __DESKTOP_DEV__: JSON.stringify(isDev),
     },
     deps: {
-      alwaysBundle: ["electron-window-state"],
+      alwaysBundle: ['electron-window-state', /^@kansoku\//],
       neverBundle: [
-        "electron",
-        "better-sqlite3",
-        "electron-context-menu",
-        "electron-dl",
-        "electron-is-dev",
-        "cli-truncate",
+        'electron',
+        'better-sqlite3',
+        'electron-context-menu',
+        'electron-dl',
+        'electron-is-dev',
+        'cli-truncate',
         // tsx (dev-only, resolved at runtime from node_modules) must never be
         // bundled: its internals rely on CJS __filename, which breaks inside
         // an ESM bundle. The regex covers every subpath (tsx/esm/api), which a
@@ -38,11 +44,12 @@ export default defineConfig([
     clean: true,
   },
   {
-    entry: "src/preload.ts",
-    outDir: "dist-preload",
-    format: "cjs",
-    platform: "node",
-    deps: { neverBundle: ["electron"] },
+    entry: 'src/preload.ts',
+    outDir: 'dist-preload',
+    format: 'cjs',
+    platform: 'node',
+    alias: desktopAlias,
+    deps: { neverBundle: ['electron'] },
     dts: false,
     clean: true,
   },

@@ -18,9 +18,9 @@ files:
   # bare imports (@tsuki-hono/*) to the same node_modules copy the main bundle
   # uses (single instance). Matches nothing on free builds.
   - pro/pro.enc
-  - native/sparkle-bridge/build/Release/sparkle_bridge.node
   - package.json
-  - "!**/*.ts"
+  - '!**/*.ts'
+  - '!**/node_modules/electron-sparkle-updater/native/vendor/**'
 extraResources:
   - from: ../web/dist
     to: web-dist
@@ -35,11 +35,11 @@ extraResources:
   - from: dist-skills
     to: skills
 extraFiles:
-  - from: native/sparkle-bridge/vendor/Sparkle.framework
+  - from: node_modules/electron-sparkle-updater/native/vendor/Sparkle.framework
     to: Frameworks/Sparkle.framework
 asarUnpack:
-  - "**/node_modules/better-sqlite3/**"
-  - "**/native/sparkle-bridge/build/**"
+  - '**/node_modules/better-sqlite3/**'
+  - '**/node_modules/electron-sparkle-updater/native/build/Release/*.node'
 # Updates ship via Sparkle, not electron-updater — skip blockmaps for both targets.
 # dmg has a native knob; zip needs the app-builder-lib patch (patches/app-builder-lib@…).
 dmg:

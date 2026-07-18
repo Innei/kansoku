@@ -1,5 +1,5 @@
-import { Type } from "typebox";
-import type { RawBar } from "../../../shared/types.js";
+import { Type } from 'typebox';
+import type { RawBar } from '@kansoku/shared/types';
 
 export const barSchema = Type.Object(
   {
