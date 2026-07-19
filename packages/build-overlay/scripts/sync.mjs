@@ -66,6 +66,25 @@ if (!existsSync(overlayRoot)) {
 }
 
 const errors = [];
+const manifestPath = join(publicRoot, 'apps', 'pro', 'overlay.private-only.json');
+const manifestRelative = relative(publicRoot, manifestPath);
+
+function readPrivateOnlyManifest() {
+  if (!existsSync(manifestPath)) return [];
+  let manifest;
+  try {
+    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  } catch (error) {
+    errors.push(`invalid private-only manifest ${manifestRelative}: ${error.message}`);
+    return [];
+  }
+  if (!Array.isArray(manifest.files)) {
+    errors.push(`private-only manifest ${manifestRelative} must have a "files" array`);
+    return [];
+  }
+  return manifest.files;
+}
+
 const mappings = walk(overlayRoot).map((source) => {
   const sourceRelative = relative(overlayRoot, source);
   const destination = resolve(publicRoot, sourceRelative);
@@ -73,9 +92,31 @@ const mappings = walk(overlayRoot).map((source) => {
     throw new Error(`unsafe overlay destination: ${sourceRelative}`);
   }
   const base = destination.replace(/\.pro(\.(?:[cm]?ts|tsx))$/, '$1');
-  if (!existsSync(base)) errors.push(`overlay has no OSS base: ${relative(publicRoot, base)}`);
-  return { destination, source, sourceRelative };
+  return { destination, hasBase: existsSync(base), source, sourceRelative };
 });
+
+const overlayRelativePaths = new Set(
+  mappings.map(({ sourceRelative }) => sourceRelative.split(sep).join('/')),
+);
+const privateOnlyFiles = readPrivateOnlyManifest();
+const privateOnlySet = new Set(privateOnlyFiles);
+
+for (const mapping of mappings) {
+  const relPath = mapping.sourceRelative.split(sep).join('/');
+  const isPrivateOnly = privateOnlySet.has(relPath);
+  if (!mapping.hasBase && !isPrivateOnly) {
+    errors.push(`overlay has no OSS base and is not registered in ${manifestRelative}: ${relPath}`);
+  }
+  if (mapping.hasBase && isPrivateOnly) {
+    errors.push(`overlay is registered as private-only in ${manifestRelative} but has an OSS base: ${relPath}`);
+  }
+}
+
+for (const entry of privateOnlyFiles) {
+  if (!overlayRelativePaths.has(entry)) {
+    errors.push(`private-only manifest ${manifestRelative} has a stale entry: ${entry}`);
+  }
+}
 
 if (errors.length > 0) {
   for (const error of errors) console.error(`overlay sync: ${error}`);
