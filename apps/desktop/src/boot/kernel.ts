@@ -12,16 +12,6 @@ import { startProActivationWatch } from './proActivationWatch.js';
 import { promptProRelaunch } from './proRelaunch.js';
 
 export async function bootKernel() {
-  if (__DESKTOP_DEV__) {
-    // The pro slot ships as TS and loads at runtime. tsx transforms it with the
-    // pro package's tsconfig (experimentalDecorators); tsx otherwise picks the
-    // desktop tsconfig, which lacks the flag. Packaged builds load built JS and
-    // skip this entirely (the branch is stripped by the __DESKTOP_DEV__ define).
-    process.env.TSX_TSCONFIG_PATH = join(app.getAppPath(), '..', 'pro', 'tsconfig.json');
-    const { register } = await import('tsx/esm/api');
-    register();
-  }
-
   const [
     { initServerRuntime },
     { attachRealtimeBridge },
@@ -53,12 +43,12 @@ export async function bootKernel() {
     },
     proAppDir: app.getAppPath(),
     productionHost: app.isPackaged,
-    // Packaged builds only ever stage pro.enc (see desktop/scripts/
-    // stagePro.mjs) — no plaintext dist/ to fall back to, so loadPro's
-    // default entryFile is fine (it just fails cleanly into free mode when
-    // absent). Only dev needs an explicit entry, for the sibling slot
-    // checkout it runs straight from TS.
-    proEntry: app.isPackaged ? undefined : 'src/index.ts',
+    // Pro is part of the same vite graph as main: packaged builds load it from
+    // pro.enc through the virtual root; dev loads the plaintext chunk the
+    // watch build emits at dist-main/__pro__ (absent → clean free mode).
+    proEntry: app.isPackaged
+      ? undefined
+      : join(app.getAppPath(), 'dist-main', '__pro__', 'index.mjs'),
   });
   // bootstrap.js is imported lazily, after initServerRuntime() has awaited
   // loadPro() above, so AppModule's registry-derived AI module composition

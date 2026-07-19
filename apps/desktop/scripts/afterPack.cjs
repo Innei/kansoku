@@ -1,7 +1,27 @@
 'use strict';
 
-const { readdirSync, statSync } = require('node:fs');
+const { readdirSync, readFileSync, statSync } = require('node:fs');
 const { join, relative } = require('node:path');
+
+// Second leak gate after vite.main.config.ts's build-time chunk assertion:
+// pro/src embeds this marker (see pro src/index.ts), pro.enc stores it only
+// under AES-GCM + gzip, so the marker appearing anywhere in the raw asar bytes
+// means plaintext pro code got packaged. Joined from parts so this script can
+// never trip the scan on itself.
+const PRO_CANARY = ['KANSOKU', 'PRO', 'CANARY', '9d4f2b7e1c'].join('-');
+
+function verifyNoPlaintextPro(context) {
+  const asarPath = join(
+    context.appOutDir,
+    `${context.packager.appInfo.productFilename}.app`,
+    'Contents',
+    'Resources',
+    'app.asar',
+  );
+  if (readFileSync(asarPath).includes(PRO_CANARY)) {
+    throw new Error('pro canary found in app.asar — plaintext pro code leaked into the package');
+  }
+}
 
 const EXPECTED_BETTER_SQLITE3_FILES = ['build/Release/better_sqlite3.node'];
 
@@ -41,6 +61,7 @@ function verifyBetterSqlite3Payload(context) {
 
 module.exports = async function afterPack(context) {
   verifyBetterSqlite3Payload(context);
+  verifyNoPlaintextPro(context);
   const { adHocSignAfterPack } = await import('electron-sparkle-updater/builder');
   return adHocSignAfterPack(context);
 };

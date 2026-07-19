@@ -6,13 +6,13 @@
   "type": "module",
   "main": "dist-main/main.mjs",
   "scripts": {
-    "build": "tsdown",
+    "build": "vite build -c vite.main.config.ts && vite build -c vite.preload.config.ts",
     "build:native": "npx electron-sparkle-updater rebuild --electron-version 43.1.0 --arch arm64",
     "predev": "node scripts/ensureDevNative.mjs",
     "dev": "node scripts/dev.mjs",
     "generate-icon": "bash scripts/generate-icon.sh",
     "prepackage": "pnpm --filter @kansoku/web build && (test -f ../web/dist/index.html || (echo 'web/dist/index.html missing after build' && exit 1))",
-    "package": "tsdown && node scripts/stageSkills.mjs && node scripts/stagePro.mjs && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64",
+    "package": "pnpm build && node scripts/stageSkills.mjs && node scripts/stagePro.mjs && pnpm rebuild-native && pnpm build:native && electron-builder --mac dmg zip --arm64",
     "rebuild-native": "electron-rebuild -v 43.1.0 --force -w better-sqlite3",
     "prestart": "node scripts/ensureDevNative.mjs",
     "start": "electron .",
@@ -20,28 +20,28 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "electron-sparkle-updater": "^0.1.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
     "@kansoku/core": "workspace:*",
     "@kansoku/pro-api": "workspace:*",
     "@kansoku/shared": "workspace:*",
     "@tsuki-hono/common": "0.0.5",
     "@tsuki-hono/core": "0.0.5",
-    "better-sqlite3": "^12.11.1",
-    "electron-context-menu": "^4.1.2",
-    "electron-ipc-decorator": "^1.0.1",
-    "electron-sparkle-updater": "^0.1.0",
-    "electron-window-state": "5.0.3",
-    "hono": "4.12.30",
-    "reflect-metadata": "0.2.2"
-  },
-  "devDependencies": {
-    "@electron/rebuild": "^4.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
     "electron": "43.1.1",
     "electron-builder": "^26.15.3",
-    "tsdown": "^0.22.8",
-    "tsx": "^4.23.1",
+    "electron-context-menu": "^4.1.2",
+    "electron-ipc-decorator": "^1.0.1",
+    "electron-window-state": "5.0.3",
+    "hono": "4.12.30",
+    "partial-json": "^0.1.7",
+    "reflect-metadata": "0.2.2",
     "typescript": "^7.0.2",
+    "vite": "^8.1.4",
     "vitest": "^4.1.10"
   }
 }

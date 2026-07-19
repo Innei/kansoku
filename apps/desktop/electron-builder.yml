@@ -12,6 +12,9 @@ afterPack: scripts/afterPack.cjs
 afterAllArtifactBuild: scripts/afterAllArtifactBuild.cjs
 files:
   - dist-main/**
+  # Plaintext pro chunks are deleted by stagePro.mjs before packaging; this
+  # exclusion plus afterPack's canary scan back that up.
+  - '!dist-main/__pro__/**'
   - dist-preload/**
   # Pro slot bundle staged by scripts/stagePro.mjs as an encrypted blob — must
   # live inside the asar so the decryption path's virtual file: root resolves
@@ -44,7 +47,9 @@ files:
   - '!**/node_modules/tar/**'
   - '!**/node_modules/tar-fs/**'
   - '!**/node_modules/electron-sparkle-updater/bin/**'
-  - '!**/node_modules/electron-sparkle-updater/dist/builder.js'
+  # dist/builder.js is NOT build-only — updater.ts imports SPARKLE_ED_PUBLIC_KEY_PLACEHOLDER
+  # from 'electron-sparkle-updater/builder' at runtime; excluding it breaks the packaged app
+  # with ERR_MODULE_NOT_FOUND. Only dist/cli.js backs the CLI bin, never imported at runtime.
   - '!**/node_modules/electron-sparkle-updater/dist/cli.js'
   - '!**/node_modules/electron-sparkle-updater/native/scripts/**'
   - '!**/node_modules/electron-sparkle-updater/native/src/**'

@@ -39,16 +39,25 @@ function isProEntryNotFound(error: unknown): boolean {
   const code = (error as NodeJS.ErrnoException).code;
   if (code !== 'ERR_MODULE_NOT_FOUND' && code !== 'MODULE_NOT_FOUND') return false;
   const missing = /Cannot find module '([^']+)'/.exec(error.message)?.[1];
-  return missing !== undefined && /\/pro\/(src|dist)\/index\.m?[jt]s$/.test(missing);
+  return (
+    missing !== undefined &&
+    (/\/pro\/(src|dist)\/index\.m?[jt]s$/.test(missing) || /\/__pro__\/index\.mjs$/.test(missing))
+  );
 }
 
 // Packaged desktop stages pro.enc at <appDir>/pro/pro.enc (see
-// desktop/scripts/stagePro.mjs); the virtual root sits beside it under the same
-// real <appDir>/pro directory so bare deps resolve through the real
-// node_modules. Source hosts (no appDir) never carry an enc payload.
+// desktop/scripts/stagePro.mjs). The virtual root sits at the exact spot the
+// plaintext pro chunks occupied before encryption (<appDir>/dist-main/__pro__),
+// so the pro chunks' relative imports of shared chunks (../chunk-X.mjs) fall
+// through the virtual map onto the real dist-main files — one module graph.
+// Bare deps (better-sqlite3) still resolve through the real node_modules.
+// Source hosts (no appDir) never carry an enc payload.
 function proEncLayout(appDir?: string): { encPath: string; virtualDir: string } | undefined {
   if (!appDir) return undefined;
-  return { encPath: join(appDir, 'pro', 'pro.enc'), virtualDir: join(appDir, 'pro', '__enc__') };
+  return {
+    encPath: join(appDir, 'pro', 'pro.enc'),
+    virtualDir: join(appDir, 'dist-main', '__pro__'),
+  };
 }
 
 export async function loadPro(appDir?: string, entryFile?: string): Promise<boolean> {
