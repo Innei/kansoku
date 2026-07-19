@@ -53,6 +53,7 @@ function createNoopSettingsStore(): SettingsStore {
       analyst: defaultRoleSetting('analyst'),
       deepDive: defaultRoleSetting('deepDive'),
       chat: defaultRoleSetting('chat'),
+      memory: defaultRoleSetting('memory'),
     }),
     setRole: () => {},
     revision: () => 0,
