@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WEB_EDITION_ABI_VERSION } from '@kansoku/core/pro/webEditionHost';
 import {
   bootstrapWebEditionHost,
@@ -95,6 +95,8 @@ describe('bootstrapWebEditionHost', () => {
       };
     };
 
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     const cleanup = await bootstrapWebEditionHost(container, {
       reactSingleton,
       loadEntry: async () => fakeValidEntryModule(mountSpy),
@@ -102,9 +104,12 @@ describe('bootstrapWebEditionHost', () => {
 
     expect(cleanup).toBeTypeOf('function');
     expect((seenHost as { react: unknown }).react).toBe(reactSingleton.react);
+    expect(consoleError).not.toHaveBeenCalled();
 
     cleanup!();
     expect(cleanupCalled).toBe(true);
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   it('refuses to mount an ABI-invalid entry (no partial execution)', async () => {
