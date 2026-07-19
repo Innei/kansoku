@@ -14,8 +14,7 @@ import { hasEncBundle, isProPresent, unregisterProModuleForTests } from "../src/
 const KEY_HEX = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
-const TSX_LOADER = createRequire(import.meta.url).resolve("tsx", { paths: [join(REPO_ROOT, "apps", "desktop")] });
+const TSX_LOADER = createRequire(import.meta.url).resolve("tsx");
 
 const FIXTURE = {
   "util.mjs": "export const base = 2;\n",
