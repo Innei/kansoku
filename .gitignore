@@ -46,3 +46,5 @@ stocks/
 *.pro.mts
 *.pro.cts
 /.kansoku-overlay-links.json
+
+apps/server/src/generated/

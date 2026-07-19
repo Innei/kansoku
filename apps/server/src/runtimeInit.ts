@@ -21,6 +21,7 @@ import {
 } from '@kansoku/core/services/watchedMarketsStore';
 import { LegacyCompatServerEdition } from './modules/legacyServerEdition.js';
 import { loadDotenv } from './dotenv.js';
+import { readGeneratedPublicCommit } from './generatedPublicCommit.js';
 import { serverEncLayout } from './proEncLayout.js';
 import {
   initAuthUrlOpener,
@@ -45,6 +46,10 @@ export interface ServerRuntimeOptions {
   // True when this host is a production artifact (packaged desktop app,
   // NODE_ENV=production server). Pro uses it to pick Dodo live vs test.
   productionHost?: boolean;
+  // Overrides the build-time-generated public-commit.json read (see
+  // generatedPublicCommit.ts) for hosts (e.g. desktop) that embed their own
+  // value instead of relying on the server's generated file.
+  expectedPublicCommit?: string;
 }
 
 export interface ServerRuntimeResult {
@@ -100,6 +105,8 @@ export async function initServerRuntime(
     runtime: 'server',
     keyHex,
     host,
+    expectedPublicCommit:
+      opts?.expectedPublicCommit ?? (productionHost ? readGeneratedPublicCommit() : undefined),
   });
   console.info(
     `[edition] runtime=server buildId=${activation.buildId ?? 'n/a'} keyId=${activation.keyId ?? 'n/a'} abi=${EDITION_ABI_VERSION} state=${activation.state} code=${activation.error?.code ?? 'n/a'}`,
