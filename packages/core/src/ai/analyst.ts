@@ -19,7 +19,8 @@ import { marketOf } from '../services/symbol.utils.js';
 import { validatePrediction } from '../services/predictionRules.js';
 import { loadSkillIndex, readSkill, type SkillMeta } from '../services/skills.js';
 import { createChart } from '../services/store.js';
-import { prepareProAiTurn } from '../pro/aiExtension.js';
+import type { AiTurnPipeline } from '../pro/domain/aiTurnPipeline.js';
+import { LegacyAiTurnPipeline } from '../pro/domain/legacyAdapters.js';
 import { AgentTimeoutError, type AiAgentFactory, createAgentSession } from './agentSession.js';
 import {
   AnalystMessagesEngine,
@@ -165,6 +166,7 @@ export interface AnalystDeps {
   exec?: ExecFn;
   skillText?: string;
   disciplineText?: string;
+  aiTurnPipeline?: AiTurnPipeline;
 }
 
 export interface RunAnalystInput {
@@ -479,7 +481,8 @@ export async function executeAnalystRun(symbol: string, deps: AnalystDeps): Prom
     const dataPack = await (deps.buildReassessPack ?? defaultBuildReassessPack)(symbol);
     if (dataPack.prediction_chart_id) state.chartId = dataPack.prediction_chart_id;
     const sessionId = `analyst:${symbol}:${runStartedAt}`;
-    const proTurn = await prepareProAiTurn({
+    const aiTurnPipeline = deps.aiTurnPipeline ?? new LegacyAiTurnPipeline();
+    const proTurn = await aiTurnPipeline.prepareTurn({
       surface: 'analyst',
       sessionId,
       symbol,

@@ -18,6 +18,7 @@ import {
 import type { ChatEvent } from '../src/ai/chat.js';
 import type { AiModel } from '../src/ai/models.js';
 import { createDb, type Db } from '../src/db/index.js';
+import type { AiTurnPipeline } from '../src/pro/domain/aiTurnPipeline.js';
 
 const model = { provider: 'anthropic', id: 'test-model' } as unknown as AiModel;
 const ZERO_USAGE = {
@@ -89,6 +90,47 @@ describe('assistant chat', () => {
 
     const messages = await listAssistantMessages(session.id, db);
     expect(messages.map((row) => row.role)).toEqual(['user', 'assistant']);
+  });
+
+  it('uses the injected aiTurnPipeline instead of the legacy registry path', async () => {
+    const session = await createAssistantSession({ title: '新对话' }, db);
+    const factory: AiAgentFactory = (config) => {
+      const state = { messages: [...(config.messages ?? [])] };
+      return {
+        prompt: async (text) => {
+          state.messages.push({ role: 'user', content: text, timestamp: Date.now() });
+          state.messages.push(assistant('你好，我是助手。'));
+        },
+        abort: () => undefined,
+        state,
+      };
+    };
+    const surfacesSeen: string[] = [];
+    const turnCompleteCalls: number[] = [];
+    const fakePipeline: AiTurnPipeline = {
+      prepareTurn: async (context) => {
+        surfacesSeen.push(context.surface);
+        return {
+          readMounts: [],
+          processors: [],
+          onTurnComplete: (messages) => turnCompleteCalls.push(messages.length),
+        };
+      },
+    };
+
+    const result = await runAssistantChatTurn(session.id, '你好', {
+      model,
+      rootDir: root,
+      db,
+      agentFactory: factory,
+      disciplineText: '# trading-discipline\n测试纪律。',
+      aiTurnPipeline: fakePipeline,
+    });
+    expect(result.started).toBe(true);
+    if (result.started) await result.done;
+
+    expect(surfacesSeen).toEqual(['assistant']);
+    expect(turnCompleteCalls).toEqual([2]);
   });
 
   it('rejects when no model is configured', async () => {

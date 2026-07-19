@@ -19,7 +19,8 @@ import {
 } from './promptPolicy.js';
 import { buildResearchLibraryTools } from './researchLibraryTools.js';
 import type { AiModel } from './models.js';
-import { prepareProAiTurn } from '../pro/aiExtension.js';
+import type { AiTurnPipeline } from '../pro/domain/aiTurnPipeline.js';
+import { LegacyAiTurnPipeline } from '../pro/domain/legacyAdapters.js';
 
 export interface AssistantChatDeps {
   model: AiModel | null;
@@ -29,6 +30,7 @@ export interface AssistantChatDeps {
   timeoutMs?: number;
   disciplineText?: string;
   exec?: ExecFn;
+  aiTurnPipeline?: AiTurnPipeline;
 }
 
 export type AssistantChatStartResult =
@@ -65,7 +67,8 @@ function prepareTurn(
     buildTurn: async (activeSessionId) => {
       const disciplineText = deps.disciplineText ?? loadSharedDiscipline(rootDir);
       if (!disciplineText) throw new DisciplineMissingError();
-      const proTurn = await prepareProAiTurn({
+      const aiTurnPipeline = deps.aiTurnPipeline ?? new LegacyAiTurnPipeline();
+      const proTurn = await aiTurnPipeline.prepareTurn({
         surface: 'assistant',
         sessionId: activeSessionId,
       });
