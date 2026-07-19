@@ -15,7 +15,7 @@ export async function promptProRelaunch(): Promise<void> {
     detail: '需要重启应用完成加载，点击「立即重启」后应用会自动重新打开。',
   };
   await (win ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options));
-  console.log('[desktop] bundle key landed — relaunching to load pro');
+  console.info('[desktop] bundle key landed — relaunching to load pro');
   app.relaunch();
   app.quit();
 }

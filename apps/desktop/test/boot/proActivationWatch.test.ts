@@ -21,7 +21,7 @@ describe('startProActivationWatch', () => {
   });
 
   it('relaunches once when the bundle key transitions from absent to present', () => {
-    let key: string | undefined;
+    let key: string | undefined = undefined;
     const d = deps({ getBundleKey: () => key });
     startProActivationWatch(d);
 
@@ -56,7 +56,7 @@ describe('startProActivationWatch', () => {
   });
 
   it('stops polling once cancelled', () => {
-    let key: string | undefined;
+    let key: string | undefined = undefined;
     const d = deps({ getBundleKey: () => key });
     const stop = startProActivationWatch(d);
 
