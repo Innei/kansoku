@@ -17,7 +17,8 @@
     "prestart": "node scripts/ensureDevNative.mjs",
     "start": "electron .",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:pro": "tsc --noEmit -p tsconfig.pro.json"
   },
   "dependencies": {
     "@kansoku/core": "workspace:*",

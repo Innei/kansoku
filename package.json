@@ -27,7 +27,8 @@
     "test": "pnpm -r test",
     "test:desktop": "pnpm --filter @kansoku/desktop test",
     "typecheck": "pnpm -r typecheck",
-    "typecheck:desktop": "pnpm --filter @kansoku/desktop typecheck"
+    "typecheck:desktop": "pnpm --filter @kansoku/desktop typecheck",
+    "typecheck:pro": "pnpm -r typecheck:pro"
   },
   "devDependencies": {
     "@lobehub/eslint-config": "^2.1.5",
