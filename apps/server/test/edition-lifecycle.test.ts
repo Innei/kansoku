@@ -9,7 +9,7 @@ import { BaseServerEdition } from '@kansoku/core/edition/base';
 import { createDefaultServerEditionHost } from '@kansoku/core/edition/host';
 import type { ServerBuilder } from '@kansoku/core/edition/serverBuilder';
 import type { EditionActivation } from '@kansoku/core/pro/editionLoader';
-import { unregisterProModuleForTests } from '@kansoku/core/pro/registry';
+import { freeHooks, registerProModule, unregisterProModuleForTests } from '@kansoku/core/pro/registry';
 import { resetProtocolClaimForTests } from '@kansoku/core/pro/protocolClaim';
 import { createKernel } from '../src/bootstrap.js';
 
@@ -70,6 +70,24 @@ describe('initServerRuntime: loadEdition-first with legacy fallback', () => {
     await expect(edition.initialize()).resolves.toBeUndefined();
     await expect(edition.start()).resolves.toBeUndefined();
     await expect(edition.dispose()).resolves.toBeUndefined();
+  });
+
+  it('absent pro.enc: legacy edition starts the pro scheduler on start() and stops it on dispose()', async () => {
+    const stopScheduler = vi.fn();
+    const startScheduler = vi.fn(() => stopScheduler);
+    registerProModule({ hooks: freeHooks, startScheduler });
+
+    const { edition } = await initServerRuntime({ proAppDir: tmpAppDir });
+
+    await edition.initialize();
+    expect(startScheduler).not.toHaveBeenCalled();
+
+    await edition.start();
+    expect(startScheduler).toHaveBeenCalledTimes(1);
+    expect(stopScheduler).not.toHaveBeenCalled();
+
+    await edition.dispose();
+    expect(stopScheduler).toHaveBeenCalledTimes(1);
   });
 
   const nonActiveStates = ['absent', 'locked', 'incompatible', 'failed'] as const;
