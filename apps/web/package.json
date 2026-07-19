@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "build:pro": "vite build --config vite.pro.config.ts",
     "dev": "vite",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

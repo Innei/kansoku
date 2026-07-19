@@ -3,16 +3,13 @@ import type { ChartDoc } from '@kansoku/shared/types';
 import { chartTargetPath } from '@kansoku/shared/chartUrl';
 import { useQuery } from './apiHooks';
 import { client } from './client';
+import { configureRoutes } from './edition';
 import { symbolFromRoute } from './lib/symbol';
-import { AboutPage } from './pages/about/AboutPage';
-import { AssistantChatPage } from './pages/assistant/AssistantChatPage';
 import { Home } from './pages/Home';
-import { LogsPage } from './pages/logViewer/LogsPage';
 import { PopoutChartWindow } from './pages/PopoutChartWindow';
-import { ResearchPage } from './pages/research/ResearchPage';
-import { SettingsPage } from './pages/settings/SettingsPage';
 import { SymbolCockpit } from './pages/SymbolCockpit';
 import { matchPopoutSymbolRoute, navigate, routePathname, useRoute } from './router';
+import { RouteRegistry } from './routing/RouteRegistry';
 import { ErrorBox } from './ui';
 
 function Redirect({ to }: { to: string }) {
@@ -61,10 +58,10 @@ export function Router() {
   }
   const symbol = symbolFromRoute(route);
   if (symbol) return <SymbolCockpit sym={symbol} />;
-  if (pathname === '/research') return <ResearchPage />;
-  if (pathname === '/chat') return <AssistantChatPage />;
-  if (pathname === '/settings') return <SettingsPage />;
-  if (pathname === '/about') return <AboutPage />;
-  if (pathname === '/logs') return <LogsPage />;
+
+  const registry = new RouteRegistry();
+  configureRoutes(registry);
+  const Page = registry.get(pathname);
+  if (Page) return <Page />;
   return <Home />;
 }
