@@ -40,3 +40,12 @@ export function getDb(): Db {
   if (!singleton) singleton = createDb(join(CHART_DATA_DIR, 'app.db'));
   return singleton;
 }
+
+export function adoptDb(db: Db): void {
+  if (!singleton) {
+    singleton = db;
+    return;
+  }
+  if (singleton === db) return;
+  throw new Error('adoptDb: a different db instance is already active');
+}

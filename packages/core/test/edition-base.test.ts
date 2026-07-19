@@ -1,0 +1,123 @@
+import { describe, expect, it } from 'vitest';
+import { BaseDesktopEdition, BaseEdition, BaseServerEdition } from '../src/edition/base.js';
+import type {
+  CoreEditionHost,
+  DesktopEditionHost,
+  ServerEditionHost,
+} from '../src/edition/host.js';
+
+function fakeHost(): CoreEditionHost {
+  return {
+    db: {} as unknown as CoreEditionHost['db'],
+    license: { isLicensed: () => true },
+    aiSettings: null,
+    watchedMarkets: null,
+    paths: { kansokuHome: '/tmp/kansoku-home' },
+    production: false,
+  };
+}
+
+class TestEdition extends BaseEdition<CoreEditionHost> {
+  readonly calls: string[] = [];
+  initFn: () => void | Promise<void> = () => {};
+
+  protected async onInitialize(): Promise<void> {
+    await this.initFn();
+    this.calls.push('init');
+  }
+
+  protected async onStart(): Promise<void> {
+    this.calls.push('start');
+  }
+
+  protected async onDispose(): Promise<void> {
+    this.calls.push('dispose');
+  }
+}
+
+describe('BaseEdition lifecycle', () => {
+  it('runs the full legal sequence exactly once, in order', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await edition.start();
+    await edition.dispose();
+    expect(edition.calls).toEqual(['init', 'start', 'dispose']);
+  });
+
+  it('throws naming the edition class on a second initialize', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await expect(edition.initialize()).rejects.toThrow(/TestEdition/);
+  });
+
+  it('throws when start is called before initialize', async () => {
+    const edition = new TestEdition(fakeHost());
+    await expect(edition.start()).rejects.toThrow();
+  });
+
+  it('is a no-op the second time start is called after success', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await edition.start();
+    await edition.start();
+    expect(edition.calls.filter((call) => call === 'start')).toHaveLength(1);
+  });
+
+  it('calls onDispose once even when dispose is called twice', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await edition.start();
+    await edition.dispose();
+    await edition.dispose();
+    expect(edition.calls.filter((call) => call === 'dispose')).toHaveLength(1);
+  });
+
+  it('throws when start is called after dispose', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await edition.dispose();
+    await expect(edition.start()).rejects.toThrow();
+  });
+
+  it('allows dispose before start', async () => {
+    const edition = new TestEdition(fakeHost());
+    await edition.initialize();
+    await expect(edition.dispose()).resolves.toBeUndefined();
+    expect(edition.calls).toEqual(['init', 'dispose']);
+  });
+
+  it('allows retrying initialize after a failed onInitialize', async () => {
+    const edition = new TestEdition(fakeHost());
+    edition.initFn = () => {
+      throw new Error('boom');
+    };
+    await expect(edition.initialize()).rejects.toThrow('boom');
+    expect(edition.calls).toEqual([]);
+
+    edition.initFn = () => {};
+    await expect(edition.initialize()).resolves.toBeUndefined();
+    expect(edition.calls).toEqual(['init']);
+  });
+});
+
+describe('BaseServerEdition / BaseDesktopEdition', () => {
+  it('narrow the host type without changing lifecycle behavior', async () => {
+    class ServerTestEdition extends BaseServerEdition {
+      ran = false;
+      protected onInitialize(): void {
+        this.ran = true;
+      }
+    }
+
+    const serverHost = fakeHost() as ServerEditionHost;
+    const serverEdition = new ServerTestEdition(serverHost);
+    await serverEdition.initialize();
+    expect(serverEdition.ran).toBe(true);
+
+    class DesktopTestEdition extends BaseDesktopEdition {}
+
+    const desktopHost: DesktopEditionHost = { ...fakeHost(), relaunch: () => {} };
+    const desktopEdition = new DesktopTestEdition(desktopHost);
+    await expect(desktopEdition.initialize()).resolves.toBeUndefined();
+  });
+});
