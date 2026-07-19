@@ -34,7 +34,11 @@ describe('bundled boot ordering', () => {
       // chunking is free to add that indirection, so accept either shape.
       const importedChunk = content.includes(`import("./${envChunk}")`)
         ? envChunk!
-        : chunkNames.find((name) => chunkContent.get(name)!.includes(`from "./${envChunk}"`));
+        : chunkNames.find(
+            (name) =>
+              chunkContent.get(name)!.includes(`from "./${envChunk}"`) &&
+              content.includes(`import("./${name}")`),
+          );
       expect(importedChunk).toBeDefined();
       const dynamicImportIndex = content.indexOf(`import("./${importedChunk}")`);
       expect(dynamicImportIndex).toBeGreaterThanOrEqual(0);
