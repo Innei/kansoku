@@ -59,4 +59,18 @@ describe('adoptDb', () => {
       /already active — call adoptDb\(\) before any getDb\(\) call/,
     );
   });
+
+  it('resetDbForTests clears the singleton so a later adoptDb or getDb call starts fresh', async () => {
+    const { adoptDb, getDb, resetDbForTests } = await import('../src/db/index.js');
+    const fake = { marker: 'fake' } as unknown as Db;
+
+    adoptDb(fake);
+    expect(getDb()).toBe(fake);
+
+    resetDbForTests();
+
+    const other = { marker: 'other' } as unknown as Db;
+    expect(() => adoptDb(other)).not.toThrow();
+    expect(getDb()).toBe(other);
+  });
 });

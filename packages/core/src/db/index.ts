@@ -51,3 +51,7 @@ export function adoptDb(db: Db): void {
     'adoptDb: a different db instance is already active — call adoptDb() before any getDb() call in this graph',
   );
 }
+
+export function resetDbForTests(): void {
+  singleton = null;
+}
