@@ -35,6 +35,7 @@
     "reflect-metadata": "0.2.2"
   },
   "devDependencies": {
+    "@electron/asar": "3.4.1",
     "@electron/rebuild": "^4.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
