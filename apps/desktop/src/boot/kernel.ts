@@ -11,6 +11,7 @@ import { DefaultIpcRegistry } from '@kansoku/core/edition/ipcRegistry';
 import type { DesktopEditionHost } from '@kansoku/core/edition/host';
 import { DefaultRealtimeChannelRegistry } from '@kansoku/core/edition/realtimeRegistry';
 import { loadEdition } from '@kansoku/core/pro/editionLoader';
+import { readEditionWebManifest } from '@kansoku/core/pro/webManifest';
 import { createCredentialsBridgeHandlers, registerCredentialsIpc } from '../credentials/bridge.js';
 import { createDesktopSecretBox } from '../credentials/secretBox.js';
 import { nonAiIpcServiceClasses } from '../ipc/index.js';
@@ -89,6 +90,9 @@ export async function bootKernel() {
     realtime: realtimeRegistry,
   };
 
+  const { encPath, virtualDir } = serverEncLayout(app.getAppPath());
+  const keyHex = getActiveBundleKey() ?? process.env.KANSOKU_BUNDLE_KEY ?? null;
+
   // Attempt at most one pro protocol per process (see protocolClaim.ts):
   // initServerRuntime() already resolved the server-side edition. protocol
   // is 'legacy' both when it fell back to the legacy loadPro() protocol
@@ -99,8 +103,6 @@ export async function bootKernel() {
   // go straight to the legacy desktop adapter.
   let desktopEdition: BaseDesktopEdition;
   if (protocol === 'edition') {
-    const { encPath, virtualDir } = serverEncLayout(app.getAppPath());
-    const keyHex = getActiveBundleKey() ?? process.env.KANSOKU_BUNDLE_KEY ?? null;
     const desktopActivation = await loadEdition<DesktopEditionHost, BaseDesktopEdition>({
       encPath,
       virtualDir,
@@ -116,6 +118,14 @@ export async function bootKernel() {
   } else {
     desktopEdition = new LegacyCompatDesktopEdition(desktopHost);
   }
+
+  // readEditionWebManifest() never calls assertProtocolAllowed/claimProtocol
+  // (see packages/core/src/pro/webManifest.ts) — it only re-reads and
+  // re-validates the same bundle loadEdition() above already resolved, so
+  // calling it here regardless of `protocol` cannot conflict with the
+  // single-pro-protocol-per-process claim made by loadEdition().
+  const webManifest = await readEditionWebManifest({ encPath, keyHex, expectedPublicCommit });
+
   desktopEdition.configureIpc(ipcRegistry);
   desktopEdition.configureRealtime(realtimeRegistry);
   await desktopEdition.initialize();
@@ -143,8 +153,13 @@ export async function bootKernel() {
       ...nonAiIpcServiceClasses,
       ...(ipcRegistry.build() as unknown as IpcServiceConstructor[]),
     ] as const,
+    webManifest,
     dispose: async () => {
       await Promise.allSettled([desktopEdition.dispose(), serverEdition.dispose()]);
+      // Drop the decrypted files Map reference so it's GC-eligible once the
+      // pro-asset protocol handler (registered against this same object in
+      // main.ts) is no longer serving requests — §15.5 exit-time cleanup.
+      webManifest.files = null;
     },
   };
 }

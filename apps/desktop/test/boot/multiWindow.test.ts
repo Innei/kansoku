@@ -41,6 +41,9 @@ vi.mock('../../../server/src/bootstrap.js', () => ({ createKernel }));
 const getActiveBundleKey = vi.hoisted(() => vi.fn((): string | null => null));
 vi.mock('@kansoku/core/license/licenseState', () => ({ getActiveBundleKey }));
 
+const readEditionWebManifest = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/webManifest', () => ({ readEditionWebManifest }));
+
 vi.stubGlobal('__DESKTOP_DEV__', false);
 
 const { bootKernel } = await import('../../src/boot/kernel.js');
@@ -73,6 +76,12 @@ beforeEach(() => {
     app: { getInstance: () => ({ fetch: vi.fn(async () => new Response('ok', { status: 200 })) }) },
   }));
   loadEdition.mockResolvedValue({ state: 'absent', bundlePresent: false });
+  readEditionWebManifest.mockReset().mockImplementation(async () => ({
+    state: 'absent',
+    files: null,
+    entryPath: null,
+    errorCode: null,
+  }));
   initServerRuntime.mockImplementation(async () => ({
     host: fakeCoreHost(),
     edition: fakeServerEdition(),
@@ -93,6 +102,8 @@ describe('bootKernel called more than once per process (no reset of underlying m
     expect(first.ipcServiceClasses).toEqual(second.ipcServiceClasses);
     expect(attachRealtimeBridge).toHaveBeenCalledTimes(2);
     expect(loadEdition).toHaveBeenCalledTimes(2);
+    expect(readEditionWebManifest).toHaveBeenCalledTimes(2);
+    expect(first.webManifest).not.toBe(second.webManifest);
 
     await expect(first.dispose()).resolves.toBeUndefined();
     await expect(second.dispose()).resolves.toBeUndefined();

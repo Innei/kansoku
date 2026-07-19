@@ -38,6 +38,13 @@ describe('isAllowedNavigationUrl', () => {
   it('rejects malformed urls instead of throwing', () => {
     expect(isAllowedNavigationUrl('not a url')).toBe(false);
   });
+
+  it('rejects top-level navigation to pro-asset: — only import()-style fetches may touch that scheme', () => {
+    expect(isAllowedNavigationUrl('pro-asset://web/index.mjs')).toBe(false);
+    expect(
+      isAllowedNavigationUrl('pro-asset://web/index.mjs', { devUrl: 'http://localhost:5199' }),
+    ).toBe(false);
+  });
 });
 
 describe('isExternalHttpUrl', () => {

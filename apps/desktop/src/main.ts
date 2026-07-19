@@ -8,7 +8,7 @@
 import './boot/env.js';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import { createServices } from 'electron-ipc-decorator';
 import { registerAppControlIpc } from './appControl/ipc.js';
 import { createAppMenuManager } from './menu/appMenuManager.js';
@@ -16,11 +16,16 @@ import { bootKernel } from './boot/kernel.js';
 import { createWindowManager } from './window/windowManager.js';
 import { showFatalErrorWindow } from './window/fatalErrorWindow.js';
 import { applyDevDockIcon } from './window/dockIcon.js';
+import { applyContentSecurityPolicy } from './window/csp.js';
 import {
   registerAppProtocolHandler,
   registerAppScheme,
   resolveWebDistRoot,
 } from './protocol/protocol.js';
+import {
+  registerProAssetProtocolHandler,
+  registerProAssetScheme,
+} from './protocol/proAssetProtocol.js';
 import { createOnboardingStore } from './onboarding/store.js';
 import { registerOnboardingIpc } from './onboarding/ipc.js';
 import { runImportFromRepoFlow } from './dataImport/flow.js';
@@ -51,8 +56,11 @@ console.log(`[desktop] logging to ${fileLogger.path}`);
 // Scheme registration must run before app.ready — calling it at module top
 // level (evaluated on import, ahead of the whenReady() handler below) makes
 // that ordering impossible to get wrong regardless of what else this file
-// grows into.
+// grows into. pro-asset registers unconditionally too, even though the
+// bundle may turn out absent/locked (Electron requires privileged schemes
+// to be registered before app.ready() regardless of runtime availability).
 registerAppScheme();
+registerProAssetScheme();
 
 function installAppMenu(checkForUpdates: () => void, openWindow: () => void): void {
   createAppMenuManager({
@@ -95,14 +103,19 @@ function installAppMenu(checkForUpdates: () => void, openWindow: () => void): vo
 app.whenReady().then(async () => {
   try {
     applyDevDockIcon();
-    const { ipcServiceClasses, dispose: disposeEdition } = await bootKernel();
+    const { ipcServiceClasses, webManifest, dispose: disposeEdition } = await bootKernel();
     createServices(ipcServiceClasses);
+
+    applyContentSecurityPolicy(session.defaultSession, {
+      extraScriptSrcOrigins: ['https://vibeloft.ai'],
+    });
 
     const webDistRoot = resolveWebDistRoot();
     registerAppProtocolHandler({
       distRoot: webDistRoot,
       distRootExists: () => existsSync(webDistRoot),
     });
+    registerProAssetProtocolHandler(webManifest);
 
     registerOnboardingIpc(createOnboardingStore());
     registerAppControlIpc();

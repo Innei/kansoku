@@ -43,6 +43,9 @@ vi.mock('../../../server/src/bootstrap.js', () => ({ createKernel }));
 const getActiveBundleKey = vi.hoisted(() => vi.fn((): string | null => null));
 vi.mock('@kansoku/core/license/licenseState', () => ({ getActiveBundleKey }));
 
+const readEditionWebManifest = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/webManifest', () => ({ readEditionWebManifest }));
+
 vi.stubGlobal('__DESKTOP_DEV__', false);
 vi.stubGlobal('__PUBLIC_COMMIT__', null);
 
@@ -78,6 +81,12 @@ beforeEach(() => {
   createKernel.mockReset();
   loadEdition.mockReset();
   getActiveBundleKey.mockReset().mockReturnValue(null);
+  readEditionWebManifest.mockReset().mockResolvedValue({
+    state: 'absent',
+    files: null,
+    entryPath: null,
+    errorCode: null,
+  });
 
   createKernel.mockImplementation(async () => ({
     app: { getInstance: () => ({ fetch: stubOkFetch() }) },
@@ -240,5 +249,79 @@ describe('bootKernel', () => {
 
     expect(initServerRuntime).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: undefined }));
     expect(loadEdition).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: undefined }));
+  });
+
+  it('protocol="legacy": still calls readEditionWebManifest() unconditionally and returns its result', async () => {
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'legacy',
+    });
+    readEditionWebManifest.mockResolvedValueOnce({
+      state: 'active',
+      files: new Map([['web/index.mjs', Buffer.from('x')]]),
+      entryPath: 'web/index.mjs',
+      errorCode: null,
+    });
+
+    const result = await bootKernel();
+
+    expect(loadEdition).not.toHaveBeenCalled();
+    expect(readEditionWebManifest).toHaveBeenCalledTimes(1);
+    expect(readEditionWebManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ keyHex: null, expectedPublicCommit: undefined }),
+    );
+    expect(result.webManifest.state).toBe('active');
+    expect(result.webManifest.files?.get('web/index.mjs')).toBeInstanceOf(Buffer);
+  });
+
+  it('protocol="edition": calls loadEdition() and readEditionWebManifest() with the same encPath/keyHex — no double-protocol-claim conflict', async () => {
+    loadEdition.mockResolvedValueOnce(nonActiveActivation('absent'));
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'edition',
+    });
+    readEditionWebManifest.mockResolvedValueOnce({
+      state: 'absent',
+      files: null,
+      entryPath: null,
+      errorCode: null,
+    });
+
+    const result = await bootKernel();
+
+    expect(loadEdition).toHaveBeenCalledTimes(1);
+    expect(readEditionWebManifest).toHaveBeenCalledTimes(1);
+    const loadEditionArgs = loadEdition.mock.calls[0][0];
+    const webManifestArgs = readEditionWebManifest.mock.calls[0][0];
+    expect(webManifestArgs.encPath).toBe(loadEditionArgs.encPath);
+    expect(webManifestArgs.keyHex).toBe(loadEditionArgs.keyHex);
+    expect(result.webManifest.state).toBe('absent');
+  });
+
+  it('dispose() drops the webManifest.files reference so it becomes GC-eligible', async () => {
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'legacy',
+    });
+    const files = new Map([['web/index.mjs', Buffer.from('x')]]);
+    readEditionWebManifest.mockResolvedValueOnce({
+      state: 'active',
+      files,
+      entryPath: 'web/index.mjs',
+      errorCode: null,
+    });
+
+    const result = await bootKernel();
+    expect(result.webManifest.files).toBe(files);
+
+    await result.dispose();
+
+    expect(result.webManifest.files).toBeNull();
   });
 });
