@@ -146,34 +146,55 @@ function activationError<TEdition>(
   };
 }
 
-export async function loadEdition<THost, TEdition>(
-  options: LoadEditionOptions<THost>,
-): Promise<EditionActivation<TEdition>> {
-  // claimProtocol("edition") only fires on the final success path below; every
-  // early return (absent/locked/incompatible/failed) leaves the protocol
-  // unclaimed so the caller can still fall back to the legacy protocol.
-  assertProtocolAllowed("edition");
+export interface BundleValidationOptions {
+  encPath: string;
+  keyHex?: string | null;
+  expectedPublicCommit?: string;
+}
+
+export type BundleValidationResult =
+  | { state: "absent" }
+  | { state: "locked" }
+  | {
+      state: "failed";
+      code: EditionErrorCode;
+      message: string;
+      cause?: unknown;
+      keyId?: string;
+      buildId?: string;
+    }
+  | {
+      state: "incompatible";
+      code: EditionErrorCode;
+      message: string;
+      cause?: unknown;
+      keyId?: string;
+      buildId?: string;
+    }
+  | { state: "valid"; manifest: ProManifest; bundle: EditionBundleManifest; blob: Buffer };
+
+export function validateEditionBundle(options: BundleValidationOptions): BundleValidationResult {
   const bundlePresent = existsSync(options.encPath);
   if (!bundlePresent) {
     console.info("edition slot: pro.enc not present, running unlocked");
-    return { state: "absent", bundlePresent: false };
+    return { state: "absent" };
   }
 
   if (!options.keyHex) {
     console.info("edition slot: pro.enc present but no bundle key, running unlocked");
-    return { state: "locked", bundlePresent: true };
+    return { state: "locked" };
   }
 
   let blob: Buffer;
   try {
     blob = readFileSync(options.encPath);
   } catch (cause) {
-    return activationError<TEdition>(
-      "failed",
-      "PRO_BUNDLE_DECRYPT_FAILED",
-      "pro.enc could not be read after it was confirmed present",
-      { cause },
-    );
+    return {
+      state: "failed",
+      code: "PRO_BUNDLE_DECRYPT_FAILED",
+      message: "pro.enc could not be read after it was confirmed present",
+      cause,
+    };
   }
 
   let manifest: ProManifest;
@@ -181,38 +202,78 @@ export async function loadEdition<THost, TEdition>(
     manifest = decryptProBlob(blob, options.keyHex);
   } catch (cause) {
     if (cause instanceof EncDecryptError) {
-      return activationError<TEdition>("failed", "PRO_BUNDLE_DECRYPT_FAILED", cause.message, { cause });
+      return { state: "failed", code: "PRO_BUNDLE_DECRYPT_FAILED", message: cause.message, cause };
     }
     throw cause;
   }
 
   const bundleResult = parseBundleManifest(manifest.files);
   if (!bundleResult.ok) {
-    return activationError<TEdition>("failed", "PRO_BUNDLE_MANIFEST_INVALID", bundleResult.message, {
+    return {
+      state: "failed",
+      code: "PRO_BUNDLE_MANIFEST_INVALID",
+      message: bundleResult.message,
       cause: bundleResult.cause,
       keyId: manifest.keyId,
-    });
+    };
   }
   const bundle = bundleResult.value;
 
   if (bundle.editionAbiVersion !== EDITION_ABI_VERSION) {
-    return activationError<TEdition>(
-      "incompatible",
-      "PRO_EDITION_ABI_MISMATCH",
-      `edition ABI mismatch: bundle requires ${bundle.editionAbiVersion}, host supports ${EDITION_ABI_VERSION}`,
-      { keyId: manifest.keyId, buildId: bundle.buildId },
-    );
+    return {
+      state: "incompatible",
+      code: "PRO_EDITION_ABI_MISMATCH",
+      message: `edition ABI mismatch: bundle requires ${bundle.editionAbiVersion}, host supports ${EDITION_ABI_VERSION}`,
+      keyId: manifest.keyId,
+      buildId: bundle.buildId,
+    };
   }
 
   if (options.expectedPublicCommit !== undefined && options.expectedPublicCommit !== bundle.publicCommit) {
-    return activationError<TEdition>(
-      "incompatible",
-      "PRO_EDITION_ABI_MISMATCH",
-      `public commit mismatch: host expects ${options.expectedPublicCommit}, bundle built against ${bundle.publicCommit}`,
-      { keyId: manifest.keyId, buildId: bundle.buildId },
-    );
+    return {
+      state: "incompatible",
+      code: "PRO_EDITION_ABI_MISMATCH",
+      message: `public commit mismatch: host expects ${options.expectedPublicCommit}, bundle built against ${bundle.publicCommit}`,
+      keyId: manifest.keyId,
+      buildId: bundle.buildId,
+    };
   }
 
+  return { state: "valid", manifest, bundle, blob };
+}
+
+export async function loadEdition<THost, TEdition>(
+  options: LoadEditionOptions<THost>,
+): Promise<EditionActivation<TEdition>> {
+  // claimProtocol("edition") only fires on the final success path below; every
+  // early return (absent/locked/incompatible/failed) leaves the protocol
+  // unclaimed so the caller can still fall back to the legacy protocol.
+  assertProtocolAllowed("edition");
+
+  const validation = validateEditionBundle({
+    encPath: options.encPath,
+    keyHex: options.keyHex,
+    expectedPublicCommit: options.expectedPublicCommit,
+  });
+
+  if (validation.state === "absent") return { state: "absent", bundlePresent: false };
+  if (validation.state === "locked") return { state: "locked", bundlePresent: true };
+  if (validation.state === "failed") {
+    return activationError<TEdition>(validation.state, validation.code, validation.message, {
+      cause: validation.cause,
+      keyId: validation.keyId,
+      buildId: validation.buildId,
+    });
+  }
+  if (validation.state === "incompatible") {
+    return activationError<TEdition>(validation.state, validation.code, validation.message, {
+      cause: validation.cause,
+      keyId: validation.keyId,
+      buildId: validation.buildId,
+    });
+  }
+
+  const { manifest, bundle, blob } = validation;
   const entryPath = bundle.entries[options.runtime];
   if (entryPath === undefined || manifest.files[entryPath] === undefined) {
     return activationError<TEdition>(
