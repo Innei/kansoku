@@ -10,7 +10,15 @@ import {
   setEncBundlePresent,
   unregisterProModuleForTests,
 } from '../src/pro/registry.js';
-import { capabilitiesService } from '../src/modules/capabilities/capabilities.service.js';
+import type { EditionRuntimeStatus, EditionRuntimeStatusReader } from '../src/pro/editionRuntime.js';
+import {
+  capabilitiesService,
+  createCapabilitiesService,
+} from '../src/modules/capabilities/capabilities.service.js';
+
+class FakeEditionRuntimeStatusReader implements EditionRuntimeStatusReader {
+  constructor(readonly status: EditionRuntimeStatus) {}
+}
 
 const featureKeys = Object.keys(FEATURES) as Array<keyof typeof FEATURES>;
 
@@ -76,5 +84,44 @@ describe('capabilitiesService.get', () => {
     for (const key of featureKeys) {
       expect(result.features[key]).toBe('active');
     }
+  });
+});
+
+describe('createCapabilitiesService', () => {
+  it('reads pro and hasEncBundle from the injected status reader', async () => {
+    const service = createCapabilitiesService(
+      new FakeEditionRuntimeStatusReader({
+        state: 'active',
+        bundlePresent: true,
+        keyId: 'test-key',
+      }),
+    );
+    const result = await service.get();
+    expect(result.pro).toBe(true);
+    expect(result.hasEncBundle).toBe(true);
+  });
+
+  it('marks pro false when the injected reader reports a locked state', async () => {
+    const service = createCapabilitiesService(
+      new FakeEditionRuntimeStatusReader({
+        state: 'locked',
+        bundlePresent: true,
+      }),
+    );
+    const result = await service.get();
+    expect(result.pro).toBe(false);
+    expect(result.hasEncBundle).toBe(true);
+  });
+
+  it('marks pro and hasEncBundle false when the injected reader reports absent', async () => {
+    const service = createCapabilitiesService(
+      new FakeEditionRuntimeStatusReader({
+        state: 'absent',
+        bundlePresent: false,
+      }),
+    );
+    const result = await service.get();
+    expect(result.pro).toBe(false);
+    expect(result.hasEncBundle).toBe(false);
   });
 });
