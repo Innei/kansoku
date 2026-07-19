@@ -61,5 +61,21 @@ jobs:
       - name: pro tests
         run: pnpm --filter @kansoku/pro test
 
+      - name: generate synthetic bundle key (CI-only, not a real release key)
+        run: echo "KANSOKU_BUNDLE_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: build pro (dist for packing)
+        run: pnpm --filter @kansoku/pro build
+
+      - name: pack pro (synthetic key — proves the pack pipeline works, not for distribution)
+        env:
+          KANSOKU_BUNDLE_KEY_ID: ci
+        run: pnpm --filter @kansoku/pro pack
+
+      - name: verify bundle commit combination (self-consistency only — not a pinned-combo check, see apps/desktop/scripts/verifyBundleCommit.mjs)
+        run: |
+          echo "this asserts bundle.json's publicCommit/proCommit match this job's checked-out HEADs — it cannot verify against the workspace superproject's separately-pinned known-good combination, which is out of scope here (see repos/kansoku-workspace/scripts/verify.sh)"
+          apps/desktop/node_modules/.bin/tsx apps/desktop/scripts/verifyBundleCommit.mjs apps/pro/dist-enc/pro.enc
+
       - name: abi gate
         run: pnpm --filter @kansoku/pro abi:gate

@@ -189,6 +189,13 @@ jobs:
           codesign --verify --deep --strict "$DMG_MOUNT_DIR"/*.app
           hdiutil detach "$DMG_MOUNT_DIR" -quiet
 
+      - name: verify bundle commit combination (self-consistency only — not a pinned-combo check, see apps/desktop/scripts/verifyBundleCommit.mjs)
+        env:
+          KANSOKU_BUNDLE_KEY: ${{ secrets.KANSOKU_BUNDLE_KEY }}
+        run: |
+          echo "this asserts bundle.json's publicCommit/proCommit match this job's checked-out HEADs — it cannot verify against the workspace superproject's separately-pinned known-good combination, which is out of scope here (see repos/kansoku-workspace/scripts/verify.sh)"
+          apps/desktop/node_modules/.bin/tsx apps/desktop/scripts/verifyBundleCommit.mjs apps/desktop/pro/pro.enc
+
       - name: prepare release archive dir
         id: archive
         run: |
