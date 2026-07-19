@@ -4,8 +4,8 @@ import { chartTargetPath } from '@kansoku/shared/chartUrl';
 import { useQuery } from './apiHooks';
 import { client } from './client';
 import { configureRoutes } from './edition';
+import { ProEditionFallback } from './host/ProEditionFallback';
 import { symbolFromRoute } from './lib/symbol';
-import { Home } from './pages/Home';
 import { PopoutChartWindow } from './pages/PopoutChartWindow';
 import { SymbolCockpit } from './pages/SymbolCockpit';
 import { matchPopoutSymbolRoute, navigate, routePathname, useRoute } from './router';
@@ -63,5 +63,5 @@ export function Router() {
   configureRoutes(registry);
   const Page = registry.get(pathname);
   if (Page) return <Page />;
-  return <Home />;
+  return <ProEditionFallback />;
 }
