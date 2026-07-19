@@ -123,10 +123,9 @@ export function proOverlayPlugin(options: ProOverlayOptions = {}): ProOverlayPlu
       if (source.includes('\0') || externalUrlPattern.test(source)) return null;
       if (importer === undefined) return null;
 
-      const hostResolve = this.resolve;
-      if (typeof hostResolve !== 'function') return null;
+      if (typeof this.resolve !== 'function') return null;
 
-      const resolved = await hostResolve(source, importer, { skipSelf: true });
+      const resolved = await this.resolve(source, importer, { skipSelf: true });
       if (!resolved || resolved.external || resolved.id.includes('\0')) return null;
 
       const resolvedParts = splitQuery(resolved.id);

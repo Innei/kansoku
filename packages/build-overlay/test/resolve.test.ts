@@ -182,6 +182,22 @@ describe('proOverlayPlugin host-first resolution', () => {
     expect(result).toBe(fixture.projection);
   });
 
+  it('invokes the host resolver bound to the plugin context, not detached', async () => {
+    const fixture = hostFixture();
+    const plugin = proOverlayPlugin();
+    const context = {
+      token: 'plugin-context',
+      resolve() {
+        if (this.token !== 'plugin-context') {
+          throw new TypeError("Cannot read properties of undefined (reading 'token')");
+        }
+        return Promise.resolve({ id: fixture.resolvedFile });
+      },
+    };
+    const result = await plugin.resolveId.call(context, '@scope/settings', fixture.importer);
+    expect(result).toBe(fixture.projection);
+  });
+
   it('preserves a query on the host-resolved id', async () => {
     const fixture = hostFixture();
     const plugin = proOverlayPlugin();
