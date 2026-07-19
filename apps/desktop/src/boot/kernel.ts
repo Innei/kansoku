@@ -31,6 +31,8 @@ export async function bootKernel() {
     register();
   }
 
+  const expectedPublicCommit = app.isPackaged && __PUBLIC_COMMIT__ ? __PUBLIC_COMMIT__ : undefined;
+
   const [
     { initServerRuntime },
     { attachRealtimeBridge },
@@ -62,6 +64,7 @@ export async function bootKernel() {
     },
     proAppDir: app.getAppPath(),
     productionHost: app.isPackaged,
+    expectedPublicCommit,
     // Packaged builds only ever stage pro.enc (see desktop/scripts/
     // stagePro.mjs) — no plaintext dist/ to fall back to, so loadPro's
     // default entryFile is fine (it just fails cleanly into free mode when
@@ -104,6 +107,7 @@ export async function bootKernel() {
       runtime: 'desktop',
       keyHex,
       host: desktopHost,
+      expectedPublicCommit,
     });
     desktopEdition =
       desktopActivation.state === 'active' && desktopActivation.edition

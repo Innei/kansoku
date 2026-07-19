@@ -44,6 +44,7 @@ const getActiveBundleKey = vi.hoisted(() => vi.fn((): string | null => null));
 vi.mock('@kansoku/core/license/licenseState', () => ({ getActiveBundleKey }));
 
 vi.stubGlobal('__DESKTOP_DEV__', false);
+vi.stubGlobal('__PUBLIC_COMMIT__', null);
 
 const { bootKernel } = await import('../../src/boot/kernel.js');
 
@@ -204,5 +205,40 @@ describe('bootKernel', () => {
     await expect(bootKernel()).resolves.toBeDefined();
 
     expect(loadEdition).not.toHaveBeenCalled();
+  });
+
+  it('packaged with __PUBLIC_COMMIT__ set: threads the same expectedPublicCommit into initServerRuntime and loadEdition', async () => {
+    electron.app.isPackaged = true;
+    vi.stubGlobal('__PUBLIC_COMMIT__', 'deadbeef');
+    loadEdition.mockResolvedValueOnce(nonActiveActivation('absent'));
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'edition',
+    });
+
+    await bootKernel();
+
+    expect(initServerRuntime).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: 'deadbeef' }));
+    expect(loadEdition).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: 'deadbeef' }));
+
+    electron.app.isPackaged = false;
+    vi.stubGlobal('__PUBLIC_COMMIT__', null);
+  });
+
+  it('unpackaged (dev) default: expectedPublicCommit is undefined on both call sites', async () => {
+    loadEdition.mockResolvedValueOnce(nonActiveActivation('absent'));
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'edition',
+    });
+
+    await bootKernel();
+
+    expect(initServerRuntime).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: undefined }));
+    expect(loadEdition).toHaveBeenCalledWith(expect.objectContaining({ expectedPublicCommit: undefined }));
   });
 });

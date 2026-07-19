@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'tsdown';
 
@@ -6,6 +8,15 @@ const desktopAlias = {
   '@desktop': fileURLToPath(new URL('./src', import.meta.url)),
   '@server': fileURLToPath(new URL('../server/src', import.meta.url)),
 };
+
+function resolvePublicCommitOrNull(): string | null {
+  const publicRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: publicRoot, encoding: 'utf8' }).trim();
+  } catch {
+    return null;
+  }
+}
 
 export default defineConfig([
   {
@@ -16,6 +27,7 @@ export default defineConfig([
     alias: desktopAlias,
     define: {
       __DESKTOP_DEV__: JSON.stringify(isDev),
+      __PUBLIC_COMMIT__: JSON.stringify(resolvePublicCommitOrNull()),
     },
     deps: {
       alwaysBundle: ['electron-window-state', /^@kansoku\//],
