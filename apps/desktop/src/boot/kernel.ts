@@ -8,6 +8,7 @@ import { app, ipcMain, safeStorage, shell } from 'electron';
 import { createCredentialsBridgeHandlers, registerCredentialsIpc } from '../credentials/bridge.js';
 import { createDesktopSecretBox } from '../credentials/secretBox.js';
 import { IS_DEV } from './env.js';
+import { startProActivationWatch } from './proActivationWatch.js';
 
 export async function bootKernel() {
   if (__DESKTOP_DEV__) {
@@ -20,13 +21,19 @@ export async function bootKernel() {
     register();
   }
 
-  const [{ initServerRuntime }, { attachRealtimeBridge }, { CHART_DATA_DIR }, { getPro }] =
-    await Promise.all([
-      import('../../../server/src/runtimeInit.js'),
-      import('../realtime/bridge.js'),
-      import('@kansoku/core/env'),
-      import('@kansoku/core/pro/registry'),
-    ]);
+  const [
+    { initServerRuntime },
+    { attachRealtimeBridge },
+    { CHART_DATA_DIR },
+    { getPro, hasEncBundle, isProPresent },
+    { getActiveBundleKey },
+  ] = await Promise.all([
+    import('../../../server/src/runtimeInit.js'),
+    import('../realtime/bridge.js'),
+    import('@kansoku/core/env'),
+    import('@kansoku/core/pro/registry'),
+    import('@kansoku/core/license/licenseState'),
+  ]);
 
   // Dev keeps the pre-P3 plaintext keyfile so ELECTRON_DEV workflows are
   // unaffected; packaged builds move the AI master key into safeStorage.
@@ -67,6 +74,17 @@ export async function bootKernel() {
 
   const health = await apiApp.fetch(new Request('http://localhost/api/health'));
   console.log(`[desktop] kernel self-test /api/health -> ${health.status}`, await health.text());
+
+  startProActivationWatch({
+    hasEncBundle,
+    isProPresent,
+    getBundleKey: getActiveBundleKey,
+    relaunch: () => {
+      console.log('[desktop] bundle key arrived — relaunching to load pro');
+      app.relaunch();
+      app.quit();
+    },
+  });
 
   return kernel;
 }
