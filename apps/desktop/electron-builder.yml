@@ -19,7 +19,35 @@ files:
   # uses (single instance). Matches nothing on free builds.
   - pro/pro.enc
   - package.json
+  # Production packages often publish source maps, declarations, and native
+  # build inputs alongside their runtime files. None of these are read by the
+  # packaged app.
   - '!**/*.ts'
+  - '!**/*.d.cts'
+  - '!**/*.d.mts'
+  - '!**/*.map'
+  # electron-rebuild leaves both its ABI cache and the complete node-gyp build
+  # tree behind. bindings loads build/Release/better_sqlite3.node at runtime;
+  # keep that one binary and discard the duplicate cache, sources, and objects.
+  - '!**/node_modules/better-sqlite3/binding.gyp'
+  - '!**/node_modules/better-sqlite3/bin/**'
+  - '!**/node_modules/better-sqlite3/deps/**'
+  - '!**/node_modules/better-sqlite3/src/**'
+  - '!**/node_modules/better-sqlite3/build/deps/**'
+  - '!**/node_modules/better-sqlite3/build/Release/obj/**'
+  - '!**/node_modules/better-sqlite3/build/Release/test_extension.node'
+  # Build/install tools are production dependencies of the two native modules,
+  # but they are never executed after electron-rebuild has produced the addons.
+  - '!**/node_modules/node-addon-api/**'
+  - '!**/node_modules/node-gyp/**'
+  - '!**/node_modules/prebuild-install/**'
+  - '!**/node_modules/tar/**'
+  - '!**/node_modules/tar-fs/**'
+  - '!**/node_modules/electron-sparkle-updater/bin/**'
+  - '!**/node_modules/electron-sparkle-updater/dist/builder.js'
+  - '!**/node_modules/electron-sparkle-updater/dist/cli.js'
+  - '!**/node_modules/electron-sparkle-updater/native/scripts/**'
+  - '!**/node_modules/electron-sparkle-updater/native/src/**'
   - '!**/node_modules/electron-sparkle-updater/native/vendor/**'
 extraResources:
   - from: ../web/dist
@@ -37,8 +65,12 @@ extraResources:
 extraFiles:
   - from: node_modules/electron-sparkle-updater/native/vendor/Sparkle.framework
     to: Frameworks/Sparkle.framework
+asar:
+  # Native addons are listed explicitly below. Electron Builder's smart
+  # unpacker otherwise expands the match to each addon package in full.
+  smartUnpack: false
 asarUnpack:
-  - '**/node_modules/better-sqlite3/**'
+  - '**/node_modules/better-sqlite3/build/Release/better_sqlite3.node'
   - '**/node_modules/electron-sparkle-updater/native/build/Release/*.node'
 # Updates ship via Sparkle, not electron-updater — skip blockmaps for both targets.
 # dmg has a native knob; zip needs the app-builder-lib patch (patches/app-builder-lib@…).
