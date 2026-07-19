@@ -4,6 +4,7 @@ import { useQuery } from '@web/apiHooks';
 import { refreshCapabilities, useCapabilities } from '@web/capabilitiesStore';
 import { client } from '@web/client';
 import { openLicenseModal } from '@web/licenseModalStore';
+import { getDesktopAppControlBridge } from './desktopAppControl';
 import { Badge, Button, Input, openModal } from '@web/ui';
 
 function activateErrorMessage(raw: string): string {
@@ -170,7 +171,16 @@ function LicensedStatus({
         </div>
         {restartRequired ? (
           <div className="settings-preference-description license-restart-notice">
-            AI 付费功能需要重启应用后才会生效，请手动退出并重新打开 Kansoku。
+            {getDesktopAppControlBridge() ? (
+              <>
+                AI 付费功能需要重启应用后才会生效。
+                <Button onClick={() => void getDesktopAppControlBridge()?.relaunch()}>
+                  立即重启
+                </Button>
+              </>
+            ) : (
+              'AI 付费功能需要重启应用后才会生效，请手动退出并重新打开 Kansoku。'
+            )}
           </div>
         ) : null}
         {proUnavailable ? (

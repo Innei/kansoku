@@ -10,6 +10,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { app, BrowserWindow } from 'electron';
 import { createServices } from 'electron-ipc-decorator';
+import { registerAppControlIpc } from './appControl/ipc.js';
 import { createAppMenuManager } from './menu/appMenuManager.js';
 import { bootKernel } from './boot/kernel.js';
 import { createWindowManager } from './window/windowManager.js';
@@ -105,6 +106,7 @@ app.whenReady().then(async () => {
     });
 
     registerOnboardingIpc(createOnboardingStore());
+    registerAppControlIpc();
     registerDataRootIpc();
     const tabsFileStore: TabsFileStore = createTabsFileStore(
       join(app.getPath('userData'), 'tabs.json'),

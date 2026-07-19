@@ -63,6 +63,10 @@ if (isPrivilegedOrigin) {
     get: () => ipcRenderer.invoke(CREDENTIALS_CHANNELS.get),
   };
 
+  desktopApi.appControl = {
+    relaunch: () => ipcRenderer.invoke('desktop:app:relaunch'),
+  };
+
   desktopApi.onboarding = {
     getState: () => ipcRenderer.invoke('desktop:onboarding:get-state'),
     complete: () => ipcRenderer.invoke('desktop:onboarding:complete'),

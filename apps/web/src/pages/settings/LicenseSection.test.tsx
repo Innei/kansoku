@@ -148,6 +148,28 @@ describe('LicenseSection', () => {
     expect(screen.queryByText(/当前构建不包含付费模块/)).toBeNull();
   });
 
+  it("offers one-click relaunch in the desktop runtime instead of asking for a manual quit", async () => {
+    const relaunch = vi.fn().mockResolvedValue(undefined);
+    (window as { desktop?: unknown }).desktop = { appControl: { relaunch } };
+    capabilitiesGet.mockResolvedValue({
+      pro: false,
+      licensed: true,
+      license: { state: "licensed", maskedKey: "••••1234" },
+      hasEncBundle: true,
+    });
+
+    try {
+      renderWithClient(<LicenseSection />);
+
+      const button = await screen.findByRole("button", { name: "立即重启" });
+      expect(screen.queryByText(/请手动退出并重新打开/)).toBeNull();
+      fireEvent.click(button);
+      expect(relaunch).toHaveBeenCalledTimes(1);
+    } finally {
+      delete (window as { desktop?: unknown }).desktop;
+    }
+  });
+
   it("shows the honest no-paid-module notice when licensed but this build has no pro code at all", async () => {
     capabilitiesGet.mockResolvedValue({
       pro: false,
