@@ -15,6 +15,7 @@ import {
 } from '@kansoku/core/services/credentials/authUrlOpener';
 import { initCredentialProvider } from '@kansoku/core/services/credentials/registry';
 import type { CredentialProvider } from '@kansoku/core/services/credentials/types';
+import { registerProAiExtension } from '@kansoku/core/pro/aiExtension';
 import type { ServerProComposition } from './edition/types.js';
 
 export interface ServerRuntimeOptions {
@@ -54,6 +55,7 @@ export async function initServerRuntime(
       console.warn('[server] pro composition unavailable, running free', error);
       return null;
     });
+  if (proComposition?.aiExtension) registerProAiExtension(proComposition.aiExtension);
   await proComposition?.start?.();
   return proComposition;
 }
