@@ -76,17 +76,25 @@ describe('detectSecondBreakouts', () => {
     expect(detectSecondBreakouts(highs, lows, c, timesTs)).toHaveLength(0);
   });
 
+  const buildAttemptGapStructure = (descentStep: number) => [
+    ...UP_TREND,
+    129, 128, 127, 126, 125,
+    126, 127, 128,
+    ...ramp(127, 123, -descentStep),
+    124, 125, 126, 127, 126, 125, 124,
+    125, 126, 127, 128,
+  ];
+
+  it('detects the H2 when the two attempts still fit within MAX_ATTEMPT_GAP', () => {
+    const closes = buildAttemptGapStructure(0.2);
+    const { highs, lows, closes: c, timesTs } = bars(closes);
+    const found = detectSecondBreakouts(highs, lows, c, timesTs);
+    expect(found).toHaveLength(1);
+    expect(found[0].kind).toBe('H2');
+  });
+
   it('drops the structure when the two attempts are too far apart', () => {
-    const gapFiller = Array.from({ length: 60 }, (_, i) => 128 + ((i % 6) - 3) * 0.2);
-    const closes = [
-      ...UP_TREND,
-      129, 128, 127, 126, 125,
-      126, 127, 128,
-      ...gapFiller,
-      127, 126, 125, 124, 123,
-      124, 125, 126, 127, 126, 125, 124,
-      125, 126, 127, 128,
-    ];
+    const closes = buildAttemptGapStructure(0.1);
     const { highs, lows, closes: c, timesTs } = bars(closes);
     expect(detectSecondBreakouts(highs, lows, c, timesTs)).toHaveLength(0);
   });
