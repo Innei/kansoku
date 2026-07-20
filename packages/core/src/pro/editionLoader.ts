@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, normalize } from "node:path";
+import { pathToFileURL } from "node:url";
 import { EDITION_ABI_VERSION } from "@kansoku/pro-api/edition";
 import type { EditionEntry, EditionRuntimeKind } from "@kansoku/pro-api/edition";
 import type { ProManifest } from "./encLoader.js";
@@ -129,6 +130,49 @@ export function parseBundleManifest(files: Record<string, string>): BundleParseR
       proCommit: typeof candidate.proCommit === "string" ? candidate.proCommit : undefined,
     },
   };
+}
+
+// Shared by loadEdition() (encrypted bundle, entry imported via a virtual
+// pro-asset:// URL) and loadEditionFromDevDist() (plain dist-dev/*.mjs on
+// disk) once each has a resolved namespace object in hand — everything past
+// "we have an imported module" is identical ABI validation + createEdition()
+// invocation, regardless of where the module came from.
+async function activateEditionModule<THost, TEdition>(
+  namespace: Record<string, unknown>,
+  runtime: EditionRuntimeKind,
+  host: THost,
+  entryLabel: string,
+  meta: { keyId?: string; buildId?: string },
+): Promise<EditionActivation<TEdition>> {
+  const entryModule = (namespace.default ?? namespace) as Partial<EditionEntry<THost, TEdition>>;
+
+  if (
+    entryModule.abiVersion !== EDITION_ABI_VERSION ||
+    entryModule.runtime !== runtime ||
+    typeof entryModule.createEdition !== "function"
+  ) {
+    return activationError<TEdition>(
+      "incompatible",
+      "PRO_EDITION_ABI_MISMATCH",
+      `edition entry "${entryLabel}" failed ABI validation for runtime "${runtime}"`,
+      meta,
+    );
+  }
+
+  let edition: TEdition;
+  try {
+    edition = await entryModule.createEdition(host);
+  } catch (cause) {
+    return activationError<TEdition>(
+      "failed",
+      "PRO_EDITION_INIT_FAILED",
+      `createEdition threw for runtime "${runtime}"`,
+      { cause, ...meta },
+    );
+  }
+
+  claimProtocol("edition");
+  return { state: "active", bundlePresent: true, ...meta, edition };
 }
 
 function activationError<TEdition>(
@@ -299,33 +343,46 @@ export async function loadEdition<THost, TEdition>(
       { cause, keyId: manifest.keyId, buildId: bundle.buildId },
     );
   }
-  const entryModule = (namespace.default ?? namespace) as Partial<EditionEntry<THost, TEdition>>;
 
-  if (
-    entryModule.abiVersion !== EDITION_ABI_VERSION ||
-    entryModule.runtime !== options.runtime ||
-    typeof entryModule.createEdition !== "function"
-  ) {
-    return activationError<TEdition>(
-      "incompatible",
-      "PRO_EDITION_ABI_MISMATCH",
-      `edition entry "${entryPath}" failed ABI validation for runtime "${options.runtime}"`,
-      { keyId: manifest.keyId, buildId: bundle.buildId },
-    );
+  return activateEditionModule<THost, TEdition>(namespace, options.runtime, options.host, entryPath, {
+    keyId: manifest.keyId,
+    buildId: bundle.buildId,
+  });
+}
+
+export interface LoadEditionFromDevDistOptions<THost> {
+  runtime: EditionRuntimeKind;
+  distDevDir: string;
+  host: THost;
+}
+
+// Dev-mode counterpart to loadEdition() (design doc §17): instead of
+// decrypting pro.enc, imports the plain, unencrypted watch-build output at
+// <distDevDir>/<runtime>/index.mjs directly off disk and runs it through the
+// same ABI-shape validation loadEdition() uses — NOT loadPro()'s legacy
+// ProModule-shape check. There is no manifest/blob/keyId/buildId here (no
+// bundle was decrypted), so activation metadata is limited to state/edition.
+export async function loadEditionFromDevDist<THost, TEdition>(
+  options: LoadEditionFromDevDistOptions<THost>,
+): Promise<EditionActivation<TEdition>> {
+  assertProtocolAllowed("edition");
+
+  const entryPath = join(options.distDevDir, options.runtime, "index.mjs");
+  if (!existsSync(entryPath)) {
+    return { state: "absent", bundlePresent: false };
   }
 
-  let edition: TEdition;
+  let namespace: Record<string, unknown>;
   try {
-    edition = await entryModule.createEdition(options.host);
+    namespace = (await import(pathToFileURL(entryPath).href)) as Record<string, unknown>;
   } catch (cause) {
     return activationError<TEdition>(
       "failed",
       "PRO_EDITION_INIT_FAILED",
-      `createEdition threw for runtime "${options.runtime}"`,
-      { cause, keyId: manifest.keyId, buildId: bundle.buildId },
+      `dev-dist edition entry "${entryPath}" threw while importing for runtime "${options.runtime}"`,
+      { cause },
     );
   }
 
-  claimProtocol("edition");
-  return { state: "active", bundlePresent: true, keyId: manifest.keyId, buildId: bundle.buildId, edition };
+  return activateEditionModule<THost, TEdition>(namespace, options.runtime, options.host, entryPath, {});
 }

@@ -29,7 +29,11 @@ vi.mock('../../src/credentials/bridge.js', () => ({
 }));
 
 const loadEdition = vi.hoisted(() => vi.fn());
-vi.mock('@kansoku/core/pro/editionLoader', () => ({ loadEdition }));
+const loadEditionFromDevDist = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/editionLoader', () => ({ loadEdition, loadEditionFromDevDist }));
+
+const proDevDistDir = vi.hoisted(() => vi.fn(() => '/app/../pro/dist-dev'));
+vi.mock('@kansoku/core/pro/loader', () => ({ proDevDistDir }));
 
 const initServerRuntime = vi.hoisted(() => vi.fn());
 vi.mock('../../../server/src/runtimeInit.js', () => ({ initServerRuntime }));
@@ -80,6 +84,8 @@ beforeEach(() => {
   attachRealtimeBridge.mockReset();
   createKernel.mockReset();
   loadEdition.mockReset();
+  loadEditionFromDevDist.mockReset();
+  proDevDistDir.mockReset().mockReturnValue('/app/../pro/dist-dev');
   getActiveBundleKey.mockReset().mockReturnValue(null);
   readEditionWebManifest.mockReset().mockResolvedValue({
     state: 'absent',
@@ -200,6 +206,26 @@ describe('bootKernel', () => {
 
     expect(loadEdition).toHaveBeenCalledTimes(1);
     expect(loadEdition).toHaveBeenCalledWith(expect.objectContaining({ runtime: 'desktop' }));
+    expect(result.ipcServiceClasses).toEqual(nonAiIpcServiceClasses);
+  });
+
+  it('protocol="edition", editionSource="dist-dev": retries the edition protocol for the desktop runtime via loadEditionFromDevDist() against dist-dev/, not loadEdition() against pro.enc (design §17)', async () => {
+    loadEditionFromDevDist.mockResolvedValueOnce(nonActiveActivation('absent'));
+    const serverEdition = fakeServerEdition();
+    initServerRuntime.mockResolvedValueOnce({
+      host: fakeCoreHost(),
+      edition: serverEdition,
+      protocol: 'edition',
+      editionSource: 'dist-dev',
+    });
+
+    const result = await bootKernel();
+
+    expect(loadEditionFromDevDist).toHaveBeenCalledTimes(1);
+    expect(loadEditionFromDevDist).toHaveBeenCalledWith(
+      expect.objectContaining({ runtime: 'desktop', distDevDir: '/app/../pro/dist-dev' }),
+    );
+    expect(loadEdition).not.toHaveBeenCalled();
     expect(result.ipcServiceClasses).toEqual(nonAiIpcServiceClasses);
   });
 

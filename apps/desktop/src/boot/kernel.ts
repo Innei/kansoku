@@ -10,7 +10,8 @@ import type { BaseDesktopEdition } from '@kansoku/core/edition/base';
 import { DefaultIpcRegistry } from '@kansoku/core/edition/ipcRegistry';
 import type { DesktopEditionHost } from '@kansoku/core/edition/host';
 import { DefaultRealtimeChannelRegistry } from '@kansoku/core/edition/realtimeRegistry';
-import { loadEdition } from '@kansoku/core/pro/editionLoader';
+import { loadEdition, loadEditionFromDevDist } from '@kansoku/core/pro/editionLoader';
+import { proDevDistDir } from '@kansoku/core/pro/loader';
 import { readEditionWebManifest } from '@kansoku/core/pro/webManifest';
 import { createCredentialsBridgeHandlers, registerCredentialsIpc } from '../credentials/bridge.js';
 import { createDesktopSecretBox } from '../credentials/secretBox.js';
@@ -22,16 +23,6 @@ import { startProActivationWatch } from './proActivationWatch.js';
 import { promptProRelaunch } from './proRelaunch.js';
 
 export async function bootKernel() {
-  if (__DESKTOP_DEV__) {
-    // The pro slot ships as TS and loads at runtime. tsx transforms it with the
-    // pro package's tsconfig (experimentalDecorators); tsx otherwise picks the
-    // desktop tsconfig, which lacks the flag. Packaged builds load built JS and
-    // skip this entirely (the branch is stripped by the __DESKTOP_DEV__ define).
-    process.env.TSX_TSCONFIG_PATH = join(app.getAppPath(), '..', 'pro', 'tsconfig.json');
-    const { register } = await import('tsx/esm/api');
-    register();
-  }
-
   const expectedPublicCommit = app.isPackaged && __PUBLIC_COMMIT__ ? __PUBLIC_COMMIT__ : undefined;
 
   const [
@@ -58,7 +49,12 @@ export async function bootKernel() {
         legacyKeyPath: join(CHART_DATA_DIR, 'ai-secret.key'),
       });
 
-  const { host: serverHost, edition: serverEdition, protocol } = await initServerRuntime({
+  const {
+    host: serverHost,
+    edition: serverEdition,
+    protocol,
+    editionSource,
+  } = await initServerRuntime({
     secretBox,
     openAuthUrl: (url) => {
       shell.openExternal(url).catch(() => {});
@@ -67,11 +63,11 @@ export async function bootKernel() {
     productionHost: app.isPackaged,
     expectedPublicCommit,
     // Packaged builds only ever stage pro.enc (see desktop/scripts/
-    // stagePro.mjs) — no plaintext dist/ to fall back to, so loadPro's
-    // default entryFile is fine (it just fails cleanly into free mode when
-    // absent). Only dev needs an explicit entry, for the sibling slot
-    // checkout it runs straight from TS.
-    proEntry: app.isPackaged ? undefined : 'src/index.ts',
+    // stagePro.mjs) — no dist-dev/ to fall back to, so loadPro's default
+    // entryFile is fine (it just fails cleanly into free mode when absent).
+    // Dev boots through the edition protocol against dist-dev/ instead (see
+    // proDevDistDir()/loadEditionFromDevDist() below) — it no longer loads
+    // apps/pro/src/index.ts as plaintext TS.
   });
   await serverEdition.initialize();
 
@@ -98,19 +94,29 @@ export async function bootKernel() {
   // is 'legacy' both when it fell back to the legacy loadPro() protocol
   // (bundle absent/locked) and when it rejected a present-but-invalid
   // bundle and ran free instead (incompatible/failed) — either way no
-  // edition-protocol bundle is usable, so only retry loadEdition() for the
-  // desktop runtime when the server side actually activated it; otherwise
-  // go straight to the legacy desktop adapter.
+  // edition-protocol source is usable, so only retry the edition protocol
+  // for the desktop runtime when the server side actually activated it;
+  // otherwise go straight to the legacy desktop adapter. editionSource says
+  // which source the server side activated from, so the desktop retry hits
+  // the same one: pro.enc via loadEdition(), or dist-dev/ (dev only, design
+  // §17) via loadEditionFromDevDist().
   let desktopEdition: BaseDesktopEdition;
   if (protocol === 'edition') {
-    const desktopActivation = await loadEdition<DesktopEditionHost, BaseDesktopEdition>({
-      encPath,
-      virtualDir,
-      runtime: 'desktop',
-      keyHex,
-      host: desktopHost,
-      expectedPublicCommit,
-    });
+    const desktopActivation =
+      editionSource === 'dist-dev'
+        ? await loadEditionFromDevDist<DesktopEditionHost, BaseDesktopEdition>({
+            runtime: 'desktop',
+            distDevDir: proDevDistDir(app.getAppPath()),
+            host: desktopHost,
+          })
+        : await loadEdition<DesktopEditionHost, BaseDesktopEdition>({
+            encPath,
+            virtualDir,
+            runtime: 'desktop',
+            keyHex,
+            host: desktopHost,
+            expectedPublicCommit,
+          });
     desktopEdition =
       desktopActivation.state === 'active' && desktopActivation.edition
         ? desktopActivation.edition

@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { ProModule } from '@kansoku/pro-api';
+import { APP_ROOT } from '../env.js';
 import { getActiveBundleKey } from '../license/licenseState.js';
 import { loadEncryptedModule } from './encLoader.js';
 import { assertProtocolAllowed, claimProtocol } from './protocolClaim.js';
@@ -28,6 +29,19 @@ function proEntryUrl(appDir?: string, entryFile = 'src/index.js'): string {
     return pathToFileURL([appDir, '..', 'pro', entryFile].join('/')).href;
   }
   return ['..', '..', '..', '..', 'apps', 'pro', entryFile].join('/');
+}
+
+// The dev-mode counterpart to proEntryUrl() above, for the unencrypted watch
+// build (§17 of the design doc): apps/pro/dist-dev/{server,desktop}/index.mjs
+// are plain filesystem paths passed to loadEditionFromDevDist(), not import()
+// specifiers, so unlike proEntryUrl() this returns a real absolute path
+// (via APP_ROOT, which is already source-location-relative — see env.ts)
+// rather than a bare relative specifier string.
+export function proDevDistDir(appDir?: string): string {
+  if (appDir) {
+    return join(appDir, '..', 'pro', 'dist-dev');
+  }
+  return join(APP_ROOT, 'pro', 'dist-dev');
 }
 
 // Node's ERR_MODULE_NOT_FOUND message is "Cannot find module '<missing>' imported

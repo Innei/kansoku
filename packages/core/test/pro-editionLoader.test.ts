@@ -7,8 +7,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
-import { loadEdition, parseBundleManifest } from "../src/pro/editionLoader.js";
-import { getClaimedProtocol, resetProtocolClaimForTests } from "../src/pro/protocolClaim.js";
+import { loadEdition, loadEditionFromDevDist, parseBundleManifest } from "../src/pro/editionLoader.js";
+import { claimProtocol, getClaimedProtocol, resetProtocolClaimForTests } from "../src/pro/protocolClaim.js";
 
 const KEY_HEX = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff";
 const WRONG_KEY_HEX = "ff".repeat(32);
@@ -630,5 +630,124 @@ describe("loadEdition (spawned Node process, real dynamic import)", () => {
     expect(results.firstLoad!.edition).toEqual({ kind: "server", name: "alice" });
     expect(results.secondLoad!.state).toBe("active");
     expect(results.secondLoad!.edition).toEqual({ kind: "server", name: "alice" });
+  });
+});
+
+// loadEditionFromDevDist() imports a real file:// path directly (no
+// registerHooks virtual-module scheme involved, unlike loadEdition()'s
+// pro-asset:// entries) — plain dynamic import() of a real path is not
+// intercepted by vitest's vite-node runner the way virtual specifiers are
+// (see the comment above RUNNER_SOURCE), so these run in-process.
+describe("loadEditionFromDevDist (design §17 dev boot, in-process, real dynamic import)", () => {
+  const roots: string[] = [];
+
+  afterEach(() => {
+    resetProtocolClaimForTests();
+    while (roots.length) rmSync(roots.pop()!, { recursive: true, force: true });
+  });
+
+  function stageDevDist(runtime: "server" | "desktop", source: string): string {
+    const root = mkdtempSync(join(tmpdir(), "kansoku-dev-dist-"));
+    roots.push(root);
+    const runtimeDir = join(root, runtime);
+    mkdirSync(runtimeDir, { recursive: true });
+    writeFileSync(join(runtimeDir, "index.mjs"), source);
+    return root;
+  }
+
+  it("absent: dist-dev/<runtime>/index.mjs missing", async () => {
+    const distDevDir = join(tmpdir(), "kansoku-dev-dist-definitely-missing");
+    const activation = await loadEditionFromDevDist({
+      runtime: "server",
+      distDevDir,
+      host: {},
+    });
+    expect(activation.state).toBe("absent");
+    expect(activation.bundlePresent).toBe(false);
+    expect(activation.error).toBeUndefined();
+  });
+
+  it("active: valid ABI entry loads and createEdition() receives the host — same ABI-shape validation loadEdition() uses, not loadPro()'s ProModule shape", async () => {
+    const distDevDir = stageDevDist("server", SERVER_ENTRY);
+
+    const activation = await loadEditionFromDevDist({
+      runtime: "server",
+      distDevDir,
+      host: { name: "alice" },
+    });
+
+    expect(activation.state).toBe("active");
+    expect(activation.bundlePresent).toBe(true);
+    expect(activation.edition).toEqual({ kind: "server", name: "alice" });
+    // No enc bundle was decrypted, so there is no keyId/buildId to report —
+    // unlike loadEdition()'s active result.
+    expect(activation.keyId).toBeUndefined();
+    expect(activation.buildId).toBeUndefined();
+    expect(getClaimedProtocol()).toBe("edition");
+  });
+
+  it("active: desktop runtime resolves dist-dev/desktop/index.mjs independently of server", async () => {
+    const distDevDir = stageDevDist("desktop", DESKTOP_ENTRY);
+
+    const activation = await loadEditionFromDevDist({
+      runtime: "desktop",
+      distDevDir,
+      host: { name: "bob" },
+    });
+
+    expect(activation.state).toBe("active");
+    expect(activation.edition).toEqual({ kind: "desktop", name: "bob" });
+  });
+
+  it("incompatible: entry module's own runtime disagrees with the requested runtime, ABI mismatch — the loadEdition()-style check, not a ProModule shape check", async () => {
+    const distDevDir = stageDevDist("server", DESKTOP_ENTRY);
+
+    const activation = await loadEditionFromDevDist({
+      runtime: "server",
+      distDevDir,
+      host: {},
+    });
+
+    expect(activation.state).toBe("incompatible");
+    expect(activation.error?.code).toBe("PRO_EDITION_ABI_MISMATCH");
+    expect(activation.edition).toBeUndefined();
+    expect(getClaimedProtocol()).toBeNull();
+  });
+
+  it("failed: createEdition throwing yields PRO_EDITION_INIT_FAILED", async () => {
+    const distDevDir = stageDevDist("server", THROWING_SERVER_ENTRY);
+
+    const activation = await loadEditionFromDevDist({
+      runtime: "server",
+      distDevDir,
+      host: {},
+    });
+
+    expect(activation.state).toBe("failed");
+    expect(activation.error?.code).toBe("PRO_EDITION_INIT_FAILED");
+    expect(activation.edition).toBeUndefined();
+  });
+
+  it("failed: entry module throws at top-level evaluation yields PRO_EDITION_INIT_FAILED", async () => {
+    const distDevDir = stageDevDist("server", THROWING_AT_TOP_LEVEL_ENTRY);
+
+    const activation = await loadEditionFromDevDist({
+      runtime: "server",
+      distDevDir,
+      host: {},
+    });
+
+    expect(activation.state).toBe("failed");
+    expect(activation.error?.code).toBe("PRO_EDITION_INIT_FAILED");
+    expect(activation.edition).toBeUndefined();
+  });
+
+  it("protocol conflict: refuses to run once the legacy protocol is already claimed in this process", async () => {
+    claimProtocol("legacy");
+    const distDevDir = stageDevDist("server", SERVER_ENTRY);
+
+    await expect(
+      loadEditionFromDevDist({ runtime: "server", distDevDir, host: {} }),
+    ).rejects.toThrow(/pro protocol conflict/);
   });
 });

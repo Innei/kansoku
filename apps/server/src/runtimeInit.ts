@@ -22,8 +22,9 @@ import {
   EditionFollowAutomation,
 } from '@kansoku/core/pro/domain/defaultImplementations';
 import { EditionRuntime } from '@kansoku/core/pro/editionRuntime';
-import { loadEdition } from '@kansoku/core/pro/editionLoader';
-import { loadPro } from '@kansoku/core/pro/loader';
+import type { EditionActivation } from '@kansoku/core/pro/editionLoader';
+import { loadEdition, loadEditionFromDevDist } from '@kansoku/core/pro/editionLoader';
+import { loadPro, proDevDistDir } from '@kansoku/core/pro/loader';
 import { getPro } from '@kansoku/core/pro/registry';
 import {
   createWatchedMarketsStore,
@@ -47,12 +48,14 @@ export interface ServerRuntimeOptions {
   openAuthUrl?: AuthUrlOpener;
   // Electron bundles this whole call chain into one file at a different
   // directory depth (see pro/loader.ts) — the desktop host passes its own
-  // app root here so the pro slot still resolves; the Tsuki server host runs
-  // TS directly and leaves this unset.
+  // app root here so the pro slot (both pro.enc and, in dev, dist-dev/) still
+  // resolves; the Tsuki server host runs TS directly and leaves this unset.
   proAppDir?: string;
-  // Entry file within the pro slot, relative to apps/pro. Desktop dev loads the
-  // TS source directly (via a tsx loader hook), packaged desktop loads the
-  // built output; the Tsuki host leaves this unset and uses the default.
+  // Entry file within the pro slot, relative to apps/pro, used only by the
+  // legacy loadPro() fallback. Packaged builds load the built dist/ output;
+  // the Tsuki host leaves this unset and uses loadPro()'s default. Dev hosts
+  // no longer set this to plaintext TS source — dev loads through the edition
+  // protocol via dist-dev/ instead (see loadEditionFromDevDist() below).
   proEntry?: string;
   // True when this host is a production artifact (packaged desktop app,
   // NODE_ENV=production server). Pro uses it to pick Dodo live vs test.
@@ -67,11 +70,49 @@ export interface ServerRuntimeResult {
   host: ServerEditionHost;
   edition: BaseServerEdition;
   // Which pro protocol this process claimed while resolving the server
-  // edition (see protocolClaim.ts) — 'edition' means the packaged bundle
-  // activated and callers may still load further edition-protocol runtimes
-  // (e.g. desktop) in this process; 'legacy' means loadPro() already claimed
-  // the legacy protocol and loadEdition() must not be attempted again here.
+  // edition (see protocolClaim.ts) — 'edition' means an edition activated
+  // (from pro.enc or, in dev, dist-dev/) and callers may still load further
+  // edition-protocol runtimes (e.g. desktop) in this process; 'legacy' means
+  // loadPro() already claimed the legacy protocol and loadEdition()/
+  // loadEditionFromDevDist() must not be attempted again here.
   protocol: 'edition' | 'legacy';
+  // Only meaningful when protocol==='edition': which source produced the
+  // active edition, so callers resolving a second runtime (desktop) in the
+  // same process (see kernel.ts) know whether to retry via loadEdition()
+  // against the same pro.enc or via loadEditionFromDevDist() against the
+  // same dist-dev/ directory. Undefined when protocol==='legacy'.
+  editionSource?: 'enc' | 'dist-dev';
+}
+
+function activateServerEditionCapabilities(
+  edition: BaseServerEdition,
+  activation: EditionActivation<BaseServerEdition>,
+): void {
+  const capabilities = edition.proCapabilities?.() ?? {};
+  configureCapabilitiesService(new EditionRuntime(activation));
+  if (capabilities.hooks) {
+    configureSymbolsService({
+      followAutomation: new EditionFollowAutomation(capabilities.hooks),
+      deepDiveService: new EditionDeepDiveService(capabilities.hooks),
+    });
+  }
+  configureDefaultAiTurnPipeline(() => new EditionAiTurnPipeline(capabilities.aiExtension));
+}
+
+async function activateLegacyServerEdition(
+  host: ServerEditionHost,
+  opts: ServerRuntimeOptions | undefined,
+  productionHost: boolean,
+): Promise<BaseServerEdition> {
+  await loadPro(opts?.proAppDir, opts?.proEntry);
+  await getPro()?.initRuntime?.(getDb(), opts?.secretBox, {
+    watchedMarkets: getActiveWatchedMarketsStore(),
+    aiSettingsStore: getActiveSettingsStore(),
+    production: productionHost,
+    licenseGate: { isLicensed },
+    kansokuHome: KANSOKU_HOME,
+  });
+  return new LegacyCompatServerEdition(host);
 }
 
 export async function initServerRuntime(
@@ -125,28 +166,37 @@ export async function initServerRuntime(
 
   let edition: BaseServerEdition;
   let protocol: 'edition' | 'legacy';
+  let editionSource: 'enc' | 'dist-dev' | undefined;
   if (activation.state === 'active' && activation.edition) {
     edition = activation.edition;
     protocol = 'edition';
-    const capabilities = edition.proCapabilities?.() ?? {};
-    configureCapabilitiesService(new EditionRuntime(activation));
-    if (capabilities.hooks) {
-      configureSymbolsService({
-        followAutomation: new EditionFollowAutomation(capabilities.hooks),
-        deepDiveService: new EditionDeepDiveService(capabilities.hooks),
-      });
-    }
-    configureDefaultAiTurnPipeline(() => new EditionAiTurnPipeline(capabilities.aiExtension));
-  } else if (activation.state === 'absent' || activation.state === 'locked') {
-    await loadPro(opts?.proAppDir, opts?.proEntry);
-    await getPro()?.initRuntime?.(getDb(), opts?.secretBox, {
-      watchedMarkets: getActiveWatchedMarketsStore(),
-      aiSettingsStore: getActiveSettingsStore(),
-      production: productionHost,
-      licenseGate: { isLicensed },
-      kansokuHome: KANSOKU_HOME,
+    editionSource = 'enc';
+    activateServerEditionCapabilities(edition, activation);
+  } else if (activation.state === 'absent' && !productionHost) {
+    // Dev host, no pro.enc staged: retry the edition protocol against the
+    // unencrypted watch build at dist-dev/server/index.mjs (design §17)
+    // before falling back to the legacy loadPro() plaintext-TS path. Only
+    // 'absent' triggers this — 'locked' means an enc bundle IS present (just
+    // missing a key), which dist-dev cannot substitute for.
+    const devActivation = await loadEditionFromDevDist<ServerEditionHost, BaseServerEdition>({
+      runtime: 'server',
+      distDevDir: proDevDistDir(opts?.proAppDir),
+      host,
     });
-    edition = new LegacyCompatServerEdition(host);
+    console.info(
+      `[edition] runtime=server source=dist-dev abi=${EDITION_ABI_VERSION} state=${devActivation.state} code=${devActivation.error?.code ?? 'n/a'}`,
+    );
+    if (devActivation.state === 'active' && devActivation.edition) {
+      edition = devActivation.edition;
+      protocol = 'edition';
+      editionSource = 'dist-dev';
+      activateServerEditionCapabilities(edition, devActivation);
+    } else {
+      edition = await activateLegacyServerEdition(host, opts, productionHost);
+      protocol = 'legacy';
+    }
+  } else if (activation.state === 'absent' || activation.state === 'locked') {
+    edition = await activateLegacyServerEdition(host, opts, productionHost);
     protocol = 'legacy';
   } else {
     // A bundle was present but rejected (incompatible commit combo or a
@@ -161,5 +211,5 @@ export async function initServerRuntime(
     protocol = 'legacy';
   }
 
-  return { host, edition, protocol };
+  return { host, edition, protocol, editionSource };
 }

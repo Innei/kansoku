@@ -20,17 +20,22 @@ import { resetProtocolClaimForTests } from '@kansoku/core/pro/protocolClaim';
 
 vi.mock('@kansoku/core/pro/editionLoader', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@kansoku/core/pro/editionLoader')>();
-  return { ...actual, loadEdition: vi.fn(actual.loadEdition) };
+  return {
+    ...actual,
+    loadEdition: vi.fn(actual.loadEdition),
+    loadEditionFromDevDist: vi.fn(actual.loadEditionFromDevDist),
+  };
 });
 
 const { initServerRuntime } = await import('../src/runtimeInit.js');
-const { loadEdition } = await import('@kansoku/core/pro/editionLoader');
+const { loadEdition, loadEditionFromDevDist } = await import('@kansoku/core/pro/editionLoader');
 
 let tmpAppDir: string;
 
 beforeEach(() => {
   tmpAppDir = mkdtempSync(join(tmpdir(), 'kansoku-server-runtime-init-'));
   vi.mocked(loadEdition).mockClear();
+  vi.mocked(loadEditionFromDevDist).mockClear();
 });
 
 afterEach(() => {
@@ -121,5 +126,62 @@ describe('initServerRuntime: active edition capability wiring', () => {
       sessionId: 'active-edition-session',
     });
     expect(turn.processors).toHaveLength(1);
+  });
+});
+
+describe('initServerRuntime: dev-dist edition-protocol fallback (design §17)', () => {
+  it('dev host, no pro.enc (state=absent): retries via loadEditionFromDevDist() and wires capabilities the same way an active enc edition would — ABI-shape validation, not loadPro()', async () => {
+    const fakeEdition = {
+      async initialize() {},
+      async start() {},
+      async dispose() {},
+      configureServer() {},
+      proCapabilities: () => ({}),
+    };
+    vi.mocked(loadEditionFromDevDist).mockResolvedValueOnce({
+      state: 'active',
+      bundlePresent: true,
+      edition: fakeEdition,
+    } as never);
+
+    const result = await initServerRuntime({ proAppDir: tmpAppDir, productionHost: false });
+
+    expect(loadEditionFromDevDist).toHaveBeenCalledWith(
+      expect.objectContaining({ runtime: 'server', host: expect.anything() }),
+    );
+    expect(result.protocol).toBe('edition');
+    expect(result.editionSource).toBe('dist-dev');
+    expect(result.edition).toBe(fakeEdition);
+
+    const capabilities = await capabilitiesService.get();
+    expect(capabilities.pro).toBe(true);
+  });
+
+  it('production host (state=absent): never attempts loadEditionFromDevDist(), falls straight to the legacy loader', async () => {
+    const result = await initServerRuntime({ proAppDir: tmpAppDir, productionHost: true });
+
+    expect(loadEditionFromDevDist).not.toHaveBeenCalled();
+    expect(result.protocol).toBe('legacy');
+    expect(result.editionSource).toBeUndefined();
+  });
+
+  it('dev host, no pro.enc and no dist-dev/ built (dist-dev also resolves absent): falls back to the legacy loadPro() path, same as before this feature existed', async () => {
+    const result = await initServerRuntime({ proAppDir: tmpAppDir, productionHost: false });
+
+    expect(loadEditionFromDevDist).toHaveBeenCalledTimes(1);
+    expect(result.protocol).toBe('legacy');
+    expect(result.editionSource).toBeUndefined();
+  });
+
+  it('dev host, state=locked (enc present but no key): never attempts loadEditionFromDevDist() — locked means a real bundle exists, dist-dev cannot substitute for it', async () => {
+    vi.mocked(loadEdition).mockResolvedValueOnce({
+      state: 'locked',
+      bundlePresent: true,
+    } as never);
+
+    const result = await initServerRuntime({ proAppDir: tmpAppDir, productionHost: false });
+
+    expect(loadEditionFromDevDist).not.toHaveBeenCalled();
+    expect(result.protocol).toBe('legacy');
   });
 });
