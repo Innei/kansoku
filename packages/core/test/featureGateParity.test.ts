@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { allRoutes } from '../src/contract/index.js';
 import { symbolsService } from '../src/symbols/symbols.service.js';
-import { freeHooks, registerProModule, unregisterProModuleForTests } from '../src/pro/registry.js';
+import { setProPresent } from '../src/pro/bundleState.js';
 
 type GatedService = Record<string, (input: { sym: string }) => Promise<unknown>>;
 
@@ -22,7 +22,7 @@ for (const [group, routeGroup] of Object.entries(allRoutes)) {
 }
 
 afterEach(() => {
-  unregisterProModuleForTests();
+  setProPresent(false);
 });
 
 describe('feature gate parity', () => {
@@ -40,7 +40,7 @@ describe('feature gate parity', () => {
           );
           return;
         }
-        registerProModule({ hooks: freeHooks });
+        setProPresent(true);
         const err = await service[method]({ sym: 'NVDA.US' }).catch((e: unknown) => e);
         expect(err).toMatchObject({ status: 403, code: 'LICENSE_REQUIRED' });
       });

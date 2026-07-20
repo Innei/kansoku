@@ -25,7 +25,7 @@ export const episodeTradeActionSchema = Type.Union([
       period: Type.Optional(
         Type.Union([Type.Literal('h1'), Type.Literal('day'), Type.Literal('week')]),
       ),
-      ...requiredReason,
+      ...optionalReason,
     },
     { additionalProperties: false },
   ),

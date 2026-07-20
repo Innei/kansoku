@@ -40,11 +40,10 @@ export interface EpisodeReportInput {
   now?: () => Date;
   datasetMeta?: { label?: string; kind?: string };
   /**
-   * Map from `questionId` → provenance entry. When present, the report reveals
-   * the real underlying symbol / cutoff / shift / price-scale of an anonymised
-   * blind case so a human reader can interpret the case beyond its ASSETxxx
-   * alias. Loaded from `<datasetsRoot>/<datasetVersion>/provenance.json` by
-   * the CLI when the file exists.
+   * Map from questionId → provenance entry. When present, the report reveals
+   * the real underlying symbol / cutoff / shift / scale of anonymised blind
+   * cases so a human reader can interpret the case beyond its ASSETxxx alias.
+   * Loaded from `<datasetsRoot>/<datasetVersion>/provenance.json` by the CLI.
    */
   provenance?: Map<string, EpisodeProvenanceEntry>;
 }

@@ -8,7 +8,7 @@ vi.mock('../src/marketdata/longbridgeCli.js', () => ({
 }));
 
 const { getEventRisk } = await import('../src/marketdata/events.js');
-const { isProPresent } = await import('../src/pro/registry.js');
+const { isProPresent } = await import('../src/pro/bundleState.js');
 
 function macroPayload(now: Date): unknown {
   return {

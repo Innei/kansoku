@@ -1,16 +1,27 @@
 import { HOST_MODE, KERNEL_PORT, PORT } from '@kansoku/core/platform/env';
-import { getPro } from '@kansoku/core/pro/registry';
 import { startHost } from './host.js';
 import { initServerRuntime } from './runtimeInit.js';
 
-await initServerRuntime();
+const proComposition = await initServerRuntime();
 
 const isDevKernel = HOST_MODE === 'dev';
 const bindPort = isDevKernel ? KERNEL_PORT : PORT;
 
-await startHost(bindPort, isDevKernel);
+await startHost(bindPort, isDevKernel, proComposition?.modules ?? []);
 
-if (getPro()?.startScheduler) {
-  getPro()!.startScheduler!();
-  console.log('ai scheduler started');
+let shuttingDown = false;
+async function shutdown(signal: NodeJS.Signals) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[server] received ${signal}, disposing pro composition`);
+  try {
+    await proComposition?.dispose?.();
+  } catch (error) {
+    console.error('[server] pro composition dispose failed', error);
+  } finally {
+    process.exit(0);
+  }
 }
+
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));

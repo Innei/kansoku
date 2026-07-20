@@ -29,9 +29,11 @@ import { fetchKlineHistoryYahoo } from './generate/yahooFetcher.js';
 import type { FetchEpisodeKlineHistory } from './episode/generate.js';
 import { DEFAULT_SYMBOLS, layerForSymbol, type SymbolSpec } from './generate/symbols.js';
 import { listQuestions, loadQuestionForScorer } from './dataset/loader.js';
+import { loadDatasetManifest } from './dataset/manifest.js';
 import { parseDatasetPathOptions, type DatasetPaths } from './dataset/paths.js';
 import { syncDataset } from './dataset/sync.js';
 import { type ReportConfigSnapshot, renderReport } from './report/render.js';
+import { renderReportHtml } from './report/renderHtml.js';
 import { parseBaselineArgs } from './baseline/args.js';
 import { runBenchBaseline } from './baseline/run.js';
 import { type Scores, scoresSchema } from './schema/scores.js';
@@ -67,7 +69,7 @@ Commands:
   baseline       Emit deterministic baseline answer sheets
   score          Score recorded answer sheets
   gold           Emit hindsight-optimal gold answer sheets
-  report         Render a leaderboard report
+  report         Render a leaderboard report (--format md|html|both, default md)
   backfill-news  Backfill fixtures.news from GDELT + SEC EDGAR
   sync-dataset   Download and verify an immutable dataset release
 
@@ -586,13 +588,24 @@ async function runBackfillNewsCommand(argv: string[], paths: DatasetPaths): Prom
   if (result.failed.length > 0) process.exitCode = 1;
 }
 
-function parseReportArgs(argv: string[]): { runId: string } {
+type ReportFormat = 'md' | 'html' | 'both';
+
+function parseReportArgs(argv: string[]): { runId: string; format: ReportFormat } {
   let runId: string | undefined;
+  let format: ReportFormat = 'md';
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
       case '--run-id': {
         runId = argv[++i];
+        break;
+      }
+      case '--format': {
+        const next = argv[++i];
+        if (next !== 'md' && next !== 'html' && next !== 'both') {
+          throw new Error(`unknown --format value: ${next} (expected md|html|both)`);
+        }
+        format = next;
         break;
       }
       default: {
@@ -601,7 +614,7 @@ function parseReportArgs(argv: string[]): { runId: string } {
     }
   }
   if (!runId) throw new Error('--run-id is required');
-  return { runId };
+  return { runId, format };
 }
 
 async function readJsonFile(file: string): Promise<unknown> {
@@ -697,6 +710,13 @@ async function runReportCommand(argv: string[], paths: DatasetPaths): Promise<vo
     for (const traceRef of new Set(answers.map((answer) => answer.traceRef).filter(Boolean))) {
       traces.set(traceRef, await readEpisodeTraceLines(join(runDir, traceRef)));
     }
+    let datasetMeta: { label?: string; kind?: string } | undefined;
+    try {
+      const manifest = await loadDatasetManifest(datasetVersion);
+      datasetMeta = { label: manifest.label, kind: manifest.kind };
+    } catch {
+      // manifest may live outside this checkout; not fatal for reporting.
+    }
     const provenance = await loadEpisodeProvenance(paths.datasetsRoot, datasetVersion);
     const { html, summary } = renderEpisodeReportHtml({
       answers,
@@ -704,6 +724,7 @@ async function runReportCommand(argv: string[], paths: DatasetPaths): Promise<vo
       config,
       audits,
       traces,
+      datasetMeta,
       provenance,
     });
     await fs.writeFile(join(runDir, 'report.html'), html, 'utf8');
@@ -728,14 +749,24 @@ async function runReportCommand(argv: string[], paths: DatasetPaths): Promise<vo
   }
   const scores = rawScores as Scores;
   const { markdown, summary } = renderReport(scores, config);
-  await fs.writeFile(join(runDir, 'report.md'), markdown, 'utf8');
+  const outputs: string[] = [];
+  if (args.format === 'md' || args.format === 'both') {
+    await fs.writeFile(join(runDir, 'report.md'), markdown, 'utf8');
+    outputs.push('report.md');
+  }
   await fs.writeFile(
     join(runDir, 'report-summary.json'),
     `${JSON.stringify(summary, null, 2)}\n`,
     'utf8',
   );
+  outputs.push('report-summary.json');
+  if (args.format === 'html' || args.format === 'both') {
+    const { html } = renderReportHtml(scores, config);
+    await fs.writeFile(join(runDir, 'report.html'), html, 'utf8');
+    outputs.push('report.html');
+  }
   process.stdout.write(
-    `report ${args.runId}: ${scores.models.length} models -> report.md, report-summary.json\n`,
+    `report ${args.runId}: ${scores.models.length} models -> ${outputs.join(', ')}\n`,
   );
 }
 

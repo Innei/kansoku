@@ -10,14 +10,14 @@ import {
   setActiveWatchedMarketsStore,
 } from '@kansoku/core/marketdata/watchedMarketsStore';
 import { createDb } from '@kansoku/core/db/index';
-import { unregisterProModuleForTests } from '@kansoku/core/pro/registry';
+import { setProPresent } from '@kansoku/core/pro/bundleState';
 import { tsukiRequest } from './helpers.js';
 
 describe('free AI settings without pro', () => {
   let dir: string;
 
   beforeEach(() => {
-    unregisterProModuleForTests();
+    setProPresent(false);
     setActiveSettingsStore(null);
     setAiRuntimeForTests(null);
     setModelsRuntimeForTests(null);

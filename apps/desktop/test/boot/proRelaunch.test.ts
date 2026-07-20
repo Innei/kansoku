@@ -14,7 +14,7 @@ const registry = vi.hoisted(() => ({
   hasEncBundle: vi.fn(() => true),
   isProPresent: vi.fn(() => false),
 }));
-vi.mock('@kansoku/core/pro/registry', () => registry);
+vi.mock('@kansoku/core/pro/bundleState', () => registry);
 
 const licenseState = vi.hoisted(() => ({
   getActiveBundleKey: vi.fn((): string | undefined => 'aa'.repeat(32)),

@@ -4,9 +4,9 @@
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
-    "test": "vitest run",
+    "build": "vite build --configLoader runner",
+    "dev": "vite --configLoader runner",
+    "test": "vitest run --configLoader runner",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
+    "@kansoku/build-overlay": "workspace:*",
     "@rolldown/plugin-babel": "^0.2.3",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",

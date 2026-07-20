@@ -228,7 +228,7 @@ pnpm typecheck # 两个包的 tsc
 
 **插槽怎么接**：`apps/pro/` 是一个 gitignored 目录，里面放的是 `@kansoku/pro` 这个独立 git 仓库（官方发行版打包时才会拉进来）。`packages/core/src/pro/loader.ts` 在 server（`runtimeInit.ts`）和 desktop（`boot/kernel.ts`）启动早期各自 await 一次动态 import；`apps/pro` 不存在或包坏了，import 直接失败被 catch 住，落进免费模式（一行 info 日志，不报错不刷屏）。公开代码永远不会静态 import `@kansoku/pro`——一行都没有，这样社区 clone 下来正常 `pnpm install`/`typecheck`/`build`/`test`/`dev` 全部照常跑通，唯一区别是 AI 入口在 UI 上不出现。
 
-**接口约定**：`packages/pro-api`（`@kansoku/pro-api`，公开、纯类型包）定义了 pro 包要交出什么——`tsukiModules`（server 路由模块）、`ipcServiceClasses`（desktop IPC）、`channels`（realtime 频道注册）、`hooks`（非 AI 代码需要反查的东西，比如宏观事件过滤、跟进状态、点评列表）、`aiSettings`（设置页 AI 分节的委托对象）、`startScheduler`、`initRuntime`。`packages/core/src/pro/registry.ts` 持有当前注册的 pro 模块，`hooks` 每一项都有免费模式下的默认实现（宏观过滤直通、跟进/点评列表返回空、scheduler 空转）——所以就算 pro 缺失，调用这些 hook 的代码也不用到处判空。
+**接口约定**：`packages/pro-api`（`@kansoku/pro-api`，公开、纯类型包）定义了 pro 包要交出什么——`ipcServiceClasses`（desktop IPC）、`channels`（realtime 频道注册）、`ProHooks`（非 AI 代码需要反查的东西，比如跟进触发、deep-dive 启停）。各 host 的 `edition/pro.pro.ts` 组合点在 `start()` 时把真实实现推给 core（如 `packages/core/src/pro/hooks.ts` 的 `registerProHooks`），`hooks` 每一项都有免费模式下的默认实现（跟进直接空转、deep-dive 拒绝启动）——所以就算 pro 缺失，调用这些 hook 的代码也不用到处判空。
 
 **能力广播**：`GET /api/capabilities` 返回 `{ pro, licensed, license? }`（IPC 下同名方法），web 启动时拉一次存进 `capabilitiesStore`，QuickBar、cockpit 的 ChatDock、settings 的 AI 分节等入口都按这个 store 显隐——`pro` 为 false 时整个 AI 相关 UI 都不出现，不会看到一个点了没用的按钮；`pro: true, licensed: false` 会渲染成上锁态 + 订阅引导，而不是直接隐藏（区别对待"没装"和"装了但没订阅"）。`license.state` 是五态之一：`unlicensed`/`licensed`/`grace`/`expired`/`invalid`，详见 spec 第 3 节。
 

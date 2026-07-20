@@ -1,9 +1,12 @@
 import type { AgentMessage } from '@earendil-works/pi-agent-core';
-import type { ProAiCompletedTurn, ProModule } from '@kansoku/pro-api';
+import type { ProAiCompletedTurn, ProAiExtension } from '@kansoku/pro-api';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MessagesEngine } from '../src/ai/conversation/messages/messageEngine.js';
-import { prepareProAiTurn } from '../src/pro/aiExtension.js';
-import { freeHooks, registerProModule, unregisterProModuleForTests } from '../src/pro/registry.js';
+import {
+  prepareProAiTurn,
+  registerProAiExtension,
+  resetProAiExtensionForTests,
+} from '../src/pro/aiExtension.js';
 
 const ZERO_USAGE = {
   input: 0,
@@ -27,24 +30,21 @@ function assistantMessage(text: string): AgentMessage {
   };
 }
 
-afterEach(() => unregisterProModuleForTests());
+afterEach(() => resetProAiExtensionForTests());
 
 describe('prepareProAiTurn', () => {
   it('adapts Pro prompt context, read mounts, and completed transcripts into Core', async () => {
     const completed: ProAiCompletedTurn[] = [];
-    const module: ProModule = {
-      hooks: freeHooks,
-      aiExtension: {
-        prepareTurn: async () => ({
-          promptContext: '<persistent_memory>偏好：控制回撤</persistent_memory>',
-          readMounts: [{ name: 'memory', root: '/tmp/memory', include: ['**/*.md'] }],
-        }),
-        afterTurn: async (turn) => {
-          completed.push(turn);
-        },
+    const extension: ProAiExtension = {
+      prepareTurn: async () => ({
+        promptContext: '<persistent_memory>偏好：控制回撤</persistent_memory>',
+        readMounts: [{ name: 'memory', root: '/tmp/memory', include: ['**/*.md'] }],
+      }),
+      afterTurn: async (turn) => {
+        completed.push(turn);
       },
     };
-    registerProModule(module);
+    registerProAiExtension(extension);
 
     const prepared = await prepareProAiTurn({
       surface: 'assistant',
@@ -76,12 +76,9 @@ describe('prepareProAiTurn', () => {
   });
 
   it('fails open when the optional Pro extension cannot prepare memory', async () => {
-    registerProModule({
-      hooks: freeHooks,
-      aiExtension: {
-        prepareTurn: async () => {
-          throw new Error('disk unavailable');
-        },
+    registerProAiExtension({
+      prepareTurn: async () => {
+        throw new Error('disk unavailable');
       },
     });
 

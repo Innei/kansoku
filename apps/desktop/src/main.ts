@@ -20,6 +20,7 @@ import {
   registerAppProtocolHandler,
   registerAppScheme,
   resolveWebDistRoot,
+  setProAssets,
 } from './platform/protocol/protocol.js';
 import { createOnboardingStore } from './shell/onboarding/store.js';
 import { OnboardingIpc } from './shell/onboarding/ipc.js';
@@ -165,15 +166,16 @@ function installAppMenu({
 app.whenReady().then(async () => {
   try {
     applyDevDockIcon();
-    await bootKernel();
+    const { proComposition, webFiles, dispose: disposeKernel } = await bootKernel();
     const { ipcServiceClasses } = await import('./kernel/ipc/index.js');
-    createServices(ipcServiceClasses);
+    createServices([...ipcServiceClasses, ...(proComposition?.ipcServices ?? [])]);
 
     const webDistRoot = resolveWebDistRoot();
     registerAppProtocolHandler({
       distRoot: webDistRoot,
       distRootExists: () => existsSync(webDistRoot),
     });
+    setProAssets(webFiles ?? null);
 
     new OnboardingIpc(createOnboardingStore());
     new AppControlIpc();
@@ -214,10 +216,16 @@ app.whenReady().then(async () => {
       try {
         tabsFileStore.flushSync();
         windowManager.flushSync();
+        setProAssets(null);
+        disposeKernel().catch((error: unknown) => {
+          console.error('[desktop] kernel dispose failed', error);
+        });
       } catch (error) {
         console.error('[desktop] flush on quit failed', error);
       }
     });
+
+    if (process.env.KANSOKU_EXIT_AFTER_BOOT === '1') app.quit();
   } catch (error) {
     showFatalErrorWindow(error);
   }

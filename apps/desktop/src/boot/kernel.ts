@@ -13,17 +13,19 @@ import { promptProRelaunch } from './proRelaunch.js';
 
 export async function bootKernel() {
   const [
-    { initServerRuntime },
+    { initServerHostRuntime, resolveServerProComposition, activateProComposition },
     { attachRealtimeBridge },
     { CHART_DATA_DIR },
-    { getPro, hasEncBundle, isProPresent },
+    { hasEncBundle, isProPresent },
     { getActiveBundleKey },
+    { loadPro },
   ] = await Promise.all([
     import('../../../server/src/runtimeInit.js'),
     import('../kernel/realtime/bridge.js'),
     import('@kansoku/core/platform/env'),
-    import('@kansoku/core/pro/registry'),
+    import('@kansoku/core/pro/bundleState'),
     import('@kansoku/core/license/licenseState'),
+    import('@kansoku/core/pro/loader'),
   ]);
 
   // Dev keeps the pre-P3 plaintext keyfile so ELECTRON_DEV workflows are
@@ -36,31 +38,43 @@ export async function bootKernel() {
         legacyKeyPath: join(CHART_DATA_DIR, 'ai-secret.key'),
       });
 
-  await initServerRuntime({
+  // Three phases in a fixed order, because two conflicting constraints meet
+  // on the desktop host: loadPro must run AFTER host init (it reads the
+  // bundle key off the license state initServerHostRuntime sets up), and
+  // both edition composition imports must run AFTER loadPro (in a packaged
+  // build the plaintext __pro__ chunks are gone, so the pro node chunks only
+  // resolve once loadPro has registered them as virtual modules).
+  await initServerHostRuntime({
     secretBox,
     openAuthUrl: (url) => {
       shell.openExternal(url).catch(() => {});
     },
-    proAppDir: app.getAppPath(),
     productionHost: app.isPackaged,
-    // Pro is part of the same vite graph as main: packaged builds load it from
-    // pro.enc through the virtual root; dev loads the plaintext chunk the
-    // watch build emits at dist-main/__pro__ (absent → clean free mode).
-    proEntry: app.isPackaged
-      ? undefined
-      : join(app.getAppPath(), 'dist-main', '__pro__', 'index.mjs'),
   });
-  // bootstrap.js is imported lazily, after initServerRuntime() has awaited
-  // loadPro() above, so AppModule's registry-derived AI module composition
-  // sees the pro module (when present).
+
+  const proPayload = await loadPro(app.getAppPath());
+
+  // Only the server edition's module list is needed here — the desktop
+  // host does not own the server composition's lifecycle, so this must not
+  // register or start it (that would double-run the composition alongside
+  // the desktop edition's own composition below).
+  const serverProComposition = await resolveServerProComposition();
+
   const { createKernel } = await import('../../../server/src/bootstrap.js');
-  const kernel = await createKernel();
-  if (getPro()?.startScheduler) {
-    getPro()!.startScheduler!();
-    console.log('[desktop] ai scheduler started');
-  }
+  const kernel = await createKernel(serverProComposition?.modules ?? []);
+
+  const proComposition = await import('../edition/pro.js')
+    .then((m) => m.loadProComposition())
+    .catch((error: unknown) => {
+      console.warn('[desktop] pro composition unavailable, running free', error);
+      return null;
+    });
+
+  console.log(`[boot] proComposition=${proComposition ? 'active' : 'free'}`);
+
   const apiApp = kernel.app.getInstance();
   attachRealtimeBridge();
+  await activateProComposition(proComposition);
   registerCredentialsIpc(ipcMain, createCredentialsBridgeHandlers());
 
   const health = await apiApp.fetch(new Request('http://localhost/api/health'));
@@ -73,5 +87,12 @@ export async function bootKernel() {
     relaunch: () => void promptProRelaunch(),
   });
 
-  return kernel;
+  return {
+    kernel,
+    proComposition,
+    webFiles: proPayload?.webFiles ?? null,
+    dispose: async () => {
+      await proComposition?.dispose?.();
+    },
+  };
 }
