@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isLicenseBypassActive } from "../src/license/licenseGate.js";
+import { isBundleKeyEnvAllowed, isLicenseBypassActive } from "../src/license/licenseGate.js";
 
 describe("isLicenseBypassActive", () => {
   it("is false when the env var is unset", () => {
@@ -26,5 +26,24 @@ describe("isLicenseBypassActive", () => {
   it("falls back to NODE_ENV outside Electron: allowed in dev/test", () => {
     expect(isLicenseBypassActive({ KANSOKU_LICENSE_BYPASS: "1", NODE_ENV: "test" }, null)).toBe(true);
     expect(isLicenseBypassActive({ KANSOKU_LICENSE_BYPASS: "1" }, null)).toBe(true);
+  });
+});
+
+describe("isBundleKeyEnvAllowed", () => {
+  it("is dead in a packaged Electron build even with the key set", () => {
+    expect(isBundleKeyEnvAllowed({ KANSOKU_BUNDLE_KEY: "ab" }, true)).toBe(false);
+  });
+
+  it("is allowed in a non-packaged Electron build (dev)", () => {
+    expect(isBundleKeyEnvAllowed({ KANSOKU_BUNDLE_KEY: "ab" }, false)).toBe(true);
+  });
+
+  it("falls back to NODE_ENV outside Electron (isPackaged unknown/null): blocked in production", () => {
+    expect(isBundleKeyEnvAllowed({ NODE_ENV: "production" }, null)).toBe(false);
+  });
+
+  it("falls back to NODE_ENV outside Electron: allowed in dev/test", () => {
+    expect(isBundleKeyEnvAllowed({ NODE_ENV: "test" }, null)).toBe(true);
+    expect(isBundleKeyEnvAllowed({}, null)).toBe(true);
   });
 });

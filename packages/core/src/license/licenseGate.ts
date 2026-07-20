@@ -30,6 +30,19 @@ export function isLicenseBypassActive(
   return true;
 }
 
+// Same gating logic as the license bypass: KANSOKU_BUNDLE_KEY is a dev/pack
+// escape hatch for decrypting pro.enc. A packaged build must never honor it —
+// otherwise one leaked bundle key downgrades every paid install to "set an
+// env var", no license check involved.
+export function isBundleKeyEnvAllowed(
+  env: NodeJS.ProcessEnv = process.env,
+  isPackaged: boolean | null = electronIsPackaged,
+): boolean {
+  if (isPackaged === true) return false;
+  if (isPackaged === null && env.NODE_ENV === "production") return false;
+  return true;
+}
+
 export function currentSnapshotSafe(): LicenseSnapshot {
   try {
     return getLicenseManager().getLicenseSnapshot();
