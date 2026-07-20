@@ -3,8 +3,7 @@ import { ClientError } from '../platform/errors.js';
 import { buildChart, rebuild, refreshBody } from '../charts/build.js';
 import { getEventRisk } from '../marketdata/events.js';
 import { TIMEFRAME_ORDER } from '../analysis/intraday/constants.js';
-import { getOptionsLevels } from '../analysis/optionsLevels.js';
-import { currentProDetectors } from '../pro/detectors.js';
+import { activeProDetectors } from '../pro/detectors.js';
 import { getStream } from '../marketdata/registry.js';
 import type { CandlePeriod } from '../marketdata/quoteStream.js';
 import { classifySession, isCurrentSessionId } from '../marketdata/session.js';
@@ -120,10 +119,11 @@ async function buildFromState(
   // stored values freeze at analysis time — the live view refetches both (the
   // getters are memory-cached, so this is free on the streaming hot path).
   const symbol = latestInput.symbol;
+  const getOptions = activeProDetectors().getOptionsLevels;
   const [optionsLevels, eventRisk] =
     typeof symbol === 'string'
       ? await Promise.all([
-          (currentProDetectors().getOptionsLevels ?? getOptionsLevels)(symbol).catch(() => null),
+          getOptions ? getOptions(symbol).catch(() => null) : Promise.resolve(null),
           getEventRisk(symbol).catch(() => null),
         ])
       : [null, null];
