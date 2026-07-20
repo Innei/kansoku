@@ -85,11 +85,14 @@ Shared conventions (enforced by `.claude/skills/_shared/`):
 
 ## Cross-cutting invariants (the reason the skills exist)
 
-**The invariants live in ONE place — `trading-discipline` — imported below. Do not restate them here or copy their text into any other skill.** Domain skills cite rule IDs (`TD-SOURCE-01`, `TD-GAAP-01`, …) and never duplicate the prose. Duplication drifts: on 2026-07-14 `capital-rotation/SKILL.md` was instructing a unit conversion that this file explicitly forbade.
+**The invariants live in four skill files — `trading-discipline` (shared core) plus three app-only companion layers — imported below. Do not restate them here or copy their text into any other skill.** Domain skills cite rule IDs (`TD-SOURCE-01`, `TD-GAAP-01`, …) and never duplicate the prose. Duplication drifts: on 2026-07-14 `capital-rotation/SKILL.md` was instructing a unit conversion that this file explicitly forbade.
 
 @.claude/skills/trading-discipline/SKILL.md
+@.claude/skills/us-market-data-discipline/SKILL.md
+@.claude/skills/market-analysis-discipline/SKILL.md
+@.claude/skills/journal-discipline/SKILL.md
 
-The same file is injected into the in-app agents (`analyst` / `deepDive` / `chat`) by the AI prompt pipeline: `analyst` activates it in its provider-facing MessagesEngine, while `deepDive` / `chat` compose it through `packages/core/src/ai/promptPolicy.ts`. Claude Code and the app therefore run on identical discipline. `@` import is a Claude Code mechanism only — the app reads the skill file directly.
+The same four files are injected into the in-app agents (`analyst` / `deepDive` / `chat`) by the AI prompt pipeline: `analyst` activates them in its provider-facing MessagesEngine (each layer as its own activated skill), while `deepDive` / `chat` compose the four via `loadSharedDiscipline` in `packages/core/src/ai/promptPolicy.ts`. The bench episode runner injects only `trading-discipline` (the shared core) because its synthetic assets have no US data feed, no journal, and no live positions — the app-only layers would be pure noise there. Claude Code and both app / bench agents therefore run on the same core discipline, with app agents receiving three additional context-specific layers. `@` import is a Claude Code mechanism only — code paths read the skill files directly.
 
 ### Known data gotchas
 

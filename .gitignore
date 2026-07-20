@@ -34,7 +34,18 @@ apps/desktop/native/
 !/.claude/skills/stock-deep-dive/
 !/.claude/skills/trade-gate/
 !/.claude/skills/trading-discipline/
+!/.claude/skills/us-market-data-discipline/
+!/.claude/skills/journal-discipline/
+!/.claude/skills/market-analysis-discipline/
+!/.claude/skills/episode-execution-discipline/
 !/.claude/skills/trump-truth-monitor/
 
 journal/
 stocks/
+
+# Pro overlay projections (symlinks into apps/pro/overlays) — never committed
+*.pro.ts
+*.pro.tsx
+*.pro.mts
+*.pro.cts
+.kansoku-overlay-links.json

@@ -27,7 +27,9 @@ import {
 } from './messages/analystMessagesEngine.js';
 import { ANALYST_ADAPTER_PROMPT, ANALYST_RETRY_PROMPT, ANALYST_SYSTEM_PROMPT } from './prompts.js';
 import {
+  APP_ONLY_DISCIPLINE_SKILLS,
   appendWatchedMarketsLine,
+  BENCH_ONLY_DISCIPLINE_SKILLS,
   DISCIPLINE_SKILL,
   DisciplineMissingError,
 } from './promptPolicy.js';
@@ -251,11 +253,32 @@ interface RunState {
   submitted: boolean;
 }
 
+export interface BuildAnalystSkillContextsOptions {
+  /**
+   * Whether to auto-activate the app-only discipline layers
+   * (us-market-data-discipline / journal-discipline / market-analysis-discipline).
+   * Defaults to true for app-side analyst / deepDive. Bench should pass false —
+   * its synthetic episodes have no US data feed, no journal, and no live positions,
+   * so those layers are pure noise.
+   */
+  includeAppOnlyDiscipline?: boolean;
+  /**
+   * Whether to auto-activate the bench-only execution layer
+   * (episode-execution-discipline). Defaults to false. The bench episode runner
+   * should pass true — those rules depend on the h1 replay clock, 40-session
+   * horizon, and fetch_kline tool that only exist inside the bench adapter.
+   */
+  includeBenchOnlyDiscipline?: boolean;
+}
+
 export function buildAnalystSkillContexts(
   skillIndex: SkillMeta[],
   skillText: string,
   disciplineText: string,
+  options: BuildAnalystSkillContextsOptions = {},
 ): AnalystSkillContext[] {
+  const includeAppOnly = options.includeAppOnlyDiscipline ?? true;
+  const includeBenchOnly = options.includeBenchOnlyDiscipline ?? false;
   const activated = new Map<string, { content: string; fallbackDescription: string }>([
     [
       DISCIPLINE_SKILL,
@@ -272,6 +295,28 @@ export function buildAnalystSkillContexts(
       },
     ],
   ]);
+  if (includeAppOnly) {
+    for (const name of APP_ONLY_DISCIPLINE_SKILLS) {
+      const content = readSkill(skillIndex, name);
+      if (content && content.trim()) {
+        activated.set(name, {
+          content,
+          fallbackDescription: `App-only discipline layer companion to trading-discipline.`,
+        });
+      }
+    }
+  }
+  if (includeBenchOnly) {
+    for (const name of BENCH_ONLY_DISCIPLINE_SKILLS) {
+      const content = readSkill(skillIndex, name);
+      if (content && content.trim()) {
+        activated.set(name, {
+          content,
+          fallbackDescription: `Bench-only discipline layer companion to trading-discipline.`,
+        });
+      }
+    }
+  }
   const skills: AnalystSkillContext[] = skillIndex.map((skill) => ({
     activated: activated.has(skill.name),
     content: activated.get(skill.name)?.content,

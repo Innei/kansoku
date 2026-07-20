@@ -27,6 +27,30 @@ export type AgentCapability = 'judgment' | 'observer' | 'mechanical';
 
 export const DISCIPLINE_SKILL = 'trading-discipline';
 
+/**
+ * Skills that are appended to the shared discipline for app-side judgment agents only.
+ *
+ * The core `trading-discipline` skill carries the cross-context priors that both bench and app
+ * agents need. The three skills below are US-market / journal / post-mortem specifics that the
+ * bench episode runner has no use for (synthetic assets, no journal, no live positions).
+ */
+export const APP_ONLY_DISCIPLINE_SKILLS = [
+  'us-market-data-discipline',
+  'journal-discipline',
+  'market-analysis-discipline',
+] as const;
+
+/**
+ * Skills that are appended to the shared discipline for the bench episode runner only.
+ *
+ * These rules depend on runtime primitives that only exist inside the bench episode adapter
+ * (an h1 replay clock with explicit bar indices, a fixed 40-session horizon, a fetch_kline tool).
+ * The app-side judgment agents have no equivalent runtime — analyst / deepDive / chat operate on
+ * a pre-built multi-period data pack against user-scoped questions and emit advice rather than
+ * sequenced orders — so injecting these rules on the app side is pure noise.
+ */
+export const BENCH_ONLY_DISCIPLINE_SKILLS = ['episode-execution-discipline'] as const;
+
 export class DisciplineMissingError extends Error {
   constructor() {
     super(`${DISCIPLINE_SKILL} SKILL.md is unavailable; aborting because this agent must not run without its discipline.`);
@@ -53,8 +77,14 @@ export function appendWatchedMarketsLine(disciplineText: string): string {
 }
 
 export function loadSharedDiscipline(repoRoot: string): string | null {
-  const text = readSkill(loadSkillIndex(skillSearchDirs(repoRoot)), DISCIPLINE_SKILL);
-  return text ? appendWatchedMarketsLine(text) : null;
+  const index = loadSkillIndex(skillSearchDirs(repoRoot));
+  const core = readSkill(index, DISCIPLINE_SKILL);
+  if (!core) return null;
+  const appOnly = APP_ONLY_DISCIPLINE_SKILLS.map((name) => readSkill(index, name)).filter(
+    (text): text is string => Boolean(text && text.trim()),
+  );
+  const composed = [core, ...appOnly].join('\n\n---\n\n');
+  return appendWatchedMarketsLine(composed);
 }
 
 /**
