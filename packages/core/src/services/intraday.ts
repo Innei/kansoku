@@ -26,6 +26,7 @@ import {
   type Pattern123,
   type PredictionScenario,
   type RawBar,
+  type SecondBreakout,
   type SeriesMarker,
   type SwingPoint,
   type TimeframeKey,
@@ -44,6 +45,7 @@ import {
   type MacdStructure,
 } from './macdStructure.js';
 import { detect123Patterns } from './pattern123.js';
+import { detectSecondBreakouts } from './secondBreakout.js';
 import {
   enrichCandlePatterns,
   offSessionSignalKeeper,
@@ -282,6 +284,7 @@ export interface CoercedTimeframe {
   autoDivergence: DivergencePair[];
   autoBeichi: DivergencePair[];
   pattern123: Pattern123[];
+  secondBreakouts: SecondBreakout[];
   fvgZones: IntradayFvgZone[];
   lastClose: number;
   summary: IntradayTfSummary;
@@ -388,6 +391,9 @@ export function coerceIntradayTimeframe(
   const pattern123 = detect123Patterns(highs, lows, closes, timesTs)
     .filter((p) => keepSignal(p.confirm?.time ?? p.p3.time))
     .slice(-2);
+  const secondBreakouts = detectSecondBreakouts(highs, lows, closes, timesTs)
+    .filter((sb) => keepSignal(sb.trigger?.time ?? sb.signal.time))
+    .slice(-2);
   structure.signals = structure.signals.filter((s) => keepSignal(s.time));
 
   return {
@@ -404,6 +410,7 @@ export function coerceIntradayTimeframe(
     autoDivergence: autoDivergence.slice(-2),
     autoBeichi: autoBeichi.slice(-2),
     pattern123,
+    secondBreakouts,
     fvgZones,
     lastClose: closes.at(-1)!,
     summary: {
@@ -421,6 +428,7 @@ export function coerceIntradayTimeframe(
       zero_tangle: structure.tangle,
       candle_patterns: candlePatterns.slice(-6),
       pattern_123: pattern123,
+      second_breakouts: secondBreakouts,
     },
   };
 }
@@ -1017,6 +1025,7 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
       autoDivergence: tf.autoDivergence,
       autoBeichi: tf.autoBeichi,
       pattern123: tf.pattern123,
+      secondBreakouts: tf.secondBreakouts,
       fvgZones: tf.fvgZones,
       offSession: offSessionSegments(
         tf.candles.map((c) => c.time),
@@ -1030,7 +1039,6 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
     TimeframeKey,
     IntradayTfSummary
   >;
-
   const lastM5 = tfs.m5.candles.at(-1)!;
   const dayContext = buildDayContext(
     input.day_kline ?? [],
