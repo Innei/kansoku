@@ -36,31 +36,31 @@ export async function bootKernel() {
         legacyKeyPath: join(CHART_DATA_DIR, 'ai-secret.key'),
       });
 
-  await initServerRuntime({
+  const serverProComposition = await initServerRuntime({
     secretBox,
     openAuthUrl: (url) => {
       shell.openExternal(url).catch(() => {});
     },
-    proAppDir: app.getAppPath(),
     productionHost: app.isPackaged,
-    // Pro is part of the same vite graph as main: packaged builds load it from
-    // pro.enc through the virtual root; dev loads the plaintext chunk the
-    // watch build emits at dist-main/__pro__ (absent → clean free mode).
-    proEntry: app.isPackaged
-      ? undefined
-      : join(app.getAppPath(), 'dist-main', '__pro__', 'index.mjs'),
   });
-  // bootstrap.js is imported lazily, after initServerRuntime() has awaited
-  // loadPro() above, so AppModule's registry-derived AI module composition
-  // sees the pro module (when present).
+
   const { createKernel } = await import('../../../server/src/bootstrap.js');
-  const kernel = await createKernel();
+  const kernel = await createKernel(serverProComposition?.modules ?? []);
   if (getPro()?.startScheduler) {
     getPro()!.startScheduler!();
     console.log('[desktop] ai scheduler started');
   }
+
+  const proComposition = await import('../edition/pro.js')
+    .then((m) => m.loadProComposition())
+    .catch((error: unknown) => {
+      console.warn('[desktop] pro composition unavailable, running free', error);
+      return null;
+    });
+
   const apiApp = kernel.app.getInstance();
   attachRealtimeBridge();
+  await proComposition?.start?.();
   registerCredentialsIpc(ipcMain, createCredentialsBridgeHandlers());
 
   const health = await apiApp.fetch(new Request('http://localhost/api/health'));
@@ -73,5 +73,11 @@ export async function bootKernel() {
     relaunch: () => void promptProRelaunch(),
   });
 
-  return kernel;
+  return {
+    kernel,
+    proComposition,
+    dispose: async () => {
+      await proComposition?.dispose?.();
+    },
+  };
 }

@@ -165,9 +165,9 @@ function installAppMenu({
 app.whenReady().then(async () => {
   try {
     applyDevDockIcon();
-    await bootKernel();
+    const { proComposition } = await bootKernel();
     const { ipcServiceClasses } = await import('./kernel/ipc/index.js');
-    createServices(ipcServiceClasses);
+    createServices([...ipcServiceClasses, ...(proComposition?.ipcServices ?? [])]);
 
     const webDistRoot = resolveWebDistRoot();
     registerAppProtocolHandler({

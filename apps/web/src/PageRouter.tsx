@@ -3,6 +3,7 @@ import type { ChartDoc } from '@kansoku/shared/types';
 import { chartTargetPath } from '@kansoku/shared/chartUrl';
 import { useQuery } from './apiHooks';
 import { client } from './client';
+import { useProRoutes } from './edition/useProRoutes';
 import { symbolFromRoute } from './lib/symbol';
 import { AboutPage } from './pages/about/AboutPage';
 import { AssistantChatPage } from './pages/assistant/AssistantChatPage';
@@ -49,6 +50,10 @@ function ChartRedirect({ id }: { id: string }) {
 export function Router() {
   const route = useRoute();
   const pathname = routePathname(route);
+
+  const proRoutes = useProRoutes();
+  const ProPage = proRoutes?.[pathname];
+  if (ProPage) return <ProPage />;
 
   if (pathname === '/overview' || pathname === '/charts') {
     return <Redirect to="/" />;
