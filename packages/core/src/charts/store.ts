@@ -104,6 +104,11 @@ export interface ListFilter {
   limit?: number;
 }
 
+function canonicalSymbol(raw: string): string {
+  const sym = raw.trim().toUpperCase();
+  return sym.includes('.') ? sym : `${sym}.US`;
+}
+
 export async function listCharts(filter: ListFilter = {}, db: Db = getDb()): Promise<ChartMeta[]> {
   await ensureIndex(db);
   const rows = await db.select().from(chartMeta).orderBy(desc(chartMeta.createdAt));
@@ -113,8 +118,8 @@ export async function listCharts(filter: ListFilter = {}, db: Db = getDb()): Pro
     metas = metas.filter((m) => types.includes(m.type));
   }
   if (filter.symbol) {
-    const s = filter.symbol.toUpperCase();
-    metas = metas.filter((m) => (m.symbol ?? '').toUpperCase().includes(s));
+    const want = canonicalSymbol(filter.symbol);
+    metas = metas.filter((m) => m.symbol != null && canonicalSymbol(m.symbol) === want);
   }
   if (filter.limit && filter.limit > 0) metas = metas.slice(0, filter.limit);
   return metas;
