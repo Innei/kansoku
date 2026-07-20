@@ -4,12 +4,7 @@ import {
   setLicenseManagerForTests,
   type LicenseManager,
 } from '../src/license/licenseState.js';
-import {
-  freeHooks,
-  registerProModule,
-  setEncBundlePresent,
-  unregisterProModuleForTests,
-} from '../src/pro/registry.js';
+import { setEncBundlePresent, setProPresent } from '../src/pro/bundleState.js';
 import { capabilitiesService } from '../src/modules/capabilities/capabilities.service.js';
 
 const featureKeys = Object.keys(FEATURES) as Array<keyof typeof FEATURES>;
@@ -25,7 +20,7 @@ function fakeLicenseManager(licensed: boolean): LicenseManager {
 }
 
 afterEach(() => {
-  unregisterProModuleForTests();
+  setProPresent(false);
   setEncBundlePresent(false);
   setLicenseManagerForTests(null);
 });
@@ -56,7 +51,7 @@ describe('capabilitiesService.get', () => {
   });
 
   it('marks pro-tier keys locked when pro is registered but unlicensed', async () => {
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     setLicenseManagerForTests(fakeLicenseManager(false));
     const result = await capabilitiesService.get();
     expect(result.pro).toBe(true);
@@ -68,7 +63,7 @@ describe('capabilitiesService.get', () => {
   });
 
   it('marks pro-tier keys active when pro is registered and licensed', async () => {
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     setLicenseManagerForTests(fakeLicenseManager(true));
     const result = await capabilitiesService.get();
     expect(result.pro).toBe(true);

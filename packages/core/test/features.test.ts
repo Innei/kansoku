@@ -4,12 +4,7 @@ import {
   setLicenseManagerForTests,
   type LicenseManager,
 } from '../src/license/licenseState.js';
-import {
-  freeHooks,
-  registerProModule,
-  setEncBundlePresent,
-  unregisterProModuleForTests,
-} from '../src/pro/registry.js';
+import { setEncBundlePresent, setProPresent } from '../src/pro/bundleState.js';
 import {
   featureState,
   featureStates,
@@ -28,7 +23,7 @@ function fakeLicenseManager(licensed: boolean): LicenseManager {
 }
 
 afterEach(() => {
-  unregisterProModuleForTests();
+  setProPresent(false);
   setEncBundlePresent(false);
   setLicenseManagerForTests(null);
 });
@@ -51,7 +46,7 @@ describe('feature resolver', () => {
   });
 
   it('is locked for a pro key when pro is present without a license manager', async () => {
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     await expect(featureState('deep-dive')).resolves.toBe('locked');
     const err = await requireFeature('deep-dive').catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ClientError);
@@ -59,7 +54,7 @@ describe('feature resolver', () => {
   });
 
   it('is locked for a pro key when unlicensed', async () => {
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     setLicenseManagerForTests(fakeLicenseManager(false));
     await expect(featureState('research-ai')).resolves.toBe('locked');
     await expect(isFeatureActive('research-ai')).resolves.toBe(false);
@@ -69,7 +64,7 @@ describe('feature resolver', () => {
   });
 
   it('is active for a pro key when licensed', async () => {
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     setLicenseManagerForTests(fakeLicenseManager(true));
     await expect(featureState('symbol-follow')).resolves.toBe('active');
     await expect(isFeatureActive('symbol-follow')).resolves.toBe(true);
@@ -79,7 +74,7 @@ describe('feature resolver', () => {
   it('featureStates resolves the license once and matches featureState per key', async () => {
     const manager = fakeLicenseManager(false);
     const spy = vi.spyOn(manager, 'getLicenseSnapshot');
-    registerProModule({ hooks: freeHooks });
+    setProPresent(true);
     setLicenseManagerForTests(manager);
     const states = await featureStates();
     expect(spy).toHaveBeenCalledTimes(1);

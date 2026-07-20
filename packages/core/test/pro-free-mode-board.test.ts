@@ -27,7 +27,7 @@ vi.mock('../src/ai/comments.js', () => ({
 }));
 
 const { buildOverviewBoard } = await import('../src/services/cockpit/board.js');
-const { isProPresent } = await import('../src/pro/registry.js');
+const { isProPresent } = await import('../src/pro/bundleState.js');
 const { easternDate } = await import('../src/services/session.js');
 const { handleConnection, parseWsMessage } = await import('../src/realtime/channelProtocol.js');
 

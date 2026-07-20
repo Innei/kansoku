@@ -20,18 +20,23 @@ vi.mock('@kansoku/core/env', () => ({ CHART_DATA_DIR: '/tmp/chart-data' }));
 
 const callOrder = vi.hoisted(() => [] as string[]);
 
-const registerProModule = vi.hoisted(() => vi.fn());
-const freeHooks = vi.hoisted(() => ({ marker: 'free-hooks' }));
-const getPro = vi.hoisted(() => vi.fn(() => undefined));
+const setProPresent = vi.hoisted(() => vi.fn());
 const hasEncBundle = vi.hoisted(() => vi.fn(() => false));
 const isProPresent = vi.hoisted(() => vi.fn(() => false));
-vi.mock('@kansoku/core/pro/registry', () => ({
-  getPro,
+vi.mock('@kansoku/core/pro/bundleState', () => ({
   hasEncBundle,
   isProPresent,
-  registerProModule,
-  freeHooks,
+  setProPresent,
 }));
+
+const registerProHooks = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/hooks', () => ({ registerProHooks }));
+
+const registerProAiExtension = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/aiExtension', () => ({ registerProAiExtension }));
+
+const registerProChannels = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/pro/channels', () => ({ registerProChannels }));
 
 const getActiveBundleKey = vi.hoisted(() => vi.fn(() => undefined));
 vi.mock('@kansoku/core/license/licenseState', () => ({ getActiveBundleKey }));
@@ -93,7 +98,6 @@ describe('bootKernel', () => {
     initServerRuntime.mockResolvedValue(null);
     createKernel.mockResolvedValue({ app: { getInstance: () => ({ fetch: fetchHealth }) } });
     fetchHealth.mockResolvedValue(new Response('ok', { status: 200 }));
-    getPro.mockReturnValue(undefined);
   });
 
   it('boots free when the pro composition rejects', async () => {
@@ -103,7 +107,10 @@ describe('bootKernel', () => {
     expect(result.proComposition).toBeNull();
     expect(result.webFiles).toBeNull();
     expect(createKernel).toHaveBeenCalledWith([]);
-    expect(registerProModule).not.toHaveBeenCalled();
+    expect(setProPresent).toHaveBeenCalledWith(false);
+    expect(registerProHooks).not.toHaveBeenCalled();
+    expect(registerProAiExtension).not.toHaveBeenCalled();
+    expect(registerProChannels).not.toHaveBeenCalled();
   });
 
   it('boots free when the pro composition resolves null', async () => {
@@ -112,7 +119,10 @@ describe('bootKernel', () => {
 
     expect(result.proComposition).toBeNull();
     expect(attachRealtimeBridge).toHaveBeenCalled();
-    expect(registerProModule).not.toHaveBeenCalled();
+    expect(setProPresent).toHaveBeenCalledWith(false);
+    expect(registerProHooks).not.toHaveBeenCalled();
+    expect(registerProAiExtension).not.toHaveBeenCalled();
+    expect(registerProChannels).not.toHaveBeenCalled();
   });
 
   it('passes server pro modules into createKernel and starts the desktop composition', async () => {
@@ -124,9 +134,17 @@ describe('bootKernel', () => {
       static readonly groupName = 'desktopPro';
     }
     const ipcServiceClass = DesktopIpc;
+    const hooks = {
+      requestImmediateFollow: vi.fn(),
+      startDeepDiveForNote: vi.fn(),
+      deepDiveStatus: vi.fn(),
+    };
+    const aiExtension = { prepareTurn: vi.fn() };
     loadProComposition.mockResolvedValueOnce({
       ipcServices: [ipcServiceClass],
       realtimeChannels: [],
+      hooks,
+      aiExtension,
       start,
       dispose,
     });
@@ -136,11 +154,10 @@ describe('bootKernel', () => {
     expect(createKernel).toHaveBeenCalledWith([serverModule]);
     expect(start).toHaveBeenCalledTimes(1);
     expect(result.proComposition?.ipcServices).toEqual([ipcServiceClass]);
-    // Task 8's loadPro no longer calls registerProModule itself; bootKernel
-    // must re-feed the old registry so getPro()/isProPresent() (read by
-    // capabilities/features/proActivationWatch) still flip true when pro
-    // actually loads. See kernelProPresence.test.ts for the real-registry proof.
-    expect(registerProModule).toHaveBeenCalledWith({ hooks: freeHooks });
+    expect(setProPresent).toHaveBeenCalledWith(true);
+    expect(registerProHooks).toHaveBeenCalledWith(hooks);
+    expect(registerProAiExtension).toHaveBeenCalledWith(aiExtension);
+    expect(registerProChannels).toHaveBeenCalledWith([]);
 
     await result.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);

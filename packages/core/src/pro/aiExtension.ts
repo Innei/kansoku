@@ -1,5 +1,5 @@
 import type { AgentMessage } from '@earendil-works/pi-agent-core';
-import type { ProAiTranscriptMessage, ProAiTurnContext } from '@kansoku/pro-api';
+import type { ProAiExtension, ProAiTranscriptMessage, ProAiTurnContext } from '@kansoku/pro-api';
 import type { FsReadMount } from '../ai/agentTools.js';
 import { textOf } from '../ai/conversationShared.js';
 import { BaseFirstUserContentProvider } from '../ai/messages/injectors/baseFirstUserContentProvider.js';
@@ -7,7 +7,16 @@ import {
   type MessagePipelineContext,
   type MessageProcessor,
 } from '../ai/messages/messageEngine.js';
-import { getPro } from './registry.js';
+
+let activeExtension: ProAiExtension | null = null;
+
+export function registerProAiExtension(extension: ProAiExtension): void {
+  activeExtension = extension;
+}
+
+export function resetProAiExtensionForTests(): void {
+  activeExtension = null;
+}
 
 class ProPromptContextProvider extends BaseFirstUserContentProvider {
   readonly name = 'ProPromptContextProvider';
@@ -58,7 +67,7 @@ export function normalizeProTranscript(
 }
 
 export async function prepareProAiTurn(context: ProAiTurnContext): Promise<PreparedProAiTurn> {
-  const extension = getPro()?.aiExtension;
+  const extension = activeExtension;
   if (!extension) return { readMounts: [], processors: [] };
 
   try {

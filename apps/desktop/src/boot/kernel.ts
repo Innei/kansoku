@@ -16,14 +16,20 @@ export async function bootKernel() {
     { initServerRuntime },
     { attachRealtimeBridge },
     { CHART_DATA_DIR },
-    { getPro, hasEncBundle, isProPresent, registerProModule, freeHooks },
+    { hasEncBundle, isProPresent, setProPresent },
+    { registerProHooks },
+    { registerProAiExtension },
+    { registerProChannels },
     { getActiveBundleKey },
     { loadPro },
   ] = await Promise.all([
     import('../../../server/src/runtimeInit.js'),
     import('../kernel/realtime/bridge.js'),
     import('@kansoku/core/env'),
-    import('@kansoku/core/pro/registry'),
+    import('@kansoku/core/pro/bundleState'),
+    import('@kansoku/core/pro/hooks'),
+    import('@kansoku/core/pro/aiExtension'),
+    import('@kansoku/core/pro/channels'),
     import('@kansoku/core/license/licenseState'),
     import('@kansoku/core/pro/loader'),
   ]);
@@ -48,10 +54,6 @@ export async function bootKernel() {
 
   const { createKernel } = await import('../../../server/src/bootstrap.js');
   const kernel = await createKernel(serverProComposition?.modules ?? []);
-  if (getPro()?.startScheduler) {
-    getPro()!.startScheduler!();
-    console.log('[desktop] ai scheduler started');
-  }
 
   // loadPro must run before the edition import below: in a packaged build
   // the plaintext __pro__ chunks are gone, so the pro node chunks only
@@ -65,13 +67,10 @@ export async function bootKernel() {
       return null;
     });
 
-  // Task 8 dropped registerProModule from loadPro's own flow (it now only
-  // decrypts + registers virtual modules); the old registry is still what
-  // capabilities/features/proActivationWatch read, so presence is re-fed
-  // here until that registry is retired.
-  if (proComposition) {
-    registerProModule({ hooks: freeHooks });
-  }
+  setProPresent(proComposition != null);
+  if (proComposition?.hooks) registerProHooks(proComposition.hooks);
+  if (proComposition?.aiExtension) registerProAiExtension(proComposition.aiExtension);
+  if (proComposition?.realtimeChannels) registerProChannels(proComposition.realtimeChannels);
 
   const apiApp = kernel.app.getInstance();
   attachRealtimeBridge();

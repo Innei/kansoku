@@ -22,7 +22,7 @@ export async function promptProRelaunch(): Promise<void> {
 
 export async function maybePromptProRelaunchAfterKeyLanded(): Promise<void> {
   const [{ hasEncBundle, isProPresent }, { getActiveBundleKey }] = await Promise.all([
-    import('@kansoku/core/pro/registry'),
+    import('@kansoku/core/pro/bundleState'),
     import('@kansoku/core/license/licenseState'),
   ]);
   if (!hasEncBundle() || isProPresent() || !getActiveBundleKey()) return;

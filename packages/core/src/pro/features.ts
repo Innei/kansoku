@@ -6,7 +6,7 @@ import {
 } from '@kansoku/pro-api/features';
 import { ClientError } from '../errors.js';
 import { isLicensed } from '../license/licenseGate.js';
-import { getPro, hasEncBundle } from './registry.js';
+import { hasEncBundle, isProPresent } from './bundleState.js';
 
 const featureCatalog: Record<FeatureKey, { tier: FeatureTier }> = FEATURES;
 
@@ -24,11 +24,11 @@ function resolveState(
 export async function featureState(key: FeatureKey): Promise<FeatureState> {
   const tier = featureCatalog[key].tier;
   if (tier === 'free') return 'active';
-  return resolveState(tier, getPro() != null, isLicensed(), hasEncBundle());
+  return resolveState(tier, isProPresent(), isLicensed(), hasEncBundle());
 }
 
 export async function featureStates(): Promise<Record<FeatureKey, FeatureState>> {
-  const proPresent = getPro() != null;
+  const proPresent = isProPresent();
   const licensed = isLicensed();
   const encBundlePresent = hasEncBundle();
   const keys = Object.keys(featureCatalog) as FeatureKey[];

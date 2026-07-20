@@ -59,15 +59,12 @@ vi.mock('electron', () => ({
 }));
 
 // Deliberately NOT mocked: this test proves that bootKernel keeps the real
-// registry's getPro()/isProPresent() (still read by capabilities.service,
-// features.ts and proActivationWatch.ts) correct now that loadPro no longer
-// calls registerProModule itself.
-const { getPro, isProPresent, unregisterProModuleForTests } = await import(
-  '@kansoku/core/pro/registry'
-);
+// bundleState's isProPresent() (still read by capabilities.service, features.ts
+// and proActivationWatch.ts) correct based on whether the pro composition loads.
+const { isProPresent, setProPresent } = await import('@kansoku/core/pro/bundleState');
 const { bootKernel } = await import('@desktop/boot/kernel.js');
 
-describe('bootKernel keeps the real pro registry in sync', () => {
+describe('bootKernel keeps pro presence in sync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     initServerRuntime.mockResolvedValue(null);
@@ -75,21 +72,20 @@ describe('bootKernel keeps the real pro registry in sync', () => {
     fetchHealth.mockResolvedValue(new Response('ok', { status: 200 }));
     loadPro.mockResolvedValue(null);
     loadProComposition.mockResolvedValue(null);
-    unregisterProModuleForTests();
+    setProPresent(false);
   });
 
   afterEach(() => {
-    unregisterProModuleForTests();
+    setProPresent(false);
   });
 
-  it('leaves getPro()/isProPresent() false when the pro composition never loads', async () => {
+  it('leaves isProPresent() false when the pro composition never loads', async () => {
     await bootKernel();
 
-    expect(getPro()).toBeNull();
     expect(isProPresent()).toBe(false);
   });
 
-  it('flips getPro()/isProPresent() true once the pro composition loads', async () => {
+  it('flips isProPresent() true once the pro composition loads', async () => {
     class DesktopIpc extends IpcService {
       static readonly groupName = 'desktopPro';
     }
@@ -102,7 +98,6 @@ describe('bootKernel keeps the real pro registry in sync', () => {
 
     await bootKernel();
 
-    expect(getPro()).not.toBeNull();
     expect(isProPresent()).toBe(true);
   });
 });

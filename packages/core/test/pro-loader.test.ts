@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadPro } from '../src/pro/loader.js';
-import { hasEncBundle } from '../src/pro/registry.js';
+import { hasEncBundle } from '../src/pro/bundleState.js';
 
 const roots: string[] = [];
 afterEach(() => {

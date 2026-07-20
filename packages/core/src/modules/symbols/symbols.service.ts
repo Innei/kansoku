@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type { IntradayPrediction, RawBar, SymbolAnalysisRow } from '@kansoku/shared/types';
-import { getProHooks } from '../../pro/registry.js';
+import { currentProHooks } from '../../pro/hooks.js';
 import { withFeatureGates } from '../../pro/withFeatureGates.js';
 import { chartUrl } from '../../chartUrl.js';
 import { analystRunStatus, reassessSymbol } from '../../ai/analyst.js';
@@ -146,7 +146,7 @@ export const symbolsService: SymbolsApi = withFeatureGates(symbolsRoutes, {
   async startFollow(input) {
     const previous = symbolFollowState(input.sym);
     const state = setSymbolFollowing(input.sym, true);
-    if (!previous.following) await getProHooks().requestImmediateFollow(state.symbol);
+    if (!previous.following) await currentProHooks().requestImmediateFollow(state.symbol);
     return state;
   },
 
@@ -212,11 +212,11 @@ export const symbolsService: SymbolsApi = withFeatureGates(symbolsRoutes, {
 
   async deepDive(input) {
     const name = noteFileName(input.sym);
-    return getProHooks().startDeepDiveForNote(name);
+    return currentProHooks().startDeepDiveForNote(name);
   },
 
   async deepDiveStatus(_input) {
-    return getProHooks().deepDiveStatus();
+    return currentProHooks().deepDiveStatus();
   },
 
   async latest(input) {

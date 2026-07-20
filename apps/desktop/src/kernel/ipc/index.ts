@@ -1,5 +1,3 @@
-import type { IpcServiceConstructor } from 'electron-ipc-decorator';
-import { getPro } from '@kansoku/core/pro/registry';
 import { AnnotationsIpc } from './annotationsIpc.js';
 import { AssistantIpc } from './assistantIpc.js';
 import { CapabilitiesIpc } from './capabilitiesIpc.js';
@@ -15,7 +13,7 @@ import { ResearchIpc } from './researchIpc.js';
 import { SettingsIpc } from './settingsIpc.js';
 import { SymbolsIpc } from './symbolsIpc.js';
 
-const nonAiIpcServiceClasses = [
+export const ipcServiceClasses = [
   ChartsIpc,
   SymbolsIpc,
   AnnotationsIpc,
@@ -31,7 +29,3 @@ const nonAiIpcServiceClasses = [
   CapabilitiesIpc,
   LicenseIpc,
 ] as const;
-
-const aiIpcServiceClasses = (getPro()?.ipcServiceClasses ?? []) as IpcServiceConstructor[];
-
-export const ipcServiceClasses = [...nonAiIpcServiceClasses, ...aiIpcServiceClasses] as const;

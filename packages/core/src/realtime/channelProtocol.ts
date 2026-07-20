@@ -6,7 +6,7 @@ import {
 import { clampViewCount } from '../services/history.js';
 import type { ProChannel } from '@kansoku/pro-api';
 import { normalizeSymbol } from '../services/symbol.utils.js';
-import { getPro } from '../pro/registry.js';
+import { currentProChannels } from '../pro/channels.js';
 import { coreAiChannels } from './aiChannels.js';
 import { subscribeAnalyses } from './analyses.js';
 import { subscribeBenchmark } from './benchmark.js';
@@ -48,7 +48,7 @@ export interface WsUnsub {
 export type WsClientMessage = WsSub | WsUnsub;
 
 function findChannel(kind: string): ProChannel | undefined {
-  return [...coreAiChannels, ...(getPro()?.channels ?? [])].find((c) => c.kind === kind);
+  return [...coreAiChannels, ...currentProChannels()].find((c) => c.kind === kind);
 }
 
 export function parseWsMessage(raw: unknown): WsClientMessage | null {

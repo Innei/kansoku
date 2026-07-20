@@ -1,5 +1,4 @@
-import { Module, type Constructor } from '@tsuki-hono/common';
-import { getPro } from '@kansoku/core/pro/registry';
+import { Module } from '@tsuki-hono/common';
 import { AnnotationsModule } from './annotations/annotations.module.js';
 import { AssistantModule } from './assistant/assistant.module.js';
 import { CapabilitiesModule } from './capabilities/capabilities.module.js';
@@ -15,8 +14,6 @@ import { PositionsModule } from './positions/positions.module.js';
 import { ResearchModule } from './research/research.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { SymbolsModule } from './symbols/symbols.module.js';
-
-const aiModules = (getPro()?.tsukiModules ?? []) as Constructor[];
 
 @Module({
   imports: [
@@ -35,7 +32,6 @@ const aiModules = (getPro()?.tsukiModules ?? []) as Constructor[];
     CredentialsModule,
     CapabilitiesModule,
     LicenseModule,
-    ...aiModules,
   ],
 })
 export class AppModule {}
