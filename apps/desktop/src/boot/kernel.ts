@@ -9,18 +9,9 @@ import { join } from 'node:path';
 import { app, ipcMain, safeStorage, shell } from 'electron';
 import type { IpcServiceConstructor } from 'electron-ipc-decorator';
 import type { BaseDesktopEdition } from '@kansoku/core/edition/base';
-import { DefaultIpcRegistry } from '@kansoku/core/edition/ipcRegistry';
 import type { DesktopEditionHost } from '@kansoku/core/edition/host';
-import { DesktopEdition } from '@kansoku/core/edition/desktopEdition';
-import { DefaultRealtimeChannelRegistry } from '@kansoku/core/edition/realtimeRegistry';
-import { hasEncBundle } from '@kansoku/core/pro/bundleState';
-import { loadEdition, loadEditionFromDevDist, proDevDistDir } from '@kansoku/core/pro/editionLoader';
-import { isEditionActive } from '@kansoku/core/pro/editionRuntime';
-import { readEditionWebManifest } from '@kansoku/core/pro/webManifest';
-import { createCredentialsBridgeHandlers, registerCredentialsIpc } from '../credentials/bridge.js';
-import { createDesktopSecretBox } from '../credentials/secretBox.js';
-import { nonAiIpcServiceClasses } from '../ipc/index.js';
-import { serverEncLayout } from '../../../server/src/proEncLayout.js';
+import { createCredentialsBridgeHandlers, registerCredentialsIpc } from '../data/credentials/bridge.js';
+import { createDesktopSecretBox } from '../data/credentials/secretBox.js';
 import { IS_DEV } from './env.js';
 import { startProActivationWatch } from './proActivationWatch.js';
 import { promptProRelaunch } from './proRelaunch.js';
@@ -28,13 +19,39 @@ import { promptProRelaunch } from './proRelaunch.js';
 export async function bootKernel() {
   const expectedPublicCommit = app.isPackaged && __PUBLIC_COMMIT__ ? __PUBLIC_COMMIT__ : undefined;
 
-  const [{ initServerRuntime }, { attachRealtimeBridge }, { CHART_DATA_DIR }, { getActiveBundleKey }] =
-    await Promise.all([
-      import('../../../server/src/runtimeInit.js'),
-      import('../realtime/bridge.js'),
-      import('@kansoku/core/env'),
-      import('@kansoku/core/license/licenseState'),
-    ]);
+  // Everything that can statically reach packages/core/src/env.ts stays behind
+  // dynamic import: the bundled env chunk must not become a static edge of
+  // main.mjs, or its top-level APP_ROOT consts evaluate before boot/env.js
+  // sets TRADE_PROJECT_ROOT (see main.ts header + test/boot/envOrdering).
+  const [
+    { initServerRuntime },
+    { attachRealtimeBridge },
+    { CHART_DATA_DIR },
+    { getActiveBundleKey },
+    { DefaultIpcRegistry },
+    { DesktopEdition },
+    { DefaultRealtimeChannelRegistry },
+    { hasEncBundle },
+    { loadEdition, loadEditionFromDevDist, proDevDistDir },
+    { isEditionActive },
+    { readEditionWebManifest },
+    { nonAiIpcServiceClasses },
+    { serverEncLayout },
+  ] = await Promise.all([
+    import('../../../server/src/runtimeInit.js'),
+    import('../kernel/realtime/bridge.js'),
+    import('@kansoku/core/env'),
+    import('@kansoku/core/license/licenseState'),
+    import('@kansoku/core/edition/ipcRegistry'),
+    import('@kansoku/core/edition/desktopEdition'),
+    import('@kansoku/core/edition/realtimeRegistry'),
+    import('@kansoku/core/pro/bundleState'),
+    import('@kansoku/core/pro/editionLoader'),
+    import('@kansoku/core/pro/editionRuntime'),
+    import('@kansoku/core/pro/webManifest'),
+    import('../kernel/ipc/index.js'),
+    import('../../../server/src/proEncLayout.js'),
+  ]);
 
   // Dev keeps the pre-P3 plaintext keyfile so ELECTRON_DEV workflows are
   // unaffected; packaged builds move the AI master key into safeStorage.

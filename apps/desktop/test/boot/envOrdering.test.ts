@@ -13,7 +13,9 @@ describe('bundled boot ordering', () => {
       const bootEnvIndex = content.indexOf('process.env.TRADE_PROJECT_ROOT = dataRoot');
       expect(bootEnvIndex).toBeGreaterThanOrEqual(0);
 
-      const envConstInMain = content.indexOf('const APP_ROOT =');
+      // tsdown emitted `const`, rolldown emits `var` — accept both.
+      const appRootDecl = /(?:const|var) APP_ROOT =/;
+      const envConstInMain = content.search(appRootDecl);
       if (envConstInMain >= 0) {
         expect(bootEnvIndex).toBeLessThan(envConstInMain);
         return;
@@ -25,24 +27,25 @@ describe('bundled boot ordering', () => {
       const chunkContent = new Map(
         chunkNames.map((name) => [name, readFileSync(join(distDir, name), 'utf8')]),
       );
-      const envChunk = chunkNames.find((name) => chunkContent.get(name)!.includes('const APP_ROOT ='));
+      const envChunk = chunkNames.find((name) => appRootDecl.test(chunkContent.get(name)!));
       expect(envChunk).toBeDefined();
-      expect(content.includes(`from "./${envChunk}"`)).toBe(false);
 
-      // The env chunk may be dynamically imported directly, or via an
-      // intermediate barrel chunk that statically re-exports it — bundler
-      // chunking is free to add that indirection, so accept either shape.
-      const importedChunk = content.includes(`import("./${envChunk}")`)
-        ? envChunk!
-        : chunkNames.find(
-            (name) =>
-              chunkContent.get(name)!.includes(`from "./${envChunk}"`) &&
-              content.includes(`import("./${name}")`),
-          );
-      expect(importedChunk).toBeDefined();
-      const dynamicImportIndex = content.indexOf(`import("./${importedChunk}")`);
-      expect(dynamicImportIndex).toBeGreaterThanOrEqual(0);
-      expect(bootEnvIndex).toBeLessThan(dynamicImportIndex);
+      // Static imports evaluate before main.mjs's own top-level code, so the
+      // ordering holds exactly when the env chunk is unreachable over STATIC
+      // import edges from main.mjs — dynamic-import indirection shapes are up
+      // to the bundler and irrelevant.
+      const staticImports = (source: string) =>
+        [...source.matchAll(/(?:from|import)\s+"\.\/([^"]+)"/g)].map((m) => m[1]);
+      const reachable = new Set<string>();
+      const queue = staticImports(content);
+      while (queue.length > 0) {
+        const name = queue.pop()!;
+        if (reachable.has(name)) continue;
+        reachable.add(name);
+        const source = chunkContent.get(name);
+        if (source) queue.push(...staticImports(source));
+      }
+      expect(reachable.has(envChunk!)).toBe(false);
     },
   );
 });

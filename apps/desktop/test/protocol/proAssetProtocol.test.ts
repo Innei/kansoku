@@ -3,7 +3,7 @@ import {
   createProAssetProtocolHandler,
   lookupProAssetMimeType,
   resolveProAssetPath,
-} from '@desktop/protocol/proAssetProtocol.js';
+} from '@desktop/platform/protocol/proAssetProtocol.js';
 import type { EditionWebManifestResult } from '@kansoku/core/pro/webManifest';
 
 function absentManifest(): EditionWebManifestResult {

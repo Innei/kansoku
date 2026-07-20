@@ -16,8 +16,8 @@
     "typecheck:pro": "tsc --noEmit -p tsconfig.pro.json"
   },
   "dependencies": {
-    "@earendil-works/pi-agent-core": "^0.80.7",
-    "@earendil-works/pi-ai": "^0.80.7",
+    "@earendil-works/pi-agent-core": "^0.80.10",
+    "@earendil-works/pi-ai": "^0.80.10",
     "@kansoku/pro-api": "workspace:*",
     "@kansoku/shared": "workspace:*",
     "@tsuki-hono/common": "0.0.5",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }

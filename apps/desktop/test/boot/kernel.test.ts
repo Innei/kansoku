@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseEdition } from '@kansoku/core/edition/base';
-import { nonAiIpcServiceClasses } from '../../src/ipc/index.js';
+import { nonAiIpcServiceClasses } from '../../src/kernel/ipc/index.js';
 
 const electron = vi.hoisted(() => ({
   app: {
@@ -21,7 +21,7 @@ vi.mock('electron-ipc-decorator', () => ({
 
 vi.mock('../../src/boot/env.js', () => ({ IS_DEV: true }));
 
-vi.mock('../../src/credentials/bridge.js', () => ({
+vi.mock('../../src/data/credentials/bridge.js', () => ({
   createCredentialsBridgeHandlers: vi.fn(() => ({})),
   registerCredentialsIpc: vi.fn(),
 }));
@@ -35,7 +35,7 @@ const initServerRuntime = vi.hoisted(() => vi.fn());
 vi.mock('../../../server/src/runtimeInit.js', () => ({ initServerRuntime }));
 
 const attachRealtimeBridge = vi.hoisted(() => vi.fn());
-vi.mock('../../src/realtime/bridge.js', () => ({ attachRealtimeBridge }));
+vi.mock('../../src/kernel/realtime/bridge.js', () => ({ attachRealtimeBridge }));
 
 const createKernel = vi.hoisted(() => vi.fn());
 vi.mock('../../../server/src/bootstrap.js', () => ({ createKernel }));

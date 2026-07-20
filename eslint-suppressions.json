@@ -4,6 +4,11 @@
       "count": 1
     }
   },
+  "apps/desktop/scripts/afterPack.cjs": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  },
   "apps/desktop/src/boot/kernel.ts": {
     "no-console": {
       "count": 2

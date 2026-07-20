@@ -3,7 +3,7 @@ import {
   applyContentSecurityPolicy,
   buildContentSecurityPolicy,
   CSP_HEADER_NAME,
-} from '@desktop/window/csp.js';
+} from '@desktop/shell/window/csp.js';
 
 describe('buildContentSecurityPolicy', () => {
   it('allows self, pro-asset:, and blob: in script-src, no unsafe-inline/wildcards', () => {

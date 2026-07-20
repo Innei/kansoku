@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cspNonceAdditionalArgument, getCspScriptNonce } from '@desktop/window/cspNonce.js';
-import { CSP_NONCE_ARGV_PREFIX } from '@desktop/window/cspNonceArgv.js';
+import { cspNonceAdditionalArgument, getCspScriptNonce } from '@desktop/shell/window/cspNonce.js';
+import { CSP_NONCE_ARGV_PREFIX } from '@desktop/shell/window/cspNonceArgv.js';
 
 describe('getCspScriptNonce', () => {
   it('returns the same value on every call within a process (session-wide, not per-request)', () => {

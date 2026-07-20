@@ -54,7 +54,11 @@ export const aiSettingsService: AiSettingsService = {
         !models.getModel(setting.provider ?? '', setting.modelId ?? '');
       rolesOut[role] = { ...setting, stale };
     }
-    return { roles: rolesOut, credentials: credentials.list(), masterKey: secretBox.status() };
+    return {
+      roles: rolesOut,
+      credentials: credentials.listEntries(),
+      masterKey: secretBox.status(),
+    };
   },
 
   async putRole(input) {
@@ -97,7 +101,7 @@ export const aiSettingsService: AiSettingsService = {
       throw new ClientError('"key" must be a non-empty string');
     }
     credentials.setApiKey(provider, key);
-    const entry = credentials.list().find((e) => e.provider === provider);
+    const entry = credentials.listEntries().find((e) => e.provider === provider);
     return { provider, masked: entry?.masked ?? null };
   },
 
@@ -114,14 +118,14 @@ export const aiSettingsService: AiSettingsService = {
 
   async getCatalog() {
     const { credentials, lobehub, models } = settingsDeps();
-    try {
-      await models.refresh(LOBEHUB_PROVIDER);
-    } catch (error) {
-      console.warn(`settings: using cached LobeHub model catalog: ${String(error)}`);
+    const refreshResult = await models.refresh({ force: true });
+    const refreshError = refreshResult.errors.get(LOBEHUB_PROVIDER);
+    if (refreshError) {
+      console.warn(`settings: using cached LobeHub model catalog: ${String(refreshError)}`);
     }
     const configuredApiKey = new Set(
       credentials
-        .list()
+        .listEntries()
         .filter((e) => e.ok)
         .map((e) => e.provider),
     );

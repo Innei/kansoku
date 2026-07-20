@@ -21,19 +21,23 @@ vi.mock('electron-ipc-decorator', () => ({
 
 vi.mock('../../src/boot/env.js', () => ({ IS_DEV: true }));
 
-vi.mock('../../src/credentials/bridge.js', () => ({
+vi.mock('../../src/data/credentials/bridge.js', () => ({
   createCredentialsBridgeHandlers: vi.fn(() => ({})),
   registerCredentialsIpc: vi.fn(),
 }));
 
 const loadEdition = vi.hoisted(() => vi.fn());
-vi.mock('@kansoku/core/pro/editionLoader', () => ({ loadEdition }));
+vi.mock('@kansoku/core/pro/editionLoader', () => ({
+  loadEdition,
+  loadEditionFromDevDist: vi.fn(),
+  proDevDistDir: vi.fn(() => '/tmp/dist-dev'),
+}));
 
 const initServerRuntime = vi.hoisted(() => vi.fn());
 vi.mock('../../../server/src/runtimeInit.js', () => ({ initServerRuntime }));
 
 const attachRealtimeBridge = vi.hoisted(() => vi.fn());
-vi.mock('../../src/realtime/bridge.js', () => ({ attachRealtimeBridge }));
+vi.mock('../../src/kernel/realtime/bridge.js', () => ({ attachRealtimeBridge }));
 
 const createKernel = vi.hoisted(() => vi.fn());
 vi.mock('../../../server/src/bootstrap.js', () => ({ createKernel }));

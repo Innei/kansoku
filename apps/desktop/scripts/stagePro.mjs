@@ -9,8 +9,8 @@ const destDir = join(desktopDir, 'pro');
 
 rmSync(destDir, { recursive: true, force: true });
 
-if (!existsSync(join(proDir, 'package.json'))) {
-  console.log('stagePro: apps/pro absent — packaging the free build');
+if (process.env.KANSOKU_FORCE_FREE === '1' || !existsSync(join(proDir, 'package.json'))) {
+  console.log('stagePro: packaging the free build');
   process.exit(0);
 }
 
