@@ -56,7 +56,7 @@
 
 - `apps/pro` 的 watch 构建（`tsdown.dev.config.ts`）把 server/desktop 两个 entry 输出到 gitignore 掉的 `apps/pro/dist-dev/{server,desktop}/index.mjs`，明文、不经过 `packEnc`。
 - `packages/core/src/pro/editionLoader.ts` 的 `loadEditionFromDevDist()` 直接从磁盘 `import()` 这两个明文文件，跑一遍和 `loadEdition()`（解密 `pro.enc` 那条路径）完全一样的 ABI 校验（`abiVersion`/`runtime`/`createEdition`），只是没有解密出来的 manifest，因此没有 `keyId`/`buildId` 可报告。
-- `apps/server/src/runtimeInit.ts` 与 `apps/desktop/src/boot/kernel.ts` 的启动流程：先按常规尝试 `loadEdition()`（读 `pro.enc`），如果拿到的是"包在但没 key"（即 `bundlePresent && state !== "active"`）且当前是非生产环境，会退回尝试 `loadEditionFromDevDist()` 读 `dist-dev/`；两条路径共用同一个 `EditionRuntimeKind`/`EditionActivation` 类型，宿主代码不需要区分自己激活的是哪一种来源，只在需要把同一个来源透传给桌面侧复用时记一下 `editionSource: 'enc' | 'dist-dev'`。
+- `apps/server/src/runtimeInit.ts` 与 `apps/desktop/src/boot/kernel.ts` 的启动流程：先按常规尝试 `loadEdition()`（读 `pro.enc`），只有当拿到的 `state` 是 `'absent'`（即 `bundlePresent === false`，压根没 staged `pro.enc`）且当前是非生产环境时，才会退回尝试 `loadEditionFromDevDist()` 读 `dist-dev/`；`'locked'`（包在但没 key，`bundlePresent === true`）不会走这条回退——一个已存在但打不开的加密包不能被 `dist-dev/` 的明文构建替代，会直接跑免费版。两条路径共用同一个 `EditionRuntimeKind`/`EditionActivation` 类型，宿主代码不需要区分自己激活的是哪一种来源，只在需要把同一个来源透传给桌面侧复用时记一下 `editionSource: 'enc' | 'dist-dev'`。
 - Web 端日常开发不经过这条协议：直接以 Pro 模式跑单图 Vite dev server，overlay resolver 进 dev 管线；加密 Web entry 的解密加载路径只在发布前 smoke 与 CI 里跑，不进日常开发循环。
 - 桌面端旧版那条直接加载 `apps/pro/src/index.ts` 明文源码的开发专用路径已经删除——现在开发和发布用的是同一套 Edition 协议入口（`loadEdition()`/`loadEditionFromDevDist()`），只是数据来源不同（`pro.enc` vs `dist-dev/`）。
 

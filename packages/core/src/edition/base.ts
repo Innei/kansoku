@@ -73,6 +73,7 @@ export abstract class BaseServerEdition extends BaseEdition<ServerEditionHost> {
   configureServer(builder: ServerBuilder): void {
     builder.addPublicModules();
   }
+  configureRealtime(_registry: RealtimeChannelRegistry): void {}
   proCapabilities(): EditionProCapabilities {
     return {};
   }

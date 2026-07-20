@@ -6,6 +6,7 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import type { BaseServerEdition } from '@kansoku/core/edition/base';
+import { DefaultRealtimeChannelRegistry } from '@kansoku/core/edition/realtimeRegistry';
 import { BASE_URL, LEGACY_CHARTS_DIR, WEB_DIST } from '@kansoku/core/env';
 import { attachWs } from './realtime/wsHost.js';
 
@@ -50,6 +51,8 @@ export async function startHost(
         : `trade chart server listening on ${BASE_URL}`,
     );
   });
-  attachWs(server as Server, '/api/ws');
+  const realtimeRegistry = new DefaultRealtimeChannelRegistry();
+  edition?.configureRealtime(realtimeRegistry);
+  attachWs(server as Server, '/api/ws', realtimeRegistry.list());
   return { server: server as Server };
 }
