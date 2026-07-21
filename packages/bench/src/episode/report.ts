@@ -229,6 +229,22 @@ interface ChartMarker {
   text: string;
 }
 
+interface ChartTradeTimes {
+  decision: number | string | null;
+  entry: number | string | null;
+  exit: number | string | null;
+}
+
+interface ChartTradeRef {
+  tradeId: number;
+  direction: EpisodeClosedTrade['direction'];
+  entry: number;
+  stop: number;
+  target: number;
+  netR: number;
+  times: Record<ChartTimeframe, ChartTradeTimes>;
+}
+
 interface ChartPayload {
   id: string;
   symbol: string;
@@ -238,6 +254,7 @@ interface ChartPayload {
   snapshotPatches: Record<string, { day: ChartBar[]; week: ChartBar[] }>;
   markers: Record<ChartTimeframe, ChartMarker[]>;
   levels: Array<{ title: string; price: number; color: string }>;
+  trades: ChartTradeRef[];
   availableTimeframes: ChartTimeframe[];
   defaultTimeframe: ChartTimeframe;
 }
@@ -1110,6 +1127,29 @@ function buildChartPayload(row: ReportRow, index: number): ChartPayload | null {
   if (plan?.entry != null) levels.push({ title: '计划入场', price: plan.entry, color: '#2563eb' });
   if (plan?.stop != null) levels.push({ title: '止损', price: plan.stop, color: '#dc2626' });
   if (plan?.target1 != null) levels.push({ title: '止盈', price: plan.target1, color: '#059669' });
+  const chartTrades: ChartTradeRef[] = trades.map((trade) => {
+    const times = {} as Record<ChartTimeframe, ChartTradeTimes>;
+    for (const tf of CHART_TIMEFRAME_ORDER) {
+      const key = CHART_TIMEFRAME_KLINE_KEY[tf];
+      const startBar = (row.question?.fixtures.kline[key] ?? []).at(-1);
+      const decisionSource =
+        trade.decisionBar === 0 ? startBar : row.question?.replay.bars[trade.decisionBar - 1];
+      times[tf] = {
+        decision: decisionSource ? chartTime(decisionSource.time, tf) : null,
+        entry: chartTime(trade.entry.time, tf),
+        exit: chartTime(trade.exit.time, tf),
+      };
+    }
+    return {
+      tradeId: trade.tradeId,
+      direction: trade.direction,
+      entry: trade.entry.price,
+      stop: trade.finalStop,
+      target: trade.target,
+      netR: trade.netR,
+      times,
+    };
+  });
   const availableTimeframes = availableTimeframesFor(row.question);
   const defaultTimeframe = availableTimeframes[0] ?? 'day';
   return {
@@ -1121,6 +1161,7 @@ function buildChartPayload(row: ReportRow, index: number): ChartPayload | null {
     snapshotPatches,
     markers,
     levels,
+    trades: chartTrades,
     availableTimeframes,
     defaultTimeframe,
   };
@@ -1318,27 +1359,32 @@ function renderProcessChain(
     <div class="process-checks">${checks.map((check) => `<span class="${check.pass ? 'pass' : 'fail'}" title="${escapeHtml(check.detail)}"><i>${check.pass ? '✓' : '!'}</i>${escapeHtml(check.label)} <small>${escapeHtml(check.detail)}</small></span>`).join('')}</div></section>`;
 }
 
-function renderTradeLedger(row: ReportRow): string {
+function renderTradeLedger(row: ReportRow, index: number): string {
   const trades = closedTrades(row.answer);
   if (trades.length === 0) {
     return `<section class="trade-ledger"><h4>交易明细</h4><p>该 Episode 全程没有成交。</p></section>`;
   }
-  return `<details class="trade-ledger" open><summary>交易明细 <span>${trades.length}</span></summary><ol>${trades
+  const chartId = `trade-chart-${index}`;
+  return `<details class="trade-ledger" open><summary>交易明细 <span>${trades.length}</span></summary><p class="ledger-hint">点击任意一笔，在图表高亮该次决策 K 线并显示该笔实际价位</p><ol>${trades
     .map((trade) => {
       const entryBar = replayBarIndex(row.question, trade.entry.time);
       const exitBar = replayBarIndex(row.question, trade.exit.time);
       const reason = tradeExitLabel(trade);
       const entryReason = tradeEntryReason(row, trade);
-      return `<li><div><strong>T${trade.tradeId} · ${escapeHtml(DIRECTION_LABELS[trade.direction])}</strong><small>B${trade.decisionBar} 决策 · ${entryBar == null ? '—' : `B${entryBar}`} → ${exitBar == null ? '—' : `B${exitBar}`} · ${escapeHtml(reason)}</small>${entryReason ? `<small class="trade-reason"><b>${escapeHtml(REASON_LABELS[entryReason.category])}</b>${escapeHtml(entryReason.summary)}</small>` : ''}</div><div class="trade-prices"><span>E ${fmt(trade.entry.price)}</span><span>S ${fmt(trade.initialStop)}${trade.finalStop === trade.initialStop ? '' : ` → ${fmt(trade.finalStop)}`}</span><span>T ${fmt(trade.target)}</span><span>X ${fmt(trade.exit.price)}</span></div><strong class="${valueClass(trade.netR)}">${fmtSigned(trade.netR, 3)} R</strong></li>`;
+      return `<li data-trade-select data-chart="${chartId}" data-trade-id="${trade.tradeId}" role="button" tabindex="0"><div><strong>T${trade.tradeId} · ${escapeHtml(DIRECTION_LABELS[trade.direction])}</strong><small>B${trade.decisionBar} 决策 · ${entryBar == null ? '—' : `B${entryBar}`} → ${exitBar == null ? '—' : `B${exitBar}`} · ${escapeHtml(reason)}</small>${entryReason ? `<small class="trade-reason"><b>${escapeHtml(REASON_LABELS[entryReason.category])}</b>${escapeHtml(entryReason.summary)}</small>` : ''}</div><div class="trade-prices"><span>E ${fmt(trade.entry.price)}</span><span>S ${fmt(trade.initialStop)}${trade.finalStop === trade.initialStop ? '' : ` → ${fmt(trade.finalStop)}`}</span><span>T ${fmt(trade.target)}</span><span>X ${fmt(trade.exit.price)}</span></div><strong class="${valueClass(trade.netR)}">${fmtSigned(trade.netR, 3)} R</strong></li>`;
     })
     .join('')}</ol></details>`;
 }
 
-function renderActionRecord(record: EpisodeActionRecord): string {
+function renderActionRecord(record: EpisodeActionRecord, chartId: string): string {
   const reason = actionReason(record);
   const label = ACTION_LABELS[record.action.type] ?? record.action.type;
   const reasonLabel = reason ? REASON_LABELS[reason.category] : '未记录理由';
-  return `<li><span>${String(record.step).padStart(2, '0')}</span><div><strong>${escapeHtml(label)} · ${escapeHtml(reasonLabel)}</strong>${reason ? `<small>${escapeHtml(reason.summary)}</small>` : ''}<em>${escapeHtml(record.effectiveBarTime ?? record.at)}</em></div></li>`;
+  const time = record.effectiveBarTime;
+  const selectAttrs = time
+    ? ` data-action-select data-chart="${chartId}" data-t-h1="${chartTime(time, 'h1')}" data-t-day="${escapeHtml(String(chartTime(time, 'day')))}" data-t-week="${escapeHtml(String(chartTime(time, 'week')))}" role="button" tabindex="0"`
+    : '';
+  return `<li${selectAttrs}><span>${String(record.step).padStart(2, '0')}</span><div><strong>${escapeHtml(label)} · ${escapeHtml(reasonLabel)}</strong>${reason ? `<small>${escapeHtml(reason.summary)}</small>` : ''}<em>${escapeHtml(record.effectiveBarTime ?? record.at)}</em></div></li>`;
 }
 
 function renderCaseDetail(row: ReportRow, index: number): string {
@@ -1356,10 +1402,10 @@ function renderCaseDetail(row: ReportRow, index: number): string {
   const defaultTimeframe: ChartTimeframe = available[0] ?? 'day';
   return `<article class="trade-case" id="case-${index}" data-model="${escapeHtml(answer.model)}" data-mode="${escapeHtml(answer.mode)}" data-outcome="${escapeHtml(outcome)}">
     <header class="case-head"><div><h3>${escapeHtml(answer.symbol)}${row.provenance ? ` <span class="provenance-alias">→ ${escapeHtml(row.provenance.sourceSymbol)}</span>` : ''}</h3><span>${escapeHtml(answer.questionId)} · ${escapeHtml(answer.model)} · ${escapeHtml(MODE_LABELS[answer.mode] ?? answer.mode)}</span>${row.provenance ? `<small class="provenance-line">${escapeHtml(formatProvenanceLine(row.provenance))}</small>` : ''}</div><div class="case-result"><span class="status ${valueClass(result?.netR)}">${escapeHtml(TERMINATION_LABELS[outcome] ?? outcome)}</span><strong class="${valueClass(result?.netR)}">${escapeHtml(fmtSigned(result?.netR, 3))} R</strong></div></header>
-    <div class="case-layout"><section class="chart-panel"><div class="chart-toolbar"><div><strong>K 线与成交量</strong><span>点击工具节点可回看该 B 编号当时可见的数据</span></div><div class="timeframe-tabs" role="tablist" aria-label="K 线周期">${available.map((tf, i) => `<button type="button"${i === 0 ? ' class="active"' : ''} data-timeframe-tab data-chart="trade-chart-${index}" data-timeframe="${tf}">${CHART_TIMEFRAME_LABEL[tf]}</button>`).join('')}</div></div><div class="tv-chart" id="trade-chart-${index}" data-chart-id="trade-chart-${index}"><span class="chart-loading">加载图表…</span></div><div class="chart-legend"><span><i class="entry"></i>计划入场</span><span><i class="target"></i>止盈</span><span><i class="stop"></i>止损</span><span><i class="decision"></i>决策位置</span><span class="chart-range" data-chart-range="trade-chart-${index}"></span></div>${renderProcessChain(row, index, available, defaultTimeframe)}</section>
-      <aside class="trade-sidebar"><section><h4>首次计划</h4><dl class="facts">${fact('方向', DIRECTION_LABELS[answer.initialSubmission?.direction ?? ''] ?? '—')}${fact('首次决策', submittedAt == null ? '—' : `B${submittedAt}`)}${fact('自主观察', `${observationBars(answer)} bars`)}${fact('计划入场', fmt(plan?.entry), 'entry-text')}${fact('止损', fmt(plan?.stop), 'negative')}${fact('止盈', fmt(plan?.target1), 'positive')}${fact('计划盈亏比', `${fmt(row.plannedRr)} R`)}${fact('止损距离', fmtPercent(row.stopDistancePct))}</dl>${initialReason ? `<p class="decision-reason"><b>${escapeHtml(REASON_LABELS[initialReason.category])}</b>${escapeHtml(initialReason.summary)}</p>` : plan?.rationale ? `<p class="rationale">${escapeHtml(plan.rationale)}</p>` : ''}</section>
+    <div class="case-layout"><section class="chart-panel"><div class="chart-toolbar"><div><strong>K 线与成交量</strong><span>点击工具节点可回看该 B 编号当时可见的数据</span></div><div class="timeframe-tabs" role="tablist" aria-label="K 线周期">${available.map((tf, i) => `<button type="button"${i === 0 ? ' class="active"' : ''} data-timeframe-tab data-chart="trade-chart-${index}" data-timeframe="${tf}">${CHART_TIMEFRAME_LABEL[tf]}</button>`).join('')}</div></div><div class="tv-chart" id="trade-chart-${index}" data-chart-id="trade-chart-${index}"><span class="chart-loading">加载图表…</span></div><div class="chart-legend"><span><i class="entry"></i>计划入场</span><span><i class="target"></i>止盈</span><span><i class="stop"></i>止损</span><span><i class="decision"></i>决策位置</span><span><i class="ema"></i>EMA20</span><span class="chart-range" data-chart-range="trade-chart-${index}"></span></div>${renderProcessChain(row, index, available, defaultTimeframe)}</section>
+      <aside class="trade-sidebar"><div class="trade-sidebar-scroll"><section><h4>首次计划</h4><dl class="facts">${fact('方向', DIRECTION_LABELS[answer.initialSubmission?.direction ?? ''] ?? '—')}${fact('首次决策', submittedAt == null ? '—' : `B${submittedAt}`)}${fact('自主观察', `${observationBars(answer)} bars`)}${fact('计划入场', fmt(plan?.entry), 'entry-text')}${fact('止损', fmt(plan?.stop), 'negative')}${fact('止盈', fmt(plan?.target1), 'positive')}${fact('计划盈亏比', `${fmt(row.plannedRr)} R`)}${fact('止损距离', fmtPercent(row.stopDistancePct))}</dl>${initialReason ? `<p class="decision-reason"><b>${escapeHtml(REASON_LABELS[initialReason.category])}</b>${escapeHtml(initialReason.summary)}</p>` : plan?.rationale ? `<p class="rationale">${escapeHtml(plan.rationale)}</p>` : ''}</section>
       <section><h4>Episode 结果</h4><dl class="facts">${fact('完整交易', `${trades.length} 笔`)}${fact('盈利 / 亏损', `${result?.winCount ?? trades.filter((trade) => trade.netR > 0).length} / ${result?.lossCount ?? trades.filter((trade) => trade.netR < 0).length}`)}${fact('Gross / Net R', `${fmtSigned(result?.grossR, 3)} / ${fmtSigned(result?.netR, 3)}`, valueClass(result?.netR))}${fact('最大回撤', `${fmt(result?.maxDrawdownR)} R`)}${fact('MFE / MAE', `${fmt(result?.mfeR)} / ${fmt(result?.maeR)}`)}${fact('首次成交 / 末次退出', `${entryAt == null ? '—' : `B${entryAt}`} / ${exitAt == null ? '—' : `B${exitAt}`}`)}${fact('累计持有', `${result?.holdingBars ?? 0} bars`)}${fact('方向命中', row.directionHit == null ? '—' : row.directionHit ? '是' : '否')}</dl></section>
-      ${renderTradeLedger(row)}<details class="actions"><summary>回放动作与理由 <span>${actions.length}</span></summary>${actions.length === 0 ? `<p>没有动作记录</p>` : `<ol>${actions.map(renderActionRecord).join('')}</ol>`}</details></aside></div>
+      ${renderTradeLedger(row, index)}<details class="actions"><summary>回放动作与理由 <span>${actions.length}</span></summary>${actions.length === 0 ? `<p>没有动作记录</p>` : `<ol>${actions.map((record) => renderActionRecord(record, `trade-chart-${index}`)).join('')}</ol>`}</details></div></aside></div>
   </article>`;
 }
 
@@ -1372,7 +1418,7 @@ function renderAudit(audits: EpisodeDataAudit[]): string {
 }
 
 const STYLES = String.raw`
-  :root{color-scheme:light;--bg:#f5f5f5;--panel:#fff;--line:#e5e5e5;--line-strong:#d4d4d4;--text:#171717;--muted:#737373;--green:#059669;--red:#dc2626;--blue:#2563eb;--soft:#fafafa;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.report{width:min(1440px,calc(100% - 32px));margin:0 auto;border:1px solid var(--line)}.report-header,.panel,.trade-case{background:var(--panel);border:1px solid var(--line);border-left:0;border-right:0}.report>:first-child{border-top:0}.report>*+*{margin-top:10px}.report-header{display:flex;align-items:center;gap:18px;padding:14px 16px}.report-title{min-width:260px}.report-title h1{font-size:18px;margin:0}.report-title p{margin:2px 0 0;color:var(--muted);font:11px var(--mono)}.header-meta{display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap}.chip,.status{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:var(--soft);font-size:11px;white-space:nowrap}.audit-state{font-weight:650}.audit-state.pass{color:var(--green);border-color:#a7d8c7;background:#f0fdf8}.audit-state.fail{color:var(--red);border-color:#efb4b4;background:#fff5f5}.generated{margin-left:auto;color:var(--muted);font:10px var(--mono);white-space:nowrap}.summary{padding:0;overflow:hidden}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px;border-bottom:1px solid var(--line)}.panel-title h2{font-size:13px;margin:0}.panel-title span{color:var(--muted);font-size:11px}.metrics{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--line)}.metric{min-width:0;padding:10px 12px;border-right:1px solid var(--line)}.metric:nth-child(6n){border-right:0}.metric span,.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin:3px 0 1px;font:600 18px var(--mono);letter-spacing:-.03em}.positive{color:var(--green)!important}.negative{color:var(--red)!important}.neutral{color:var(--text)}.config-strip{display:flex;gap:0;overflow:auto}.config-strip div{flex:1;min-width:112px;padding:8px 12px;border-right:1px solid var(--line)}.config-strip div:last-child{border:0}.config-strip span,.config-strip strong{display:block}.config-strip span{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em}.config-strip strong{margin-top:2px;font:600 11px var(--mono)}.table-scroll{overflow:auto}.compact-table{width:100%;border-collapse:collapse;min-width:880px}.compact-table th{padding:7px 10px;background:var(--soft);border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;text-align:left;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.compact-table td{padding:8px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle;white-space:nowrap}.compact-table tbody tr:last-child td{border-bottom:0}.compact-table tbody tr:hover{background:#fafafa}.compact-table strong,.compact-table small{display:block}.compact-table small{color:var(--muted);font-size:9px}.mono{font-family:var(--mono)}a{color:inherit}.filters{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line)}.filters select,.filters input{height:30px;padding:0 9px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;color:var(--text);font:11px inherit;outline:none}.filters select:focus,.filters input:focus{border-color:var(--blue);box-shadow:0 0 0 2px #dbeafe}.filters input{flex:1;min-width:180px}.filters>span{align-self:center;margin-left:auto;color:var(--muted);font:10px var(--mono)}.case-row[hidden],.trade-case[hidden]{display:none}.status.positive{background:#eefbf5;border-color:#b4e2d0}.status.negative{background:#fff3f3;border-color:#efb8b8}.trade-case{overflow:hidden;scroll-margin-top:10px}.case-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}.case-head h3{display:inline;margin:0 8px 0 0;font-size:15px}.case-head>div>span{color:var(--muted);font-size:10px}.case-result{display:flex;align-items:center;gap:10px}.case-result strong{font:650 17px var(--mono)}.case-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px}.chart-panel{min-width:0;border-right:1px solid var(--line)}.chart-toolbar{height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 10px;border-bottom:1px solid var(--line)}.chart-toolbar strong,.chart-toolbar span{display:block}.chart-toolbar span{color:var(--muted);font-size:9px}.timeframe-tabs{display:flex;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden}.timeframe-tabs button{height:28px;padding:0 12px;border:0;border-right:1px solid var(--line-strong);background:#fff;color:var(--muted);font:11px inherit;cursor:pointer}.timeframe-tabs button:last-child{border-right:0}.timeframe-tabs button.active{background:#e5e5e5;color:var(--text);font-weight:650}.tv-chart{height:360px;position:relative;background:#fff}.chart-marker-tooltip{position:absolute;pointer-events:none;background:#171717;color:#fff;padding:6px 8px;border-radius:4px;font:10px var(--mono);line-height:1.5;max-width:240px;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;white-space:normal}.chart-marker-tooltip div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chart-loading,.chart-error{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:11px}.chart-error{color:var(--red)}.chart-legend{height:31px;display:flex;align-items:center;gap:14px;padding:0 10px;border-top:1px solid var(--line);color:var(--muted);font-size:9px}.chart-legend span{display:flex;align-items:center;gap:5px}.chart-legend i{display:block;width:14px;height:2px}.chart-legend i.entry{background:var(--blue)}.chart-legend i.target{background:var(--green)}.chart-legend i.stop{background:var(--red)}.chart-range{margin-left:auto!important;font-family:var(--mono)}.trade-sidebar{background:#fafafa}.trade-sidebar>section,.actions{padding:10px 12px;border-bottom:1px solid var(--line)}.trade-sidebar h4{margin:0 0 8px;font-size:11px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin:0}.facts div{min-width:0}.facts dt{color:var(--muted);font-size:9px}.facts dd{margin:1px 0 0;font:600 11px var(--mono)}.entry-text{color:var(--blue)}.rationale{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.actions{padding:0}.actions summary{display:flex;justify-content:space-between;padding:9px 12px;cursor:pointer;font-size:10px;font-weight:650}.actions summary span{color:var(--muted)}.actions p{margin:0;padding:0 12px 10px;color:var(--muted);font-size:10px}.actions ol{list-style:none;margin:0;padding:0 12px 8px}.actions li{display:grid;grid-template-columns:22px 58px 1fr;gap:6px;padding:5px 0;border-top:1px solid var(--line);font-size:9px}.actions li>span,.actions li small{color:var(--muted);font-family:var(--mono)}.audit-panel>summary{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;cursor:pointer;font-size:12px;font-weight:650}.audit-panel>summary small{margin-left:8px;color:var(--muted);font-weight:400}.audit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}.audit-check{display:grid;grid-template-columns:20px 1fr;gap:7px;padding:8px;background:#fff}.audit-check i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e9f9f2;color:var(--green);font-style:normal;font-size:10px}.audit-check.fail i{background:#fff0f0;color:var(--red)}.audit-check strong,.audit-check small,.audit-check em{display:block}.audit-check strong{font-size:10px}.audit-check small{color:var(--muted);font:8px var(--mono)}.audit-check em{margin-top:3px;color:var(--muted);font-size:9px;font-style:normal}.footer{display:flex;justify-content:space-between;gap:16px;padding:6px 12px;color:var(--muted);font-size:9px}.footer a{color:var(--blue)}@media(max-width:1050px){.metrics{grid-template-columns:repeat(3,1fr)}.metric:nth-child(3n){border-right:0}.case-layout{grid-template-columns:1fr}.chart-panel{border-right:0;border-bottom:1px solid var(--line)}.trade-sidebar{display:grid;grid-template-columns:1fr 1fr}.actions{grid-column:1/-1}.audit-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:680px){.report{width:100%;margin:0}.report-header,.panel,.trade-case{border-left:0;border-right:0}.report-header{display:block}.header-meta{margin-top:8px}.generated{width:100%;margin:2px 0 0}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(3n){border-right:1px solid var(--line)}.metric:nth-child(2n){border-right:0}.filters{flex-wrap:wrap}.filters select{flex:1}.filters input{order:2;flex-basis:100%}.case-head{align-items:flex-start}.case-head>div>span{display:block;margin-top:2px}.case-result{align-items:flex-end;flex-direction:column;gap:4px}.chart-toolbar{height:auto;align-items:flex-start;flex-direction:column}.timeframe-tabs{width:100%}.timeframe-tabs button{flex:1}.tv-chart{height:330px}.trade-sidebar{display:block}.audit-grid{grid-template-columns:1fr}.audit-panel>summary small{display:none}.footer{padding:8px 10px;display:block}}@media print{body{background:#fff}.report{width:100%;margin:0}.filters{display:none}.panel,.trade-case,.report-header{break-inside:avoid}.tv-chart{height:300px}}
+  :root{color-scheme:light;--bg:#f5f5f5;--panel:#fff;--line:#e5e5e5;--line-strong:#d4d4d4;--text:#171717;--muted:#737373;--green:#059669;--red:#dc2626;--blue:#2563eb;--soft:#fafafa;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.report{width:min(1440px,calc(100% - 32px));margin:0 auto;border:1px solid var(--line)}.report-header,.panel,.trade-case{background:var(--panel);border:1px solid var(--line);border-left:0;border-right:0}.report>:first-child{border-top:0}.report>*+*{margin-top:10px}.report-header{display:flex;align-items:center;gap:18px;padding:14px 16px}.report-title{min-width:260px}.report-title h1{font-size:18px;margin:0}.report-title p{margin:2px 0 0;color:var(--muted);font:11px var(--mono)}.header-meta{display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap}.chip,.status{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:var(--soft);font-size:11px;white-space:nowrap}.audit-state{font-weight:650}.audit-state.pass{color:var(--green);border-color:#a7d8c7;background:#f0fdf8}.audit-state.fail{color:var(--red);border-color:#efb4b4;background:#fff5f5}.generated{margin-left:auto;color:var(--muted);font:10px var(--mono);white-space:nowrap}.summary{padding:0;overflow:hidden}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px;border-bottom:1px solid var(--line)}.panel-title h2{font-size:13px;margin:0}.panel-title span{color:var(--muted);font-size:11px}.metrics{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--line)}.metric{min-width:0;padding:10px 12px;border-right:1px solid var(--line)}.metric:nth-child(6n){border-right:0}.metric span,.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin:3px 0 1px;font:600 18px var(--mono);letter-spacing:-.03em}.positive{color:var(--green)!important}.negative{color:var(--red)!important}.neutral{color:var(--text)}.config-strip{display:flex;gap:0;overflow:auto}.config-strip div{flex:1;min-width:112px;padding:8px 12px;border-right:1px solid var(--line)}.config-strip div:last-child{border:0}.config-strip span,.config-strip strong{display:block}.config-strip span{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em}.config-strip strong{margin-top:2px;font:600 11px var(--mono)}.table-scroll{overflow:auto}.compact-table{width:100%;border-collapse:collapse;min-width:880px}.compact-table th{padding:7px 10px;background:var(--soft);border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;text-align:left;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.compact-table td{padding:8px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle;white-space:nowrap}.compact-table tbody tr:last-child td{border-bottom:0}.compact-table tbody tr:hover{background:#fafafa}.compact-table strong,.compact-table small{display:block}.compact-table small{color:var(--muted);font-size:9px}.mono{font-family:var(--mono)}a{color:inherit}.filters{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line)}.filters select,.filters input{height:30px;padding:0 9px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;color:var(--text);font:11px inherit;outline:none}.filters select:focus,.filters input:focus{border-color:var(--blue);box-shadow:0 0 0 2px #dbeafe}.filters input{flex:1;min-width:180px}.filters>span{align-self:center;margin-left:auto;color:var(--muted);font:10px var(--mono)}.case-row[hidden],.trade-case[hidden]{display:none}.status.positive{background:#eefbf5;border-color:#b4e2d0}.status.negative{background:#fff3f3;border-color:#efb8b8}.trade-case{overflow:hidden;scroll-margin-top:10px}.case-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}.case-head h3{display:inline;margin:0 8px 0 0;font-size:15px}.case-head>div>span{color:var(--muted);font-size:10px}.case-result{display:flex;align-items:center;gap:10px}.case-result strong{font:650 17px var(--mono)}.case-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px}.chart-panel{min-width:0;border-right:1px solid var(--line)}.chart-toolbar{height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 10px;border-bottom:1px solid var(--line)}.chart-toolbar strong,.chart-toolbar span{display:block}.chart-toolbar span{color:var(--muted);font-size:9px}.timeframe-tabs{display:flex;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden}.timeframe-tabs button{height:28px;padding:0 12px;border:0;border-right:1px solid var(--line-strong);background:#fff;color:var(--muted);font:11px inherit;cursor:pointer}.timeframe-tabs button:last-child{border-right:0}.timeframe-tabs button.active{background:#e5e5e5;color:var(--text);font-weight:650}.tv-chart{height:360px;position:relative;background:#fff}.chart-marker-tooltip{position:absolute;pointer-events:none;background:#171717;color:#fff;padding:6px 8px;border-radius:4px;font:10px var(--mono);line-height:1.5;max-width:240px;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;white-space:normal}.chart-marker-tooltip div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chart-loading,.chart-error{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:11px}.chart-error{color:var(--red)}.chart-legend{height:31px;display:flex;align-items:center;gap:14px;padding:0 10px;border-top:1px solid var(--line);color:var(--muted);font-size:9px}.chart-legend span{display:flex;align-items:center;gap:5px}.chart-legend i{display:block;width:14px;height:2px}.chart-legend i.entry{background:var(--blue)}.chart-legend i.target{background:var(--green)}.chart-legend i.stop{background:var(--red)}.chart-legend i.ema{background:#f59e0b}.chart-range{margin-left:auto!important;font-family:var(--mono)}.trade-sidebar{background:#fafafa;position:relative;min-height:0}.trade-sidebar-scroll{position:absolute;inset:0;overflow-y:auto;scrollbar-width:thin}.trade-sidebar section,.actions{padding:10px 12px;border-bottom:1px solid var(--line)}.trade-sidebar h4{margin:0 0 8px;font-size:11px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin:0}.facts div{min-width:0}.facts dt{color:var(--muted);font-size:9px}.facts dd{margin:1px 0 0;font:600 11px var(--mono)}.entry-text{color:var(--blue)}.rationale{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.actions{padding:0}.actions summary{display:flex;justify-content:space-between;padding:9px 12px;cursor:pointer;font-size:10px;font-weight:650}.actions summary span{color:var(--muted)}.actions p{margin:0;padding:0 12px 10px;color:var(--muted);font-size:10px}.actions ol{list-style:none;margin:0;padding:0 12px 8px}.actions li{display:grid;grid-template-columns:22px 58px 1fr;gap:6px;padding:5px 0;border-top:1px solid var(--line);font-size:9px}.actions li>span,.actions li small{color:var(--muted);font-family:var(--mono)}.audit-panel>summary{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;cursor:pointer;font-size:12px;font-weight:650}.audit-panel>summary small{margin-left:8px;color:var(--muted);font-weight:400}.audit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}.audit-check{display:grid;grid-template-columns:20px 1fr;gap:7px;padding:8px;background:#fff}.audit-check i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e9f9f2;color:var(--green);font-style:normal;font-size:10px}.audit-check.fail i{background:#fff0f0;color:var(--red)}.audit-check strong,.audit-check small,.audit-check em{display:block}.audit-check strong{font-size:10px}.audit-check small{color:var(--muted);font:8px var(--mono)}.audit-check em{margin-top:3px;color:var(--muted);font-size:9px;font-style:normal}.footer{display:flex;justify-content:space-between;gap:16px;padding:6px 12px;color:var(--muted);font-size:9px}.footer a{color:var(--blue)}@media(max-width:1050px){.metrics{grid-template-columns:repeat(3,1fr)}.metric:nth-child(3n){border-right:0}.case-layout{grid-template-columns:1fr}.chart-panel{border-right:0;border-bottom:1px solid var(--line)}.trade-sidebar-scroll{position:static;overflow:visible;display:grid;grid-template-columns:1fr 1fr}.actions{grid-column:1/-1}.audit-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:680px){.report{width:100%;margin:0}.report-header,.panel,.trade-case{border-left:0;border-right:0}.report-header{display:block}.header-meta{margin-top:8px}.generated{width:100%;margin:2px 0 0}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(3n){border-right:1px solid var(--line)}.metric:nth-child(2n){border-right:0}.filters{flex-wrap:wrap}.filters select{flex:1}.filters input{order:2;flex-basis:100%}.case-head{align-items:flex-start}.case-head>div>span{display:block;margin-top:2px}.case-result{align-items:flex-end;flex-direction:column;gap:4px}.chart-toolbar{height:auto;align-items:flex-start;flex-direction:column}.timeframe-tabs{width:100%}.timeframe-tabs button{flex:1}.tv-chart{height:330px}.trade-sidebar-scroll{display:block}.audit-grid{grid-template-columns:1fr}.audit-panel>summary small{display:none}.footer{padding:8px 10px;display:block}}@media print{body{background:#fff}.report{width:100%;margin:0}.filters{display:none}.panel,.trade-case,.report-header{break-inside:avoid}.tv-chart{height:300px}.trade-sidebar-scroll{position:static;overflow:visible}}
 `;
 
 const PROCESS_STYLES = String.raw`
@@ -1380,7 +1426,7 @@ const PROCESS_STYLES = String.raw`
 `;
 
 const REASON_STYLES = String.raw`
-  .reason-empty{margin:0;padding:12px;color:var(--muted);font-size:10px}.reason-table{min-width:720px}.decision-reason{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.decision-reason b,.trade-reason b{display:inline-block;margin-right:6px;color:#7c3aed}.trade-ledger li>div:first-child .trade-reason{margin-top:4px;color:var(--text);font:9px/1.45 inherit}.actions li{grid-template-columns:22px minmax(0,1fr);gap:6px;padding:7px 0}.actions li>div strong,.actions li>div small,.actions li>div em{display:block}.actions li>div strong{font-size:9px}.actions li>div small{margin-top:2px;color:var(--text);font:9px/1.4 inherit}.actions li>div em{margin-top:3px;color:var(--muted);font:7px var(--mono);font-style:normal}
+  .reason-empty{margin:0;padding:12px;color:var(--muted);font-size:10px}.reason-table{min-width:720px}.decision-reason{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.decision-reason b,.trade-reason b{display:inline-block;margin-right:6px;color:#7c3aed}.trade-ledger li>div:first-child .trade-reason{margin-top:4px;color:var(--text);font:9px/1.45 inherit}.actions li{grid-template-columns:22px minmax(0,1fr);gap:6px;padding:7px 0}.actions li>div strong,.actions li>div small,.actions li>div em{display:block}.actions li>div strong{font-size:9px}.actions li>div small{margin-top:2px;color:var(--text);font:9px/1.4 inherit}.actions li>div em{margin-top:3px;color:var(--muted);font:7px var(--mono);font-style:normal}.ledger-hint{margin:0;padding:0 12px 6px;color:var(--muted);font-size:8px}li[data-trade-select],li[data-action-select]{cursor:pointer;padding-left:6px!important;margin-left:-6px;border-left:2px solid transparent}li[data-trade-select]:hover,li[data-action-select]:hover{background:#f5f3ff}li[data-trade-select].active,li[data-action-select].active{background:#faf9ff;border-left-color:#7c3aed}
 `;
 
 const SCRIPT = String.raw`
@@ -1411,6 +1457,42 @@ const SCRIPT = String.raw`
             ctx.moveTo(cutX, 0);
             ctx.lineTo(cutX, h);
             ctx.stroke();
+            ctx.restore();
+          });
+        },
+      };
+      const paneView = {
+        renderer: () => renderer,
+        zOrder: () => 'bottom',
+        update: () => {},
+      };
+      return {
+        updateAllViews() {},
+        paneViews() { return [paneView]; },
+        attached() {},
+        detached() {},
+      };
+    }
+
+    function createBarHighlight(chart, time) {
+      if (time == null) return null;
+      const renderer = {
+        draw(target) {
+          target.useBitmapCoordinateSpace((scope) => {
+            const x = chart.timeScale().timeToCoordinate(time);
+            if (x == null) return;
+            const ctx = scope.context;
+            const dpr = scope.horizontalPixelRatio;
+            const spacing = (chart.timeScale().options().barSpacing || 6) * dpr;
+            const cx = (x + 0.5) * dpr;
+            const half = Math.max(3 * dpr, spacing / 2);
+            const h = scope.bitmapSize.height;
+            ctx.save();
+            ctx.fillStyle = 'rgba(124,58,237,0.14)';
+            ctx.fillRect(cx - half, 0, half * 2, h);
+            ctx.strokeStyle = 'rgba(124,58,237,0.65)';
+            ctx.lineWidth = Math.max(1, dpr);
+            ctx.strokeRect(cx - half, 0, half * 2, h);
             ctx.restore();
           });
         },
