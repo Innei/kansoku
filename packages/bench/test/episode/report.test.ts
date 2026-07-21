@@ -319,11 +319,9 @@ describe('episode HTML report', () => {
     expect(chart.trades).toHaveLength(1);
     expect(chart.trades[0]).toMatchObject({
       tradeId: 1,
-      direction: 'short',
       entry: 364.771,
       stop: 389.2,
       target: 361,
-      netR: 0.4428025,
     });
     expect(chart.trades[0].times.h1.entry).not.toBeNull();
     expect(chart.trades[0].times.day.decision).not.toBeNull();

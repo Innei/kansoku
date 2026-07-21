@@ -1,5 +1,6 @@
 import type { Scores } from '../schema/scores.js';
 import { loadBenchReportUiAssets } from './uiAssets.js';
+import { escapeHtml, serializeForScript } from './htmlFormat.js';
 import type { ReportConfigSnapshot } from './render.js';
 import { buildLeaderboardReportViewData } from './viewModel.js';
 
@@ -9,24 +10,6 @@ export interface RenderHtmlOptions {
 
 export interface RenderHtmlResult {
   html: string;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function serializeForScript(value: unknown): string {
-  return JSON.stringify(value)
-    .replaceAll('<', '\\u003c')
-    .replaceAll('>', '\\u003e')
-    .replaceAll('&', '\\u0026')
-    .replaceAll(' ', '\\u2028')
-    .replaceAll(' ', '\\u2029');
 }
 
 export function renderReportHtml(

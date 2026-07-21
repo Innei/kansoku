@@ -12,11 +12,9 @@ function bar(time: number, close: number): EpisodeReportChartBar {
 
 const trade: EpisodeReportChartTradeRef = {
   tradeId: 1,
-  direction: 'long',
   entry: 100,
   stop: 90,
   target: 120,
-  netR: 1,
   times: {
     h1: { decision: 10, entry: 12, exit: 20 },
     day: { decision: 2000, entry: 2000, exit: 3000 },

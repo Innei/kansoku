@@ -2,6 +2,7 @@ import type { EpisodeAnswer } from '../schema/episode.js';
 import type { Question } from '../schema/question.js';
 import type { EpisodeDataAudit } from './audit.js';
 import { loadBenchReportUiAssets } from '../report/uiAssets.js';
+import { escapeHtml, serializeForScript } from '../report/htmlFormat.js';
 import { aggregate, aggregateReasons, type EpisodeReportSummary } from './metrics.js';
 import { buildRows } from './rows.js';
 import { buildEpisodeReportViewData, type EpisodeConfigSummary } from './viewModel.js';
@@ -80,24 +81,6 @@ export interface EpisodeReportTraceLine {
   episodeNetR?: number;
   warningInjected?: boolean;
   warningPriority?: 'high' | 'critical' | null;
-}
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function serializeForScript(value: unknown): string {
-  return JSON.stringify(value)
-    .replaceAll('<', '\\u003c')
-    .replaceAll('>', '\\u003e')
-    .replaceAll('&', '\\u0026')
-    .replaceAll(' ', '\\u2028')
-    .replaceAll(' ', '\\u2029');
 }
 
 function buildConfigSummary(firstQuestion: Question | undefined): EpisodeConfigSummary | null {

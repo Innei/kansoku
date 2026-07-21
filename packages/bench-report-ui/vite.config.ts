@@ -22,6 +22,7 @@ const GLOBAL_NAMES: Record<EntryName, string> = {
 export default defineConfig(() => {
   const entryName = resolveEntryName();
   return {
+    define: { 'process.env.NODE_ENV': JSON.stringify('production') },
     plugins: [react(), vanillaExtractPlugin()],
     build: {
       outDir: 'dist',

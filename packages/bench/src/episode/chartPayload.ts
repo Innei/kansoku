@@ -1,5 +1,4 @@
 import type { RawBar } from '@kansoku/shared/types';
-import type { EpisodeClosedTrade } from '../schema/episode.js';
 import type { Question } from '../schema/question.js';
 import { buildEpisodeQuestionViewAtCursor } from './view.js';
 import { fmt, fmtSigned } from './labels.js';
@@ -54,11 +53,9 @@ export interface ChartTradeTimes {
 
 export interface ChartTradeRef {
   tradeId: number;
-  direction: EpisodeClosedTrade['direction'];
   entry: number;
   stop: number;
   target: number;
-  netR: number;
   times: Record<ChartTimeframe, ChartTradeTimes>;
 }
 
@@ -304,11 +301,9 @@ export function buildChartPayload(row: ReportRow, index: number): ChartPayload |
     }
     return {
       tradeId: trade.tradeId,
-      direction: trade.direction,
       entry: trade.entry.price,
       stop: trade.finalStop,
       target: trade.target,
-      netR: trade.netR,
       times,
     };
   });

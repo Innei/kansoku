@@ -41,6 +41,7 @@ export function CaseDetail({
     bar: number,
     sequence: number,
   ) => {
+    setSelection(null);
     setTimeframe(tf);
     setBarIndex(bar);
     setActiveNodeSeq(sequence);

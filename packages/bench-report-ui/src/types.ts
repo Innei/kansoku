@@ -113,11 +113,9 @@ export interface EpisodeReportChartMarker {
 
 export interface EpisodeReportChartTradeRef {
   tradeId: number;
-  direction: 'long' | 'short';
   entry: number;
   stop: number;
   target: number;
-  netR: number;
   times: Record<EpisodeReportChartTimeframe, EpisodeReportChartTradeTimes>;
 }
 
