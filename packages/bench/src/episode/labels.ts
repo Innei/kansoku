@@ -1,6 +1,6 @@
 import type { EpisodeTradeReasonCategory } from '../schema/tradeReason.js';
 
-export type ToneClass = 'positive' | 'negative' | 'neutral';
+export type ToneClass = 'positive' | 'negative' | 'neutral' | 'entry';
 
 export const PLAYSTYLE_LABEL: Record<string, string> = {
   'single-shot': 'oneshot',

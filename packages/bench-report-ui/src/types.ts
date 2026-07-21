@@ -1,4 +1,4 @@
-export type ToneClass = 'positive' | 'negative' | 'neutral';
+export type ToneClass = 'positive' | 'negative' | 'neutral' | 'entry';
 
 export type EpisodeReportChartTimeframe = 'h1' | 'day' | 'week';
 

@@ -144,7 +144,7 @@ export function buildCaseDetail(
     fact('方向', DIRECTION_LABELS[answer.initialSubmission?.direction ?? ''] ?? '—'),
     fact('首次决策', submittedAt == null ? '—' : `B${submittedAt}`),
     fact('自主观察', `${observationBars(answer)} bars`),
-    fact('计划入场', fmt(plan?.entry), 'positive'),
+    fact('计划入场', fmt(plan?.entry), 'entry'),
     fact('止损', fmt(plan?.stop), 'negative'),
     fact('止盈', fmt(plan?.target1), 'positive'),
     fact('计划盈亏比', `${fmt(row.plannedRr)} R`),
