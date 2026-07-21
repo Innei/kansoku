@@ -1,6 +1,7 @@
 packages:
   - packages/core
   - packages/bench
+  - packages/bench-report-ui
   - packages/build-overlay
   - packages/pro-api
   - packages/shared
