@@ -142,6 +142,20 @@ Episode runner 要求模型在每次交易决策中提交结构化理由：`subm
 - **日历 fixture 带「未卜先知」的前视信息**：`fixtures.calendar` 是出题当下（现在）拉的，里面可能含 cutoff 之后才公布的财报/宏观日程，实盘模式下模型能看到本不该在那个时点知道的未来事件。这是已知的数据泄漏，等接入历史时点的日历归档源后才能修。
 - **温度（temperature）只记录、不生效**：`RunConfig.temperatures` 会被原样写进 `config.json` 快照留档，但 runner 目前并不把它下发给模型调用，所以同一个模型在不同温度配置下跑出来的其实是同一套采样设置——这一项暂时只是元数据，不影响实际输出。
 
+## 报告 HTML 依赖 `@kansoku/bench-report-ui`
+
+`report` 和 episode report（`report --run-id ... `内部识别到 `episodes.jsonl` 时自动走 episode 分支）最终产出的 `report.html` 是纯前端页面（React + vanilla-extract），实际渲染代码不在这个包里，而在同一 workspace 的 `@kansoku/bench-report-ui`（`packages/bench-report-ui`）。本包只负责算出可序列化的 view-model，再拼一个 `<!doctype html>` 外壳：内联 `dist/{episode,leaderboard}.css`、把 view-model 塞进 `window.__KANSOKU_REPORT_DATA__`、内联 `dist/{episode,leaderboard}.js`。
+
+所以第一次渲染 HTML 报告前必须先构建一次 UI 包（之后除非改了 UI 代码不用重复）：
+
+```bash
+pnpm --filter @kansoku/bench-report-ui build
+```
+
+没构建就跑 `report`/episode report 会报错，报错信息里会直接提示上面这条命令。`pnpm -r test`（仓库根 `pnpm test`）已经覆盖这一步——`@kansoku/bench-report-ui` 的 `test` script 带 `pretest` 钩子会先构建再跑测试，所以走根测试链路不用手动操心构建顺序，只有单独跑 `pnpm --filter @kansoku/bench cli report ...` 时才需要自己先构建一次。
+
+产出的 `report.html` 是单文件、可离线的（CSS/JS/数据全部内联，`lightweight-charts` 也打进 JS 里，不依赖任何 CDN），可以直接双击打开或存档。
+
 ## 端到端验证
 
 公开包这边验证的是**判分→报告**这段纯链路：`test/integration/scoreReport.test.ts` 拿一份写死的 predictions 答卷（`test/fixtures/predictions/predictions.jsonl`，两个模型跨三道真实 v1 题）喂给 `score`，再 `render` 出报告，断言每格都判了分、两个模型都进榜、报告能钻取到每道题、summary 通过 schema 校验。跑法：`pnpm --filter @kansoku/bench test`。
