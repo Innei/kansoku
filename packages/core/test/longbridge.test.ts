@@ -407,7 +407,15 @@ describe('longbridgeProvider (CLI-backed)', () => {
     const provider = createLongbridgeProvider(run);
     await expect(provider.getMacroCalendar!('US', '2026-07-10', '2026-07-13', 3)).resolves.toEqual({
       supported: true,
-      items: [{ ts: '2026-07-11T04:00:00.000Z', title: 'CPI', estimate: '3.1%', previous: null }],
+      items: [
+        {
+          ts: '2026-07-11T04:00:00.000Z',
+          title: 'CPI',
+          estimate: '3.1%',
+          previous: null,
+          actual: null,
+        },
+      ],
     });
   });
 
