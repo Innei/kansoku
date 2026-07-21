@@ -264,9 +264,117 @@ export interface EpisodeReportViewData {
   };
 }
 
-export interface LeaderboardReportViewData {
+export interface LeaderboardKvItem {
+  label: string;
+  value: string;
+}
+
+export type LeaderboardGaugeKind = 'j' | 'e' | 'muted';
+
+export interface LeaderboardGauge {
+  fillRatio: number;
+  text: string;
+  kind: LeaderboardGaugeKind;
+}
+
+export interface LeaderboardDelta {
+  tone: 'pos' | 'neg';
+  text: string;
+}
+
+export interface LeaderboardModelRowView {
+  id: string;
+  rank: number | null;
+  isBaseline: boolean;
+  name: string;
+  vendor: string | null;
+  baselineBadge: boolean;
+  total: string;
+  delta: LeaderboardDelta | null;
+  judgment: LeaderboardGauge;
+  efficiency: LeaderboardGauge | null;
+  winRate: string;
+  abstainRate: string;
+  cost: string;
+  duration: string;
+  violationRate: string;
+}
+
+export interface LeaderboardScatterTick {
+  cx?: number;
+  cy?: number;
+  label: string;
+}
+
+export interface LeaderboardScatterDot {
+  id: string;
+  name: string;
+  cx: number;
+  cy: number;
+  r: number;
+  lead: boolean;
+  below: boolean;
+  labelX: number;
+  labelY: number;
+  anchor: 'start' | 'end';
+}
+
+export interface LeaderboardScatterBaseline {
+  y: number;
+  label: string;
+}
+
+export interface LeaderboardScatterView {
+  width: number;
+  height: number;
+  padL: number;
+  padT: number;
+  innerRight: number;
+  innerBottom: number;
+  xTicks: LeaderboardScatterTick[];
+  yTicks: LeaderboardScatterTick[];
+  baseline: LeaderboardScatterBaseline | null;
+  dots: LeaderboardScatterDot[];
+}
+
+export interface LeaderboardDetailRow {
+  label: string;
+  value: string;
+  tone: ToneClass | '';
+}
+
+export interface LeaderboardDetailSection {
   title: string;
+  rows: LeaderboardDetailRow[];
+}
+
+export interface LeaderboardDetailCardView {
+  id: string;
+  name: string;
+  vendor: string;
+  did: string;
+  sections: LeaderboardDetailSection[];
+}
+
+export interface LeaderboardReportViewData {
+  runId: string;
   generatedAt: string;
+  title: string;
+  subtitle: string;
+  n: number;
+  kvs: LeaderboardKvItem[];
+  realRows: LeaderboardModelRowView[];
+  baselineRows: LeaderboardModelRowView[];
+  passLineLabel: string | null;
+  scatter: LeaderboardScatterView;
+  scatterLegend: { belowLabel: string | null };
+  details: Record<string, LeaderboardDetailCardView>;
+  initialSelectedId: string | null;
+  footer: {
+    datasetVersion: string;
+    runId: string;
+    generatedAt: string;
+  };
 }
 
 declare global {
