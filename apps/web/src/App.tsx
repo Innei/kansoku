@@ -1,14 +1,16 @@
+import { RouterProvider } from 'react-router';
 import { AppSkeleton } from './AppSkeleton';
-import { DesktopShell } from './desktop/DesktopShell';
-import { Onboarding } from './onboarding/Onboarding';
-import { useCredentialsGate } from './onboarding/useCredentialsGate';
-import { CommandPalette } from './palette/CommandPalette';
-import { Router } from './PageRouter';
-import { RestrictedBanner } from './RestrictedBanner';
-import { isDesktopRealtime } from './portTransport';
-import { matchPopoutSymbolRoute, navigate, routePathname, useRoute } from './router';
+import { DesktopShell } from './features/desktop/DesktopShell';
+import { Onboarding } from './features/onboarding/Onboarding';
+import { useCredentialsGate } from './features/onboarding/useCredentialsGate';
+import { CommandPalette } from './features/palette/CommandPalette';
+import { RestrictedBanner } from './features/edition/RestrictedBanner';
+import { isDesktopRealtime } from './lib/portTransport';
+import { getBrowserRouter, matchPopoutSymbolRoute, navigate, routePathname, useRoute } from './lib/router';
 import { ContextMenuHost, ModalHost } from './ui';
-import { RoutedGlobalNotifications } from './GlobalNotifications';
+import { RoutedGlobalNotifications } from './features/notifications/GlobalNotifications';
+
+const browserRouter = getBrowserRouter();
 
 export function App() {
   const gate = useCredentialsGate();
@@ -31,7 +33,7 @@ export function App() {
   }
 
   if (isPopout) {
-    return <Router />;
+    return <RouterProvider router={browserRouter} />;
   }
 
   if (isDesktopRealtime()) {
@@ -42,7 +44,7 @@ export function App() {
     <>
       <RestrictedBanner />
       <RoutedGlobalNotifications />
-      <Router />
+      <RouterProvider router={browserRouter} />
       <CommandPalette onOpenRoute={navigate} />
       <ModalHost />
       <ContextMenuHost />

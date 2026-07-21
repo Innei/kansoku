@@ -4,6 +4,7 @@ import babel from '@rolldown/plugin-babel';
 import { isProModule, proLeakGuard, proOverlayPlugin } from '@kansoku/build-overlay';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { routeBuilderPlugin } from 'vite-plugin-route-builder';
 
 const KERNEL_PORT = Number(process.env.KERNEL_PORT || 5200);
 const KERNEL_URL = `http://localhost:${KERNEL_PORT}`;
@@ -42,6 +43,12 @@ export function assetFileNamesFor(asset: AssetNameInput): string {
 
 export default defineConfig({
   plugins: [
+    routeBuilderPlugin({
+      pagePattern: './src/pages/**/*.{tsx,sync.tsx}',
+      outputPath: './src/generated-routes.ts',
+      enableInDev: true,
+      transformPath: (path) => path.replace(/\[\.\.\.[^\]]*\]/, '*'),
+    }),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     ...(proPresent ? [proOverlayPlugin({ overlayRoot })] : []),
