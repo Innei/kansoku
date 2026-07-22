@@ -1,3 +1,4 @@
+import { runChart } from './commands/chart.js';
 import { runInfo } from './commands/info.js';
 import { resolveDataRoot } from './dataRoot.js';
 
@@ -10,6 +11,9 @@ Commands:
   info kit-version           print the packaged Agent Kit version
   info data-root             print the resolved data root path
   info version               print the CLI's own version (matches App)
+  chart create               create a chart (--type, --symbol, --json-input)
+  chart list                 list chart metas (--symbol, --date)
+  chart get <id>             print a chart's meta + data
 
 Data root resolution (priority):
   --data-root <path>         command-line flag
@@ -41,7 +45,7 @@ async function main() {
       return runInfo(rest);
     }
     case 'chart': {
-      throw new Error('chart subcommand not yet available (implemented in Task 3)');
+      return runChart(rest);
     }
     default: {
       process.stderr.write(`Unknown command: ${command}\n`);
