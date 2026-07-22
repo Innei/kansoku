@@ -33,6 +33,7 @@ export async function ensureAgentKit(input: {
       `KANSOKU_DATA_ROOT=${input.dataRoot}`,
       `KANSOKU_APP_VERSION=${manifest.appVersion}`,
       `KANSOKU_KIT_VERSION=${manifest.kitVersion}`,
+      `TRADE_MIGRATIONS_DIR=${join(input.resourcesPath, 'drizzle')}`,
       '',
     ].join('\n'),
     'utf8',

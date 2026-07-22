@@ -54,3 +54,21 @@ export function writeState(dataRoot: string, state: AgentKitDataState): void {
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'state.json'), `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }
+
+export function upsertTemplate(
+  state: AgentKitDataState,
+  dest: string,
+  templateState: TemplateState,
+): AgentKitDataState {
+  return { ...state, templates: { ...state.templates, [dest]: templateState } };
+}
+
+export function removeConflict(state: AgentKitDataState, dest: string): AgentKitDataState {
+  const pendingConflicts = state.pendingConflicts?.filter((c) => c.dest !== dest) ?? [];
+  return { ...state, pendingConflicts: pendingConflicts.length ? pendingConflicts : undefined };
+}
+
+export function removeUpdate(state: AgentKitDataState, dest: string): AgentKitDataState {
+  const pendingUpdates = state.pendingUpdates?.filter((u) => u.dest !== dest) ?? [];
+  return { ...state, pendingUpdates: pendingUpdates.length ? pendingUpdates : undefined };
+}

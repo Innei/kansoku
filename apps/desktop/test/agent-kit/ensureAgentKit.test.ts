@@ -72,6 +72,7 @@ describe('ensureAgentKit', () => {
         `KANSOKU_DATA_ROOT=${dataRoot}`,
         'KANSOKU_APP_VERSION=1.0.0',
         'KANSOKU_KIT_VERSION=1.0.0+20260722',
+        `TRADE_MIGRATIONS_DIR=${join(resourcesPath, 'drizzle')}`,
         '',
       ].join('\n'),
     );

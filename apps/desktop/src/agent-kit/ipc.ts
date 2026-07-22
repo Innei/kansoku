@@ -7,7 +7,14 @@ import { dataRoot } from '../boot/env.js';
 import { toEnvelope } from '../kernel/ipc/envelope.js';
 import { ensureAgentKit } from './ensureAgentKit.js';
 import { readManifest, type ManifestTemplate } from './manifest.js';
-import { readState, writeState, type AgentKitDataState } from './state.js';
+import {
+  readState,
+  removeConflict,
+  removeUpdate,
+  upsertTemplate,
+  writeState,
+  type AgentKitDataState,
+} from './state.js';
 import { defaultAgentKitStore } from './store.js';
 import { acceptConflictWithTemplate, keepConflictOriginal, makeRender } from './templates.js';
 
@@ -85,12 +92,7 @@ export class AgentKitIpc extends IpcService {
               render: makeRender(resourcesPath(), db),
             })
           : keepConflictOriginal({ template, dataRoot });
-      const pendingConflicts = state.pendingConflicts?.filter((c) => c.dest !== input.dest) ?? [];
-      writeState(dataRoot, {
-        ...state,
-        templates: { ...state.templates, [input.dest]: templateState },
-        pendingConflicts: pendingConflicts.length ? pendingConflicts : undefined,
-      });
+      writeState(dataRoot, removeConflict(upsertTemplate(state, input.dest, templateState), input.dest));
       return { dest: input.dest };
     });
   }
@@ -108,12 +110,7 @@ export class AgentKitIpc extends IpcService {
         db,
         render: makeRender(resourcesPath(), db),
       });
-      const pendingUpdates = state.pendingUpdates?.filter((u) => u.dest !== input.dest) ?? [];
-      writeState(dataRoot, {
-        ...state,
-        templates: { ...state.templates, [input.dest]: templateState },
-        pendingUpdates: pendingUpdates.length ? pendingUpdates : undefined,
-      });
+      writeState(dataRoot, removeUpdate(upsertTemplate(state, input.dest, templateState), input.dest));
       return { dest: input.dest };
     });
   }
