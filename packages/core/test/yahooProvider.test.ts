@@ -142,6 +142,19 @@ describe('createYahooProvider: getKline', () => {
     expect(period2 - period1).toBeGreaterThan(730 * 86400);
   });
 
+  it('scales the day-bar window buffer with a holiday cushion, not a flat pad', async () => {
+    const payload = chartPayload([{ ts: 1, o: 1, h: 1, l: 1, c: 1, v: 1 }]);
+    const { client, calls } = fakeClient(() => payload);
+    const provider = createYahooProvider(client);
+
+    await provider.getKline('MU.US', 'day', 500);
+
+    const url = new URL(calls[0].url);
+    const period1 = Number(url.searchParams.get('period1'));
+    const period2 = Number(url.searchParams.get('period2'));
+    expect(period2 - period1).toBeGreaterThanOrEqual(740 * 86400);
+  });
+
   it('rejects the year period since yahoo has no yearly interval', async () => {
     const { client } = fakeClient(() => ({}));
     const provider = createYahooProvider(client);
@@ -223,11 +236,32 @@ describe('createYahooProvider: getQuotes', () => {
 
     expect(quote.pre_market).toEqual({
       last: '108',
-      prev_close: '100',
+      prev_close: '110',
       timestamp: new Date(2_000 * 1000).toISOString(),
     });
     expect(quote.post_market).toBeUndefined();
     expect(quote.overnight).toBeUndefined();
+  });
+
+  it('pre_market.prev_close baselines off regularMarketPrice (yesterday\'s close during pre-market), not regularMarketPreviousClose (two sessions back)', async () => {
+    const regularMarketPrice = 100;
+    const regularMarketPreviousClose = 90;
+    const preMarketPrice = 102;
+    const { client } = fakeClient(() => ({
+      quoteResponse: {
+        result: [
+          { symbol: 'MU', regularMarketPrice, regularMarketPreviousClose, preMarketPrice, preMarketTime: 2_000 },
+        ],
+      },
+    }));
+    const provider = createYahooProvider(client);
+
+    const [quote] = await provider.getQuotes(['MU.US']);
+
+    expect(quote.pre_market?.prev_close).toBe(String(regularMarketPrice));
+    const impliedPct = (Number(quote.pre_market!.last) / Number(quote.pre_market!.prev_close) - 1) * 100;
+    const expectedPct = (preMarketPrice / regularMarketPrice - 1) * 100;
+    expect(impliedPct).toBeCloseTo(expectedPct, 6);
   });
 
   it('omits pre_market and post_market when yahoo does not return them', async () => {
@@ -381,8 +415,30 @@ describe('createYahooProvider: getEarningsCalendar', () => {
 
     const entry = await provider.getEarningsCalendar!('MU.US', '2026-07-22');
 
-    expect(entry).toEqual({ date: '2026-08-05', title: 'earnings date (estimated)' });
+    expect(entry).toEqual({ date: '2026-08-05', title: '预计财报日期' });
     expect(calls[0].crumb).toBe(true);
+  });
+
+  it('titles a confirmed (non-estimate) earnings date differently from an estimated one', async () => {
+    const { client } = fakeClient(() => ({
+      quoteSummary: {
+        result: [
+          {
+            calendarEvents: {
+              earnings: {
+                earningsDate: [{ raw: Date.parse('2026-08-05T00:00:00Z') / 1000 }],
+                isEarningsDateEstimate: false,
+              },
+            },
+          },
+        ],
+      },
+    }));
+    const provider = createYahooProvider(client);
+
+    const entry = await provider.getEarningsCalendar!('MU.US', '2026-07-22');
+
+    expect(entry).toEqual({ date: '2026-08-05', title: '财报日期' });
   });
 
   it('returns null when no earningsDate is on/after fromDate', async () => {

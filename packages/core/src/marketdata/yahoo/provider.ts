@@ -42,7 +42,9 @@ function calendarSecondsFor(interval: string, count: number): number {
     const tradingDays = Math.ceil(count / barsPerTradingDay) + 5;
     return (Math.ceil((tradingDays * 7) / 5) + 10) * 86400;
   }
-  if (interval === '1d') return (Math.ceil((count * 7) / 5) + 15) * 86400;
+  if (interval === '1d') {
+    return (Math.ceil((count * 7) / 5) + 15 + Math.ceil(count * 0.06)) * 86400;
+  }
   if (interval === '1wk') return (count * 7 + 21) * 86400;
   return (count * 31 + 31) * 86400;
 }
@@ -159,7 +161,7 @@ function toRawQuote(canonical: string, row: YahooQuoteRow): RawQuote {
   if (typeof row.preMarketPrice === 'number') {
     quote.pre_market = {
       last: String(row.preMarketPrice),
-      prev_close: String(row.regularMarketPreviousClose ?? row.regularMarketPrice ?? 0),
+      prev_close: String(row.regularMarketPrice ?? row.regularMarketPreviousClose ?? 0),
       ...(typeof row.preMarketTime === 'number'
         ? { timestamp: new Date(row.preMarketTime * 1000).toISOString() }
         : {}),
@@ -275,7 +277,7 @@ export function createYahooProvider(client: YahooClient): MarketDataProvider {
         if (!candidates.length) return null;
         return {
           date: candidates[0],
-          title: earnings?.isEarningsDateEstimate === false ? 'earnings date' : 'earnings date (estimated)',
+          title: earnings?.isEarningsDateEstimate === false ? '财报日期' : '预计财报日期',
         };
       } catch {
         return null;
