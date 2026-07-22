@@ -116,8 +116,8 @@ export function IntradaySidebar({
           <TriangleAlert className="icon" size={12} />{' '}
           仅供学习参考，不构成投资建议。数据来源：长桥证券。
           <br />
-          方向判断、情景推演、入场计划、Pin Bar/MACD 背离标注均为 AI 分析结论；MACD
-          数值本身由脚本计算。
+          方向判断、情景推演和入场计划为 AI 分析结论；Pin Bar、MACD 背离标注及 MACD
+          数值由服务端算法自动计算。
         </div>
       </div>
 
