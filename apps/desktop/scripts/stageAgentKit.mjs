@@ -36,7 +36,11 @@ export function stageAgentKit({ srcRoot, destRoot, pkg }) {
       continue;
     }
     const filePath = join(srcRoot, entry.path);
-    if (!existsSync(filePath)) continue;
+    if (!existsSync(filePath)) {
+      throw new Error(
+        `stageAgentKit: manifest entry "${entry.path}" has no real file at ${filePath} — did the manifest drift from agent-kit-src/templates/?`,
+      );
+    }
     entry.sha256 = sha256File(filePath);
     templateCount += 1;
   }

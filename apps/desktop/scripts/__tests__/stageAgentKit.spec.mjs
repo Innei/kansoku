@@ -67,6 +67,19 @@ function buildFixtureSrc() {
   return srcRoot;
 }
 
+function buildFixtureSrcWithMissingTemplate() {
+  const srcRoot = buildFixtureSrc();
+  const manifestPath = join(srcRoot, 'manifest.template.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  manifest.templates.push({
+    path: 'templates/nonexistent.md.tpl',
+    dest: 'NONEXISTENT.md',
+    sha256: '__SHA_MISSING__',
+  });
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  return srcRoot;
+}
+
 function hashTree(root) {
   const files = [];
   const walk = (dir) => {
@@ -157,5 +170,15 @@ describe('stageAgentKit', () => {
     const manifest = JSON.parse(readFileSync(join(destRoot, 'manifest.json'), 'utf8'));
     expect(manifest.kitVersion).toMatch(/^\d+\.\d+\.\d+(-[\w.]+)?\+\d{8}$/);
     expect(manifest.appVersion).toBe(pkg.version);
+  });
+
+  it('throws when a non-app-config manifest entry has no real file', () => {
+    const srcRoot = buildFixtureSrcWithMissingTemplate();
+    const destRoot = tempDir('agent-kit-dist-');
+    const pkg = { version: '1.2.3' };
+
+    expect(() => stageAgentKit({ srcRoot, destRoot, pkg })).toThrow(
+      join(srcRoot, 'templates', 'nonexistent.md.tpl'),
+    );
   });
 });
