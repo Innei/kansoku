@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { app } from 'electron';
+import { ensureAgentKit } from '../agent-kit/ensureAgentKit.js';
+import { defaultAgentKitStore } from '../agent-kit/store.js';
 import { buildDataRootStatus } from '../data/dataRoot/status.js';
 import { isDataRootUsable } from '../data/dataRoot/usability.js';
 import { resolveDataRoot, scaffoldDataRoot } from './paths.js';
@@ -46,6 +48,17 @@ if (isPackaged) {
 process.env.TRADE_PROJECT_ROOT = dataRoot;
 
 export const IS_DEV = __DESKTOP_DEV__;
+
+if (defaultAgentKitStore(app).read().enabled) {
+  void (async () => {
+    try {
+      const { getDb } = await import('@kansoku/core/db/index');
+      await ensureAgentKit({ dataRoot, resourcesPath: process.resourcesPath, db: getDb() });
+    } catch (err) {
+      console.error('[agent-kit] boot sync failed', err);
+    }
+  })();
+}
 
 function readConfiguredPath(userDataPath: string): string | null {
   try {
