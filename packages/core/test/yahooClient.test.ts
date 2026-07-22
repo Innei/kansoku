@@ -41,8 +41,8 @@ function jsonResponse(status: number, body: unknown): Response {
 
 describe('createYahooClient', () => {
   it('performs no network activity until the first getJson call', () => {
-    const { calls } = makeFetch([]);
-    createYahooClient({ fetchImpl: makeFetch([]).fetchImpl });
+    const { calls, fetchImpl } = makeFetch([]);
+    createYahooClient({ fetchImpl });
     expect(calls.length).toBe(0);
   });
 
@@ -71,6 +71,29 @@ describe('createYahooClient', () => {
     expect(calls[2].headers['User-Agent']).toContain('Mozilla');
     expect(calls[3].url).toBe('https://query1.finance.yahoo.com/v8/finance/chart/MSFT');
     expect(calls[3].headers.Cookie).toBe('A1=abc123');
+    expect(calls[0].headers['User-Agent']).toContain('Mozilla');
+    expect(calls[1].headers['User-Agent']).toContain('Mozilla');
+    expect(calls[3].headers['User-Agent']).toContain('Mozilla');
+  });
+
+  it('dedupes concurrent handshake and crumb fetches across overlapping getJson calls', async () => {
+    const cookieResponse = new Response(null, { status: 204, headers: { 'set-cookie': 'A1=shared' } });
+    const crumbResponse = new Response('shared-crumb', { status: 200 });
+    const ok1 = jsonResponse(200, { n: 1 });
+    const ok2 = jsonResponse(200, { n: 2 });
+    const { fetchImpl, calls } = makeFetch([cookieResponse, crumbResponse, ok1, ok2]);
+    const clock = makeClock();
+    const client = createYahooClient({ fetchImpl, now: clock.now, sleep: clock.sleep });
+
+    const results = await Promise.all([
+      client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/AAPL', { crumb: true }),
+      client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/MSFT', { crumb: true }),
+    ]);
+
+    expect(results).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+    expect(calls.filter((c) => c.url === 'https://fc.yahoo.com/')).toHaveLength(1);
+    expect(calls.filter((c) => c.url === 'https://query1.finance.yahoo.com/v1/test/getcrumb')).toHaveLength(1);
   });
 
   it('refreshes cookie+crumb and retries once on 401, then succeeds', async () => {
@@ -133,6 +156,63 @@ describe('createYahooClient', () => {
       ClientError,
     );
     expect(clock.sleeps.slice(-2)).toEqual([1000, 2000]);
+  });
+
+  it('backs off a 429 on the cookie handshake before caching a cookie', async () => {
+    const rate = new Response(null, { status: 429 });
+    const cookieResponse = new Response(null, { status: 204, headers: { 'set-cookie': 'A1=abc' } });
+    const ok = jsonResponse(200, { ok: true });
+    const { fetchImpl, calls } = makeFetch([rate, cookieResponse, ok]);
+    const clock = makeClock();
+    const client = createYahooClient({ fetchImpl, now: clock.now, sleep: clock.sleep });
+
+    const result = await client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/AAPL');
+
+    expect(result).toEqual({ ok: true });
+    expect(calls).toHaveLength(3);
+    expect(calls[2].headers.Cookie).toBe('A1=abc');
+    expect(clock.sleeps).toContain(1000);
+  });
+
+  it('backs off a 429 on the getcrumb endpoint before caching a crumb', async () => {
+    const cookieResponse = new Response(null, { status: 204, headers: { 'set-cookie': 'A1=abc' } });
+    const rate = new Response(null, { status: 429 });
+    const crumbResponse = new Response('a-crumb', { status: 200 });
+    const ok = jsonResponse(200, { ok: true });
+    const { fetchImpl, calls } = makeFetch([cookieResponse, rate, crumbResponse, ok]);
+    const clock = makeClock();
+    const client = createYahooClient({ fetchImpl, now: clock.now, sleep: clock.sleep });
+
+    const result = await client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/AAPL', { crumb: true });
+
+    expect(result).toEqual({ ok: true });
+    expect(calls).toHaveLength(4);
+    expect(calls[3].url).toContain('crumb=a-crumb');
+    expect(clock.sleeps).toContain(1000);
+  });
+
+  it('throws ClientError when the crumb endpoint responds non-OK', async () => {
+    const cookieResponse = new Response(null, { status: 204, headers: { 'set-cookie': 'A1=abc' } });
+    const crumbError = new Response('nope', { status: 500 });
+    const { fetchImpl } = makeFetch([cookieResponse, crumbError]);
+    const clock = makeClock();
+    const client = createYahooClient({ fetchImpl, now: clock.now, sleep: clock.sleep });
+
+    await expect(
+      client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/AAPL', { crumb: true }),
+    ).rejects.toThrow(ClientError);
+  });
+
+  it('throws ClientError when the crumb endpoint returns an empty body', async () => {
+    const cookieResponse = new Response(null, { status: 204, headers: { 'set-cookie': 'A1=abc' } });
+    const emptyCrumb = new Response('', { status: 200 });
+    const { fetchImpl } = makeFetch([cookieResponse, emptyCrumb]);
+    const clock = makeClock();
+    const client = createYahooClient({ fetchImpl, now: clock.now, sleep: clock.sleep });
+
+    await expect(
+      client.getJson('https://query1.finance.yahoo.com/v8/finance/chart/AAPL', { crumb: true }),
+    ).rejects.toThrow(ClientError);
   });
 
   it('throttles so two immediate getJson calls have request starts spaced by minIntervalMs', async () => {

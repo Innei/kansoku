@@ -33,7 +33,9 @@ export function createYahooClient(opts: YahooClientOptions = {}): YahooClient {
   const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
 
   let cookie: string | undefined;
+  let cookiePromise: Promise<void> | null = null;
   let crumb: string | undefined;
+  let crumbPromise: Promise<void> | null = null;
   let lastStart: number | null = null;
   let queue: Promise<void> = Promise.resolve();
 
@@ -55,25 +57,15 @@ export function createYahooClient(opts: YahooClientOptions = {}): YahooClient {
 
   function invalidate(): void {
     cookie = undefined;
+    cookiePromise = null;
     crumb = undefined;
-  }
-
-  async function ensureCookie(): Promise<void> {
-    if (cookie !== undefined) return;
-    const response = await throttledFetch(COOKIE_URL, { 'User-Agent': USER_AGENT });
-    cookie = response.headers.get('set-cookie') ?? '';
+    crumbPromise = null;
   }
 
   function buildHeaders(): Record<string, string> {
     const headers: Record<string, string> = { 'User-Agent': USER_AGENT };
     if (cookie) headers.Cookie = cookie;
     return headers;
-  }
-
-  async function ensureCrumb(): Promise<void> {
-    if (crumb !== undefined) return;
-    const response = await throttledFetch(CRUMB_URL, buildHeaders());
-    crumb = await response.text();
   }
 
   async function fetchWithBackoff(url: string): Promise<Response> {
@@ -88,6 +80,47 @@ export function createYahooClient(opts: YahooClientOptions = {}): YahooClient {
       waitMs *= 2;
     }
     throw new ClientError('yahoo request was rate limited', YAHOO_HINT, 429);
+  }
+
+  async function ensureCookie(): Promise<void> {
+    if (cookie !== undefined) return;
+    if (!cookiePromise) {
+      cookiePromise = (async () => {
+        const response = await fetchWithBackoff(COOKIE_URL);
+        cookie = response.headers.get('set-cookie') ?? '';
+      })();
+    }
+    try {
+      await cookiePromise;
+    } finally {
+      cookiePromise = null;
+    }
+  }
+
+  async function ensureCrumb(): Promise<void> {
+    if (crumb !== undefined) return;
+    if (!crumbPromise) {
+      crumbPromise = (async () => {
+        const response = await fetchWithBackoff(CRUMB_URL);
+        if (!response.ok) {
+          throw new ClientError(
+            `yahoo crumb request failed with status ${response.status}`,
+            YAHOO_HINT,
+            response.status,
+          );
+        }
+        const value = await response.text();
+        if (!value) {
+          throw new ClientError('yahoo crumb response was empty', YAHOO_HINT, response.status);
+        }
+        crumb = value;
+      })();
+    }
+    try {
+      await crumbPromise;
+    } finally {
+      crumbPromise = null;
+    }
   }
 
   async function attemptRequest(url: string, wantsCrumb: boolean): Promise<Response> {
