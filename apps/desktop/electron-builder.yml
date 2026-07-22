@@ -109,3 +109,7 @@ mac:
     SUPublicEDKey: SPARKLE_ED_PUBLIC_KEY_PLACEHOLDER
     SUEnableInstallerLauncherService: false
     SUScheduledCheckInterval: 3600
+    CFBundleURLTypes:
+      - CFBundleURLName: dev.innei.kansoku
+        CFBundleURLSchemes:
+          - kansoku
