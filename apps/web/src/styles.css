@@ -1416,20 +1416,46 @@ a.zone-item:hover {
   letter-spacing: 0.08em;
   margin-bottom: 6px;
 }
-.event-row {
+.event-card-list {
   display: flex;
-  gap: 8px;
-  font-size: var(--fs-sm);
-  line-height: 1.6;
+  flex-direction: column;
 }
-.event-time {
-  color: var(--text-secondary);
-  flex-shrink: 0;
+.event-card-group + .event-card-group {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.event-card-day {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
-.event-title {
+.event-card-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.event-card-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: baseline;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+.event-card-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.event-card-title {
   color: var(--text-primary);
   min-width: 0;
+  font-weight: 600;
 }
 
 .sidebar-tabs {
