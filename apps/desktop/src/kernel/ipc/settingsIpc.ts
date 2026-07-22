@@ -62,6 +62,16 @@ export class SettingsIpc extends IpcService implements WrapEnvelope<SettingsApi>
   }
 
   @IpcMethod()
+  getLocalWatchlist() {
+    return toEnvelope('settings.getLocalWatchlist', () => settingsService.getLocalWatchlist());
+  }
+
+  @IpcMethod()
+  putLocalWatchlist(input: Parameters<SettingsApi['putLocalWatchlist']>[0]) {
+    return toEnvelope('settings.putLocalWatchlist', () => settingsService.putLocalWatchlist(input));
+  }
+
+  @IpcMethod()
   getSubscribeUrl() {
     return toEnvelope('settings.getSubscribeUrl', () => settingsService.getSubscribeUrl());
   }

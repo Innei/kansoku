@@ -5,6 +5,7 @@ import {
   releaseSymbols,
   retainSymbols,
 } from '../marketdata/streamRouting.js';
+import { watchlistSymbols } from '../marketdata/watchlist.js';
 import { marketOf } from '../symbols/symbol.utils.js';
 
 export type { RawQuote } from '../marketdata/types.js';
@@ -24,7 +25,7 @@ async function refreshBaseSymbols(): Promise<void> {
     const provider = getProvider();
     const set = new Set<string>();
     const [watchlist, positions] = await Promise.allSettled([
-      provider.getWatchlistSymbols?.() ?? Promise.resolve([]),
+      watchlistSymbols(provider),
       provider.getPositions?.() ?? Promise.resolve([]),
     ]);
     if (watchlist.status === 'fulfilled') {

@@ -44,6 +44,13 @@ vi.mock('@kansoku/core/marketdata/watchedMarketsStore', () => ({
   setActiveWatchedMarketsStore,
 }));
 
+const createLocalWatchlistStore = vi.hoisted(() => vi.fn(() => ({})));
+const setActiveLocalWatchlistStore = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/marketdata/localWatchlistStore', () => ({
+  createLocalWatchlistStore,
+  setActiveLocalWatchlistStore,
+}));
+
 const initAuthUrlOpener = vi.hoisted(() => vi.fn());
 vi.mock('@kansoku/core/credentials/authUrlOpener', () => ({ initAuthUrlOpener }));
 

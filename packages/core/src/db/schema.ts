@@ -197,3 +197,9 @@ export const watchedMarketsSettings = sqliteTable('watched_markets_settings', {
   markets: text('markets', { mode: 'json' }).$type<Market[]>().notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+export const localWatchlistSettings = sqliteTable('local_watchlist_settings', {
+  id: integer('id').primaryKey(),
+  symbols: text('symbols', { mode: 'json' }).$type<string[]>().notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
