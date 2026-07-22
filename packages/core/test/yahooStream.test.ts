@@ -221,6 +221,58 @@ describe('YahooQuoteStream snapshot', () => {
   });
 });
 
+describe('YahooQuoteStream disposal races an in-flight poll', () => {
+  it('stops the loop instead of leaking a zombie timer when disposed mid-fetch', async () => {
+    let resolvePoll: (rows: RawQuote[]) => void = () => {};
+    const getQuotes = vi.fn().mockImplementation(
+      () =>
+        new Promise<RawQuote[]>((resolve) => {
+          resolvePoll = resolve;
+        }),
+    );
+    const classify = fixedClassify('regular');
+    const stream = createYahooQuoteStream({ provider: { getQuotes }, classify, now: () => Date.now() });
+
+    const retainPromise = stream.retain(['AAA.US']);
+    expect(getQuotes).toHaveBeenCalledTimes(1);
+
+    stream.dispose();
+    resolvePoll([makeQuote('AAA.US', 100)]);
+    await retainPromise;
+
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(getQuotes).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('YahooQuoteStream release races an in-flight poll', () => {
+  it('does not resurrect the snapshot or emit a stale update for a symbol released mid-fetch', async () => {
+    let resolvePoll: (rows: RawQuote[]) => void = () => {};
+    const getQuotes = vi.fn().mockImplementation(
+      () =>
+        new Promise<RawQuote[]>((resolve) => {
+          resolvePoll = resolve;
+        }),
+    );
+    const classify = fixedClassify('regular');
+    const stream = createYahooQuoteStream({ provider: { getQuotes }, classify, now: () => Date.now() });
+    const received: number[] = [];
+    stream.onUpdate((cell) => received.push(cell.last));
+
+    const retainPromise = stream.retain(['AAA.US']);
+    expect(getQuotes).toHaveBeenCalledTimes(1);
+
+    await stream.release(['AAA.US']);
+    expect(stream.getSnapshot('AAA.US')).toBeUndefined();
+
+    resolvePoll([makeQuote('AAA.US', 100)]);
+    await retainPromise;
+
+    expect(stream.getSnapshot('AAA.US')).toBeUndefined();
+    expect(received).toEqual([]);
+  });
+});
+
 describe('getYahooStream/resetYahooStream singleton', () => {
   afterEach(() => {
     resetYahooStream();

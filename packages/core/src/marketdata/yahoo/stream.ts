@@ -51,6 +51,7 @@ export class YahooQuoteStream implements QuoteStream {
   private pollPromise: Promise<void> | null = null;
   private consecutiveFailures = 0;
   private tradeSequence = 0;
+  private disposed = false;
 
   constructor(deps: YahooQuoteStreamDeps = {}) {
     this.provider = deps.provider ?? yahooProvider;
@@ -90,6 +91,7 @@ export class YahooQuoteStream implements QuoteStream {
   }
 
   private scheduleNext(delayMs: number): void {
+    if (this.disposed) return;
     this.timer = setTimeout(() => {
       this.timer = null;
       void this.runPoll();
@@ -97,6 +99,7 @@ export class YahooQuoteStream implements QuoteStream {
   }
 
   private runPoll(): Promise<void> {
+    if (this.disposed) return Promise.resolve();
     if (this.pollPromise) return this.pollPromise;
     this.pollPromise = this.doPoll().finally(() => {
       this.pollPromise = null;
@@ -126,9 +129,11 @@ export class YahooQuoteStream implements QuoteStream {
     const cadence = session === 'regular' ? REGULAR_CADENCE_MS : EXTENDED_CADENCE_MS;
     try {
       const rows = await this.provider.getQuotes(symbols);
+      if (this.disposed) return;
       this.consecutiveFailures = 0;
       this.applyRows(rows);
     } catch {
+      if (this.disposed) return;
       this.consecutiveFailures += 1;
     }
     if (!this.symbolsToPoll().length) {
@@ -145,6 +150,7 @@ export class YahooQuoteStream implements QuoteStream {
   private applyRows(rows: RawQuote[]): void {
     const nowMs = this.now();
     for (const row of rows) {
+      if (!this.isActive(row.symbol)) continue;
       const cell = normalizeQuote(row, nowMs);
       const prev = this.snapshots.get(cell.symbol);
       this.snapshots.set(cell.symbol, cell);
@@ -250,10 +256,16 @@ export class YahooQuoteStream implements QuoteStream {
   }
 
   dispose(): void {
+    this.disposed = true;
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
     }
+    this.refs.clear();
+    this.candleRefs.clear();
+    this.candleListeners.clear();
+    this.candleSeeded.clear();
+    this.snapshots.clear();
   }
 }
 
