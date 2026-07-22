@@ -5,15 +5,22 @@ vi.mock('electron-ipc-decorator', () => ({
   IpcService: class {},
 }));
 
-vi.mock('electron', () => ({ app: { getPath: vi.fn(() => '/tmp/agent-kit-ipc-smoke') } }));
+vi.mock('electron', () => ({
+  app: { getPath: vi.fn(() => '/tmp/agent-kit-ipc-smoke') },
+  BrowserWindow: { getFocusedWindow: vi.fn(() => null) },
+  dialog: { showOpenDialog: vi.fn() },
+}));
 
 const getDb = vi.hoisted(() => vi.fn(() => ({})));
 vi.mock('@kansoku/core/db/index', () => ({ getDb }));
 
-vi.mock('../../src/boot/env.js', () => ({ dataRoot: '/tmp/agent-kit-ipc-smoke-dataroot' }));
+vi.mock('../../src/boot/env.js', () => ({
+  dataRoot: '/tmp/agent-kit-ipc-smoke-dataroot',
+  dataRootStatus: { mode: 'custom', effectivePath: '/tmp/agent-kit-ipc-smoke-dataroot', configuredPath: null, degraded: false },
+}));
 
 const store = vi.hoisted(() => ({
-  read: vi.fn(() => ({ enabled: true, lastSyncAt: undefined })),
+  read: vi.fn(() => ({ enabled: true, location: { kind: 'follow-data-root' as const }, lastSyncAt: undefined })),
   write: vi.fn(),
 }));
 vi.mock('../../src/agent-kit/store.js', () => ({ defaultAgentKitStore: () => store }));
@@ -53,6 +60,10 @@ describe('agent-kit ipc', () => {
       ok: true,
       data: {
         enabled: true,
+        location: { kind: 'follow-data-root' },
+        resolvedPath: '/tmp/agent-kit-ipc-smoke-dataroot',
+        followBlocked: false,
+        dataRoot: '/tmp/agent-kit-ipc-smoke-dataroot',
         lastSyncAt: undefined,
         kitVersion: '1.0.0+20260722',
         pendingConflicts: undefined,

@@ -9,11 +9,28 @@ vi.mock('electron-ipc-decorator', () => ({
   IpcService: class {},
 }));
 
-const env = vi.hoisted(() => ({ dataRoot: '', userDataPath: '' }));
-vi.mock('electron', () => ({ app: { getPath: () => env.userDataPath } }));
+const env = vi.hoisted(() => ({
+  dataRoot: '',
+  userDataPath: '',
+  dataRootMode: 'custom' as 'custom' | 'default',
+}));
+const dialogMock = vi.hoisted(() => ({ showOpenDialog: vi.fn() }));
+vi.mock('electron', () => ({
+  app: { getPath: () => env.userDataPath },
+  BrowserWindow: { getFocusedWindow: vi.fn(() => null) },
+  dialog: dialogMock,
+}));
 vi.mock('../../src/boot/env.js', () => ({
   get dataRoot() {
     return env.dataRoot;
+  },
+  get dataRootStatus() {
+    return {
+      mode: env.dataRootMode,
+      effectivePath: env.dataRoot,
+      configuredPath: null,
+      degraded: false,
+    };
   },
 }));
 vi.mock('@kansoku/core/db/index', () => ({ getDb: () => ({}) }));
@@ -55,6 +72,8 @@ describe('agent-kit ipc state mutations', () => {
     userDataPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-userdata-'));
     env.dataRoot = dataRoot;
     env.userDataPath = userDataPath;
+    env.dataRootMode = 'custom';
+    dialogMock.showOpenDialog.mockReset();
     setResourcesPath(resourcesPath);
 
     await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'templates'), { recursive: true });
@@ -71,7 +90,11 @@ describe('agent-kit ipc state mutations', () => {
   });
 
   it('setEnabled(true) syncs from a disabled store and persists enabled + lastSyncAt', async () => {
-    await writeFile(join(userDataPath, 'agent-kit.json'), JSON.stringify({ enabled: false }), 'utf8');
+    await writeFile(
+      join(userDataPath, 'agent-kit.json'),
+      JSON.stringify({ enabled: false, location: { kind: 'follow-data-root' } }),
+      'utf8',
+    );
 
     const instance = new AgentKitIpc();
     const result = await instance.setEnabled({ enabled: true });
@@ -89,7 +112,11 @@ describe('agent-kit ipc state mutations', () => {
   it('setEnabled(false) persists disabled without running a sync', async () => {
     await writeFile(
       join(userDataPath, 'agent-kit.json'),
-      JSON.stringify({ enabled: true, lastSyncAt: '2026-01-01T00:00:00.000Z' }),
+      JSON.stringify({
+        enabled: true,
+        location: { kind: 'follow-data-root' },
+        lastSyncAt: '2026-01-01T00:00:00.000Z',
+      }),
       'utf8',
     );
 
@@ -98,7 +125,11 @@ describe('agent-kit ipc state mutations', () => {
     expect(result).toEqual({ ok: true, data: { enabled: false } });
 
     const storeRaw = JSON.parse(await readFile(join(userDataPath, 'agent-kit.json'), 'utf8'));
-    expect(storeRaw).toEqual({ enabled: false, lastSyncAt: '2026-01-01T00:00:00.000Z' });
+    expect(storeRaw).toEqual({
+      enabled: false,
+      location: { kind: 'follow-data-root' },
+      lastSyncAt: '2026-01-01T00:00:00.000Z',
+    });
     expect(existsSync(join(dataRoot, '.kansoku-agent-kit', 'state.json'))).toBe(false);
   });
 
@@ -189,6 +220,121 @@ describe('agent-kit ipc state mutations', () => {
   });
 });
 
+describe('agent-kit ipc location handling', () => {
+  let dataRoot: string;
+  let resourcesPath: string;
+  let userDataPath: string;
+  let customDir: string;
+
+  beforeEach(async () => {
+    dataRoot = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-data-'));
+    resourcesPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-resources-'));
+    userDataPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-userdata-'));
+    customDir = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-custom-'));
+    env.dataRoot = dataRoot;
+    env.userDataPath = userDataPath;
+    env.dataRootMode = 'custom';
+    dialogMock.showOpenDialog.mockReset();
+    setResourcesPath(resourcesPath);
+
+    await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'templates'), { recursive: true });
+    await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'bin'), { recursive: true });
+    await writeFile(join(resourcesPath, 'kansoku-agent-kit', 'templates', 'CLAUDE.md.tpl'), TEMPLATE_V1, 'utf8');
+    await writeFile(join(resourcesPath, 'kansoku-agent-kit', 'bin', 'kansoku-cli'), '#!/bin/sh\necho cli\n', 'utf8');
+    await writeManifest(resourcesPath, 'sha-claude-v1');
+  });
+
+  afterEach(async () => {
+    await rm(dataRoot, { recursive: true, force: true });
+    await rm(resourcesPath, { recursive: true, force: true });
+    await rm(userDataPath, { recursive: true, force: true });
+    await rm(customDir, { recursive: true, force: true });
+  });
+
+  it('a custom location is used instead of dataRoot when set', async () => {
+    await writeFile(
+      join(userDataPath, 'agent-kit.json'),
+      JSON.stringify({ enabled: true, location: { kind: 'custom', path: customDir } }),
+      'utf8',
+    );
+
+    const instance = new AgentKitIpc();
+    const result = await instance.forceSync();
+    expect(result).toEqual({ ok: true, data: { conflicts: [], updates: [] } });
+
+    expect(await readFile(join(customDir, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V1);
+    expect(existsSync(join(dataRoot, 'CLAUDE.md'))).toBe(false);
+    expect(readState(customDir)?.templates['CLAUDE.md']).toBeDefined();
+    expect(readState(dataRoot)).toBeNull();
+  });
+
+  it('followDataRoot switches location back to follow-data-root and re-syncs', async () => {
+    await writeFile(
+      join(userDataPath, 'agent-kit.json'),
+      JSON.stringify({ enabled: true, location: { kind: 'custom', path: customDir } }),
+      'utf8',
+    );
+
+    const instance = new AgentKitIpc();
+    const result = await instance.followDataRoot();
+    expect(result).toEqual({
+      ok: true,
+      data: expect.objectContaining({
+        enabled: true,
+        location: { kind: 'follow-data-root' },
+        resolvedPath: dataRoot,
+      }),
+    });
+
+    const storeRaw = JSON.parse(await readFile(join(userDataPath, 'agent-kit.json'), 'utf8'));
+    expect(storeRaw.location).toEqual({ kind: 'follow-data-root' });
+    expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V1);
+  });
+
+  it('pickCustomLocation stores the picked path and re-syncs there', async () => {
+    await writeFile(
+      join(userDataPath, 'agent-kit.json'),
+      JSON.stringify({ enabled: true, location: { kind: 'follow-data-root' } }),
+      'utf8',
+    );
+    dialogMock.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: [customDir] });
+
+    const instance = new AgentKitIpc();
+    const result = await instance.pickCustomLocation();
+    expect(result).toEqual({
+      ok: true,
+      data: expect.objectContaining({
+        enabled: true,
+        location: { kind: 'custom', path: customDir },
+        resolvedPath: customDir,
+      }),
+    });
+
+    const storeRaw = JSON.parse(await readFile(join(userDataPath, 'agent-kit.json'), 'utf8'));
+    expect(storeRaw.location).toEqual({ kind: 'custom', path: customDir });
+    expect(await readFile(join(customDir, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V1);
+  });
+
+  it('pickCustomLocation leaves the store untouched when the dialog is canceled', async () => {
+    await writeFile(
+      join(userDataPath, 'agent-kit.json'),
+      JSON.stringify({ enabled: true, location: { kind: 'follow-data-root' } }),
+      'utf8',
+    );
+    dialogMock.showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] });
+
+    const instance = new AgentKitIpc();
+    const result = await instance.pickCustomLocation();
+    expect(result).toEqual({
+      ok: true,
+      data: expect.objectContaining({ location: { kind: 'follow-data-root' } }),
+    });
+
+    const storeRaw = JSON.parse(await readFile(join(userDataPath, 'agent-kit.json'), 'utf8'));
+    expect(storeRaw.location).toEqual({ kind: 'follow-data-root' });
+  });
+});
+
 describe('agent-kit ipc clean', () => {
   let dataRoot: string;
   let resourcesPath: string;
@@ -200,6 +346,8 @@ describe('agent-kit ipc clean', () => {
     userDataPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-userdata-'));
     env.dataRoot = dataRoot;
     env.userDataPath = userDataPath;
+    env.dataRootMode = 'custom';
+    dialogMock.showOpenDialog.mockReset();
     setResourcesPath(resourcesPath);
 
     await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'templates'), { recursive: true });

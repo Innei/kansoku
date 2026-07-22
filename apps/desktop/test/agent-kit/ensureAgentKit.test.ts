@@ -61,7 +61,7 @@ describe('ensureAgentKit', () => {
   });
 
   it('provisions runtime.env, the CLI symlink, templates, and state on a clean data root', async () => {
-    const result = await ensureAgentKit({ dataRoot, resourcesPath, db, now });
+    const result = await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now });
     expect(result).toEqual({ conflicts: [], updates: [] });
 
     const kitDir = join(dataRoot, '.kansoku-agent-kit');
@@ -70,6 +70,7 @@ describe('ensureAgentKit', () => {
       [
         `KANSOKU_CLI=${join(kitDir, 'bin', 'kansoku-cli')}`,
         `KANSOKU_DATA_ROOT=${dataRoot}`,
+        `KANSOKU_AGENT_KIT_DIR=${dataRoot}`,
         'KANSOKU_APP_VERSION=1.0.0',
         'KANSOKU_KIT_VERSION=1.0.0+20260722',
         `TRADE_MIGRATIONS_DIR=${join(resourcesPath, 'drizzle')}`,
@@ -100,22 +101,22 @@ describe('ensureAgentKit', () => {
   });
 
   it('replaces a stale CLI symlink on re-run instead of throwing', async () => {
-    await ensureAgentKit({ dataRoot, resourcesPath, db, now });
+    await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now });
 
     const shimPath = join(dataRoot, '.kansoku-agent-kit', 'bin', 'kansoku-cli');
     await rm(shimPath, { force: true });
     await symlink('/nonexistent/stale-target', shimPath);
 
-    await ensureAgentKit({ dataRoot, resourcesPath, db, now });
+    await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now });
 
     expect(readlinkSync(shimPath)).toBe(join(resourcesPath, 'kansoku-agent-kit', 'bin', 'kansoku-cli'));
   });
 
   it('leaves an unmodified template untouched and reports no pending items on a second pass', async () => {
-    await ensureAgentKit({ dataRoot, resourcesPath, db, now });
+    await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now });
     const claudeMdBefore = await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8');
 
-    const result = await ensureAgentKit({ dataRoot, resourcesPath, db, now });
+    const result = await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now });
     expect(result).toEqual({ conflicts: [], updates: [] });
     expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(claudeMdBefore);
   });
@@ -124,10 +125,10 @@ describe('ensureAgentKit', () => {
     const nowFirst = () => new Date('2026-07-22T00:00:00.000Z');
     const nowSecond = () => new Date('2026-07-23T00:00:00.000Z');
 
-    await ensureAgentKit({ dataRoot, resourcesPath, db, now: nowFirst });
+    await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now: nowFirst });
     const writtenAtFirst = readState(dataRoot)?.templates['CLAUDE.md']?.writtenAt;
 
-    const result = await ensureAgentKit({ dataRoot, resourcesPath, db, now: nowSecond });
+    const result = await ensureAgentKit({ agentKitDir: dataRoot, dataRoot, resourcesPath, db, now: nowSecond });
     expect(result).toEqual({ conflicts: [], updates: [] });
 
     const stateAfterSecond = readState(dataRoot);
@@ -138,5 +139,26 @@ describe('ensureAgentKit', () => {
       'CLAUDE.md',
       'journal/personal.md',
     ]);
+  });
+
+  it('writes templates and state under a custom agentKitDir, distinct from dataRoot', async () => {
+    const agentKitDir = await mkdtemp(join(tmpdir(), 'agent-kit-custom-location-'));
+    try {
+      const result = await ensureAgentKit({ agentKitDir, dataRoot, resourcesPath, db, now });
+      expect(result).toEqual({ conflicts: [], updates: [] });
+
+      const kitDir = join(agentKitDir, '.kansoku-agent-kit');
+      const envContent = await readFile(join(kitDir, 'runtime.env'), 'utf8');
+      expect(envContent).toContain(`KANSOKU_DATA_ROOT=${dataRoot}`);
+      expect(envContent).toContain(`KANSOKU_AGENT_KIT_DIR=${agentKitDir}`);
+
+      expect(await readFile(join(agentKitDir, 'CLAUDE.md'), 'utf8')).toBe('CLAUDE TEMPLATE\n');
+      await expect(readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).rejects.toThrow();
+
+      expect(readState(agentKitDir)?.kitVersion).toBe('1.0.0+20260722');
+      expect(readState(dataRoot)).toBeNull();
+    } finally {
+      await rm(agentKitDir, { recursive: true, force: true });
+    }
   });
 });
