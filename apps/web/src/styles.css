@@ -4466,6 +4466,16 @@ a.zone-item:hover {
 .app-skeleton--desktop {
   padding-top: 40px;
 }
+.app-skeleton-page {
+  max-width: 1400px;
+  padding-bottom: 20px;
+}
+.app-skeleton-page .section-title {
+  font-size: var(--fs-base);
+}
+.app-skeleton-page .home-side-content {
+  padding-right: 8px;
+}
 .app-skeleton-titlebar {
   position: fixed;
   top: 0;
@@ -4509,28 +4519,51 @@ a.zone-item:hover {
   width: 56px;
   height: 24px;
 }
-.app-skeleton-bone--date {
-  width: 92px;
-  height: 24px;
+.app-skeleton-bone--action {
+  width: 16px;
+  height: 16px;
+  margin: 5px;
 }
-.app-skeleton-bone--qc-sym {
-  width: 36px;
+.app-skeleton-bone--session {
+  width: 34px;
+  height: 16px;
+}
+.app-skeleton-bone--hts-date {
+  width: 72px;
   height: 11px;
 }
-.app-skeleton-bone--qc-price {
+.app-skeleton-bone--index {
+  width: 92px;
+  height: 16px;
+}
+.app-skeleton-market-temp {
+  width: 207px;
+}
+.app-skeleton-bone--temp-label {
   width: 48px;
   height: 11px;
 }
-.app-skeleton-bone--qc-pct {
-  width: 40px;
+.app-skeleton-bone--temp-gauge {
+  width: 64px;
+  height: 7px;
+}
+.app-skeleton-bone--temp-sub {
+  width: 79px;
   height: 11px;
 }
-.app-skeleton-quote {
-  gap: 8px;
-  pointer-events: none;
+.app-skeleton-bone--timeline-day {
+  width: 12px;
+  height: 11px;
+}
+.app-skeleton-timeline .dtl-item {
   cursor: default;
 }
+.app-skeleton-timeline {
+  height: 49px;
+}
 .app-skeleton-symbol-card {
+  box-sizing: border-box;
+  height: 70px;
   pointer-events: none;
 }
 .app-skeleton-symbol-head {
@@ -4558,45 +4591,93 @@ a.zone-item:hover {
 }
 .app-skeleton-bone--level {
   width: 72px;
-  height: 12px;
+  height: 17px;
 }
-.app-skeleton-bone--comment {
-  width: 100%;
-  height: 28px;
-  margin-top: 8px;
+.app-skeleton-tail-cell {
+  box-sizing: border-box;
+  width: 145px;
+  height: 27.5px;
 }
-.app-skeleton-bone--chart-title {
-  width: 100px;
-  height: 14px;
-  margin-bottom: 8px;
+.app-skeleton-bone--pano-tab {
+  width: 82px;
+  height: 24px;
 }
-.app-skeleton-bone--chart {
-  width: 100%;
-  height: 340px;
-  border: 1px solid var(--border);
-  background-color: var(--bg-surface);
+.app-skeleton-pano-sector {
+  border-radius: 0;
+}
+.app-skeleton-pano-chips {
+  height: 24px;
+  flex-wrap: nowrap;
+}
+.app-skeleton-bone--pano-chip {
+  width: 108px;
+  height: 24px;
+}
+.app-skeleton-sector-read {
+  width: 180px;
+  height: 16px;
 }
 .app-skeleton-positions {
   pointer-events: none;
 }
-.app-skeleton-positions-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 18px;
-  margin-bottom: 10px;
-}
 .app-skeleton-bone--stat {
   width: 88px;
-  height: 12px;
-}
-.app-skeleton-positions-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.app-skeleton-bone--row {
-  width: 100%;
   height: 18px;
+}
+.app-skeleton-bone--position-symbol {
+  width: 58px;
+  height: 18px;
+}
+.app-skeleton-bone--position-detail {
+  width: 96px;
+  height: 18px;
+}
+.app-skeleton-bone--position-last {
+  width: 52px;
+  height: 18px;
+}
+.app-skeleton-bone--position-pct {
+  width: 54px;
+  height: 18px;
+}
+.app-skeleton-bone--cal-button {
+  width: 22px;
+  height: 22px;
+}
+.app-skeleton-bone--cal-title {
+  width: 88px;
+  height: 17px;
+}
+.app-skeleton-bone--weekday {
+  width: 10px;
+  height: 11px;
+  margin: 0 auto;
+}
+.app-skeleton-event-calendar .cal-weekdays {
+  height: 16px;
+}
+.app-skeleton-cal-day {
+  cursor: default;
+}
+.app-skeleton-bone--cal-day {
+  width: 14px;
+  height: 11px;
+}
+.app-skeleton-bone--event-label {
+  width: 96px;
+  height: 16px;
+}
+.app-skeleton-bone--event-row {
+  width: 100%;
+  height: 44px;
+}
+@media (max-width: 1000px) {
+  .app-skeleton-page {
+    padding-bottom: 60px;
+  }
+  .app-skeleton-page .home-side-content {
+    padding-right: 0;
+  }
 }
 @keyframes app-skeleton-shimmer {
   0% {
