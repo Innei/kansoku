@@ -3,7 +3,6 @@ import type {
   BuySellPoint,
   BuySellPointKind,
   Fenxing,
-  TimeframeKey,
   Xianduan,
   Zhongshu,
 } from '@kansoku/shared/types';
@@ -93,7 +92,7 @@ function fenxingKindLabel(kind: Fenxing['kind']): string {
   return kind === 'top' ? '顶分型' : '底分型';
 }
 
-export function fenxingTooltip(f: Fenxing, timeframe: TimeframeKey): string {
+export function fenxingTooltip(f: Fenxing, timeframe: string): string {
   const icon = f.kind === 'top' ? '🔺' : '🔻';
   const status = f.confirmed ? '' : '（未确认）';
   const meaning = f.confirmed
@@ -107,7 +106,7 @@ export function fenxingTooltip(f: Fenxing, timeframe: TimeframeKey): string {
   ].join('\n');
 }
 
-export function biTooltip(b: Bi, index: number, timeframe: TimeframeKey): string {
+export function biTooltip(b: Bi, index: number, timeframe: string): string {
   const icon = b.direction === 'up' ? '↗' : '↘';
   const label = b.direction === 'up' ? '上笔' : '下笔';
   const pctChange = ((b.end.price - b.start.price) / b.start.price) * 100;
@@ -121,7 +120,7 @@ export function biTooltip(b: Bi, index: number, timeframe: TimeframeKey): string
   ].join('\n');
 }
 
-export function xianduanTooltip(x: Xianduan, index: number, timeframe: TimeframeKey): string {
+export function xianduanTooltip(x: Xianduan, index: number, timeframe: string): string {
   const icon = x.direction === 'up' ? '⤴' : '⤵';
   const label = x.direction === 'up' ? '上线段' : '下线段';
   const status = x.broken ? '已破坏' : '进行中';
@@ -135,7 +134,7 @@ export function xianduanTooltip(x: Xianduan, index: number, timeframe: Timeframe
   ].join('\n');
 }
 
-export function zhongshuTooltip(z: Zhongshu, index: number, timeframe: TimeframeKey): string {
+export function zhongshuTooltip(z: Zhongshu, index: number, timeframe: string): string {
   const status = z.endTime === null ? '盘整中' : '已终结';
   const extendSuffix = z.extendedBy.length > 0 ? `｜+${z.extendedBy.length} 段延伸` : '';
   const endLabel = z.endTime !== null ? formatBarTime(z.endTime) : '仍在延续';

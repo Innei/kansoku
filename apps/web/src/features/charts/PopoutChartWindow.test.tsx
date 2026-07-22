@@ -19,6 +19,13 @@ vi.mock('./intraday/IntradayDashboard', () => ({
   IntradayChartOnly: ({ symbol }: { symbol: string }) => (
     <div data-testid="popout-chart">chart:{symbol}</div>
   ),
+  IntradayTimeframeSwitch: ({ activeTf }: { activeTf: string }) => (
+    <div data-testid="popout-tf">{activeTf}</div>
+  ),
+}));
+
+vi.mock('./intraday/ChartLayerMenu', () => ({
+  ChartLayerMenu: () => <div data-testid="popout-layers" />,
 }));
 
 const mockedUseIntradayPreview = vi.mocked(useIntradayPreview);

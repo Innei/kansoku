@@ -71,7 +71,7 @@ export const ENTRY_STATUS_NOTES: Record<Exclude<EntryPlanStatus, 'waiting'>, str
 
 export const barTimeShort = (t: number) => formatMarketMonthDayTime(t, true);
 
-export const VWAP_TIMEFRAMES = new Set<string>(['m5', 'm15']);
+export const VWAP_TIMEFRAMES = new Set<string>(['m5', 'm15', '1m']);
 
 export const AI_AUTO_MERGE_BAR_WINDOW = 2;
 

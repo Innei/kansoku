@@ -30,6 +30,7 @@
   --radius-lg: 10px;
   --radius-full: 999px;
   --control-h: 28px;
+  --sidebar-w: 340px;
 }
 
 .num {
@@ -492,6 +493,32 @@ a:hover {
   border-bottom: 1px solid var(--border);
   font-size: var(--fs-md);
 }
+.detail-topbar--split {
+  display: grid;
+  grid-template-columns: 1fr var(--sidebar-w);
+  gap: 0;
+  padding: 0;
+}
+.topbar-chart,
+.topbar-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  min-width: 0;
+}
+.topbar-chart {
+  border-right: 1px solid var(--border);
+}
+.topbar-side {
+  gap: 8px;
+}
+.topbar-chart-tail {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .detail-topbar .title {
   color: var(--text-primary);
   font-weight: 500;
@@ -590,7 +617,7 @@ a:hover {
 .layout {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr var(--sidebar-w);
   height: 100%;
 }
 .charts-col {
@@ -1254,6 +1281,211 @@ a.zone-item:hover {
   min-width: 0;
   max-width: none;
 }
+.layer-panel--inline {
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  background: transparent;
+  border: 0;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--fs-sm);
+}
+.layer-panel--inline .lp-header {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2px 8px;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+}
+.tf-settings-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.tf-settings-trigger:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.tf-settings-positioner {
+  z-index: 200;
+}
+.tf-settings-popup {
+  width: 196px;
+  padding: 7px 0;
+  background: rgb(10 10 10 / 0.96);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.6);
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+}
+.tf-settings-title {
+  padding: 0 10px 6px;
+  color: var(--text-secondary);
+}
+.tf-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.tf-settings-row:hover {
+  background: var(--bg-hover);
+}
+.tf-settings-row--fixed {
+  cursor: default;
+  color: var(--text-secondary);
+}
+.tf-settings-tag {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+.tf-settings-foot {
+  padding: 6px 10px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.tf-load-error {
+  color: var(--down);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.ma-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.ma-menu-trigger:hover {
+  background: var(--bg-hover);
+}
+.ma-menu-positioner {
+  z-index: 200;
+}
+.ma-menu-popup {
+  width: 224px;
+  padding: 7px 0;
+  background: rgb(10 10 10 / 0.96);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.6);
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+}
+.ma-menu-title {
+  padding: 0 10px 6px;
+  color: var(--text-secondary);
+}
+.ma-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+}
+.ma-row:hover {
+  background: var(--bg-hover);
+}
+.ma-row-eye,
+.ma-row-del {
+  display: inline-flex;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.ma-row-eye:hover,
+.ma-row-del:hover {
+  color: var(--text-primary);
+}
+.ma-row-del {
+  margin-left: auto;
+}
+.ma-row-color {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.ma-row-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.ma-row-color::-webkit-color-swatch {
+  border: 0;
+}
+.ma-row-period {
+  width: 46px;
+  padding: 1px 5px;
+  background: var(--bg-element);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+.ma-row-last {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.ma-menu-add {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+.ma-menu-add:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+.ma-menu-foot {
+  padding: 4px 10px 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.layer-panel--inline .lp-body {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  width: 196px;
+  background: rgba(10, 10, 10, 0.96);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.6);
+  font-size: var(--fs-xs);
+}
 .lp-body {
   padding: 4px 8px 6px;
   max-height: 70vh;
@@ -1289,15 +1521,11 @@ a.zone-item:hover {
 .lp-group label:hover {
   color: var(--text-primary);
 }
-.lp-group label:has(input:not(:checked)) {
+.lp-group label:has([data-unchecked]) {
   color: var(--text-muted);
 }
-.lp-group input[type='checkbox'] {
+.lp-group .ui-checkbox {
   margin: 0 5px 0 0;
-  accent-color: var(--accent);
-  flex-shrink: 0;
-  width: 11px;
-  height: 11px;
 }
 .lp-swatch {
   display: inline-block;
@@ -1612,6 +1840,11 @@ a.zone-item:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.alert-badge--icon {
+  max-width: none;
+  padding: 0 7px;
+  gap: 4px;
+}
 
 .unread-badge {
   margin-left: 4px;
@@ -1819,6 +2052,50 @@ a.zone-item:hover {
 }
 .follow-control-lock {
   color: var(--accent);
+}
+
+.ui-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 0;
+  background: var(--bg-element);
+  border: 0;
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px var(--border-strong);
+  color: var(--bg-canvas);
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+.ui-checkbox--sm {
+  width: 12px;
+  height: 12px;
+}
+.ui-checkbox--md {
+  width: 15px;
+  height: 15px;
+}
+.ui-checkbox:hover:not([data-disabled]) {
+  box-shadow: 0 0 0 1px var(--text-muted);
+}
+.ui-checkbox[data-checked] {
+  background: var(--accent);
+  box-shadow: none;
+}
+.ui-checkbox[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.ui-checkbox:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 1px;
+}
+.ui-checkbox-indicator {
+  display: inline-flex;
 }
 
 .ui-switch {
@@ -4785,13 +5062,6 @@ a.zone-item:hover {
   animation: none;
   background: var(--bg-element);
 }
-.cockpit-skeleton .detail-topbar .title {
-  display: inline-flex;
-}
-.cockpit-skeleton-bone--title {
-  width: 180px;
-  height: 14px;
-}
 .cockpit-skeleton-bone--meta {
   width: 56px;
   height: 12px;
@@ -6809,29 +7079,6 @@ a.zone-item:hover {
   gap: 8px;
   min-height: var(--control-h);
   cursor: pointer;
-}
-.research-edit-operation > header input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-.research-edit-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 15px;
-  height: 15px;
-  color: var(--bg-canvas);
-  background: var(--bg-element);
-  border-radius: var(--radius);
-  box-shadow: 0 0 0 1px var(--border-strong);
-}
-.research-edit-operation.selected .research-edit-check {
-  background: var(--accent);
-  box-shadow: none;
 }
 .research-edit-operation > header span:last-child {
   color: var(--text-secondary);

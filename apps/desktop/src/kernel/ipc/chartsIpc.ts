@@ -35,4 +35,9 @@ export class ChartsIpc extends IpcService implements WrapEnvelope<ChartsApi> {
   built(input: Parameters<ChartsApi['built']>[0]) {
     return toEnvelope('charts.built', () => chartsService.built(input));
   }
+
+  @IpcMethod()
+  viewTimeframe(input: Parameters<ChartsApi['viewTimeframe']>[0]) {
+    return toEnvelope('charts.viewTimeframe', () => chartsService.viewTimeframe(input));
+  }
 }

@@ -12,7 +12,6 @@ import {
   type Pattern123,
   type RawBar,
   type SecondBreakout,
-  type TimeframeKey,
 } from '@kansoku/shared/types';
 import { computeChanStructure } from '../chanlun/index.js';
 import { ClientError } from '../../platform/errors.js';
@@ -71,7 +70,7 @@ export function sanitizeEmaPeriods(raw: unknown): number[] {
 
 export function coerceIntradayTimeframe(
   bars: RawBar[],
-  key: TimeframeKey,
+  key: string,
   emaPeriods = DEFAULT_EMA_PERIODS,
 ): CoercedTimeframe {
   if (!bars || bars.length < MACD_MIN_BARS) {

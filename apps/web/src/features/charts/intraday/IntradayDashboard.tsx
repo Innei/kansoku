@@ -1,29 +1,18 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import type { IntradayBuilt, QuoteCell, TimeframeKey } from '@kansoku/shared/types';
-import type { FeatureKey } from '@kansoku/pro-api/features';
 import { fmt } from '@web/lib/format';
-import { useFeature } from '@web/features/edition/useFeature';
 import type { SidebarTab } from '../SidebarTabs';
 import { DrawingToolbar } from '../drawings/DrawingToolbar';
 import { useDrawings, type DrawingsHandle } from '../drawings/useDrawings';
-import { LayerPanel, type LayerGroup, type LayerItem, type LayerPreset } from '../LayerPanel';
 import type { ConclusionReassess } from './ConclusionCard';
 import { IntradaySidebar } from './IntradaySidebar';
-import {
-  CHAN_BUYSELL_TOGGLE_KEYS,
-  CHAN_STRUCTURE_TOGGLE_KEYS,
-  INDICATOR_FEATURE_GATES,
-  INDICATOR_PRESETS,
-  INDICATOR_TOGGLE_COLORS,
-  INDICATOR_TOGGLE_LABELS,
-  useIndicatorToggles,
-  type IndicatorToggleKey,
-} from './useIndicatorToggles';
-import { EMA_COLORS, useIntradayCharts } from './useIntradayCharts';
+import { useIntradayControls } from './controlsContext';
+import { TimeframeSettingsMenu } from './TimeframeSettingsMenu';
+import { isViewPeriod, tfDataOf, tfLabel, tfShortLabel, type ChartTf } from './timeframes';
+import { useMaSeries } from './useMaLines';
+import { useIntradayCharts } from './useIntradayCharts';
 
 export const TF_LABELS: Record<TimeframeKey, string> = { m5: '5分钟', m15: '15分钟', h1: '1小时' };
-const TF_SHORT_LABELS: Record<TimeframeKey, string> = { m5: '5m', m15: '15m', h1: '1h' };
-const TF_ORDER: TimeframeKey[] = ['m5', 'm15', 'h1'];
 
 const MACD_MIN = 100;
 const MACD_MAX = 340;
@@ -32,26 +21,10 @@ const MACD_HEIGHT_KEY = 'intraday-macd-height';
 
 const clampMacdHeight = (h: number) => Math.min(MACD_MAX, Math.max(MACD_MIN, h));
 
-const LAYER_GROUP_DEFS: { title: string; keys: IndicatorToggleKey[] }[] = [
-  { title: '参照', keys: ['ema', 'vwap', 'levels', 'daylevel', 'optwall'] },
-  { title: '结构', keys: ['fvg', 'pattern123', 'sb', 'candle'] },
-  { title: '信号', keys: ['crosses', 'divergence', 'macdBeichi', 'ai'] },
-];
-
-const toLayerItem = (
-  key: IndicatorToggleKey,
-  setToggle: (key: IndicatorToggleKey, value: boolean) => void,
-): LayerItem => ({
-  key,
-  label: INDICATOR_TOGGLE_LABELS[key],
-  color: INDICATOR_TOGGLE_COLORS[key],
-  toggle: (v: boolean) => setToggle(key, v),
-});
-
 interface IntradayDashboardProps {
   symbol: string;
   built: IntradayBuilt;
-  activeTf: TimeframeKey;
+  activeTf: ChartTf;
   predictionUpdatedAt?: string;
   predictionStale?: boolean;
   conclusionReassess?: ConclusionReassess;
@@ -68,21 +41,23 @@ export function IntradayTimeframeSwitch({
   activeTf,
   onChange,
 }: {
-  activeTf: TimeframeKey;
-  onChange: (tf: TimeframeKey) => void;
+  activeTf: ChartTf;
+  onChange: (tf: ChartTf) => void;
 }) {
+  const { visibleTfs } = useIntradayControls();
   return (
     <div className="chart-timeframe-switch" aria-label="时间周期">
-      {TF_ORDER.map((k) => (
+      {visibleTfs.map((k) => (
         <button
           key={k}
           aria-pressed={k === activeTf}
           onClick={() => onChange(k)}
-          title={TF_LABELS[k]}
+          title={tfLabel(k)}
         >
-          {TF_SHORT_LABELS[k]}
+          {tfShortLabel(k)}
         </button>
       ))}
+      <TimeframeSettingsMenu />
     </div>
   );
 }
@@ -90,7 +65,7 @@ export function IntradayTimeframeSwitch({
 interface IntradayChartOnlyProps {
   symbol: string;
   built: IntradayBuilt;
-  activeTf: TimeframeKey;
+  activeTf: ChartTf;
   onLoadHistory?: () => void;
 }
 
@@ -107,20 +82,10 @@ export function IntradayChartOnly({
   const [dragging, setDragging] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const macdRef = useRef<HTMLDivElement>(null);
-  const {
-    toggles,
-    set: setToggle,
-    applyPreset,
-    markerRange,
-    setMarkerRange,
-  } = useIndicatorToggles();
+  const { toggles, markerRange, maLines } = useIntradayControls();
   const [drawingHandle, setDrawingHandle] = useState<DrawingsHandle | null>(null);
-  const autoPatternsFeature = useFeature('auto-patterns');
-  const optionsWallsFeature = useFeature('options-walls');
-  const gatedFeatures: Partial<Record<FeatureKey, typeof autoPatternsFeature>> = {
-    'auto-patterns': autoPatternsFeature,
-    'options-walls': optionsWallsFeature,
-  };
+  const candles = useMemo(() => tfDataOf(built, activeTf)?.candles ?? [], [built, activeTf]);
+  const maSeries = useMaSeries(candles, maLines);
   useIntradayCharts(
     built,
     activeTf,
@@ -129,82 +94,11 @@ export function IntradayChartOnly({
     onLoadHistory,
     toggles,
     markerRange,
+    maSeries,
     setDrawingHandle,
   );
-  const barTimes = useMemo(
-    () => built.timeframes[activeTf]?.candles.map((c) => c.time) ?? [],
-    [built, activeTf],
-  );
+  const barTimes = useMemo(() => candles.map((c) => c.time), [candles]);
   const drawingsApi = useDrawings(drawingHandle, symbol, barTimes);
-  const activeTfData = built.timeframes[activeTf];
-  const layerDataCounts: Partial<Record<IndicatorToggleKey, number>> = {
-    fvg: activeTfData?.fvgZones?.length ?? 0,
-    pattern123: activeTfData?.pattern123?.length ?? 0,
-    sb: activeTfData?.secondBreakouts?.length ?? 0,
-    divergence: activeTfData?.autoDivergence?.length ?? 0,
-    macdBeichi: activeTfData?.autoBeichi?.length ?? 0,
-    candle: activeTfData?.markers?.filter((marker) => marker.group === 'candle').length ?? 0,
-  };
-  const lockedToggleKeys = useMemo(() => {
-    const keys = new Set<IndicatorToggleKey>();
-    for (const [key, featureKey] of Object.entries(INDICATOR_FEATURE_GATES) as [
-      IndicatorToggleKey,
-      FeatureKey,
-    ][]) {
-      if (!gatedFeatures[featureKey]?.active) keys.add(key);
-    }
-    return keys;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPatternsFeature.active, optionsWallsFeature.active]);
-  const layerGroups: LayerGroup[] = useMemo(() => {
-    const staticGroups = LAYER_GROUP_DEFS.map(({ title, keys }) => ({
-      title,
-      items: keys.map((key) => {
-        const featureKey = INDICATOR_FEATURE_GATES[key];
-        const locked = lockedToggleKeys.has(key);
-        return {
-          key,
-          label:
-            layerDataCounts[key] === undefined
-              ? INDICATOR_TOGGLE_LABELS[key]
-              : `${INDICATOR_TOGGLE_LABELS[key]} · ${layerDataCounts[key]}`,
-          color: INDICATOR_TOGGLE_COLORS[key],
-          toggle: (v: boolean) => setToggle(key, v),
-          locked,
-          onLockedClick: featureKey ? () => gatedFeatures[featureKey]?.guard(() => {}) : undefined,
-        };
-      }),
-    }));
-    const chanStructureOn = CHAN_STRUCTURE_TOGGLE_KEYS.filter((key) => toggles[key]).length;
-    const chanBuySellOn = CHAN_BUYSELL_TOGGLE_KEYS.filter((key) => toggles[key]).length;
-    return [
-      ...staticGroups,
-      {
-        title: `缠论结构 ${chanStructureOn}/${CHAN_STRUCTURE_TOGGLE_KEYS.length}`,
-        items: CHAN_STRUCTURE_TOGGLE_KEYS.map((key) => toLayerItem(key, setToggle)),
-      },
-      {
-        title: `缠论买卖点 ${chanBuySellOn}/${CHAN_BUYSELL_TOGGLE_KEYS.length}`,
-        items: CHAN_BUYSELL_TOGGLE_KEYS.map((key) => toLayerItem(key, setToggle)),
-      },
-    ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTfData,
-    lockedToggleKeys,
-    setToggle,
-    autoPatternsFeature.locked,
-    optionsWallsFeature.locked,
-    toggles,
-  ]);
-  const filteredPresets: LayerPreset[] = useMemo(
-    () =>
-      INDICATOR_PRESETS.map((p) => ({
-        ...p,
-        on: p.on.filter((key) => !lockedToggleKeys.has(key)),
-      })),
-    [lockedToggleKeys],
-  );
 
   const onResizeStart = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -232,13 +126,15 @@ export function IntradayChartOnly({
       <div className="chart-block intraday-main">
         <div className="chart-label">K 线 + 成交量</div>
         <div className="chart-legend">
-          {(built.sidebar.technicals[activeTf]?.emas ?? []).map((e, i) => (
-            <span key={e.period}>
-              <span className="swatch" style={{ background: EMA_COLORS[i % EMA_COLORS.length] }} />
-              EMA{e.period}
-              {e.last !== null && ` $${fmt(e.last)}`}
-            </span>
-          ))}
+          {maSeries
+            .filter((s) => s.line.visible)
+            .map((s) => (
+              <span key={s.line.id}>
+                <span className="swatch" style={{ background: s.line.color }} />
+                EMA{s.line.period}
+                {s.last !== null && ` $${fmt(s.last)}`}
+              </span>
+            ))}
           <span>
             <span className="swatch" style={{ background: 'rgba(232,232,232,0.3)' }} />
             盘前/盘后
@@ -248,14 +144,6 @@ export function IntradayChartOnly({
             夜盘
           </span>
         </div>
-        <LayerPanel
-          groups={layerGroups}
-          checked={toggles}
-          presets={filteredPresets}
-          onPreset={(on) => applyPreset(on as IndicatorToggleKey[])}
-          range={markerRange}
-          onRangeChange={setMarkerRange}
-        />
         <DrawingToolbar api={drawingsApi} />
         <div ref={mainRef} className="chart-host" />
       </div>
@@ -287,6 +175,7 @@ export function IntradayDashboard({
   dock,
   liveQuote,
 }: IntradayDashboardProps) {
+  const sidebarTf = isViewPeriod(activeTf) ? built.defaultTf : activeTf;
   return (
     <div className="layout">
       <IntradayChartOnly
@@ -297,7 +186,7 @@ export function IntradayDashboard({
       />
       <IntradaySidebar
         built={built}
-        activeTf={activeTf}
+        activeTf={sidebarTf}
         predictionUpdatedAt={predictionUpdatedAt}
         predictionStale={predictionStale}
         conclusionReassess={conclusionReassess}

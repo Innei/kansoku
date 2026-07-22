@@ -15,6 +15,12 @@ export interface ChartBuiltResult {
   count: number;
 }
 
+export interface ChartViewTimeframeResult {
+  period: string;
+  bars: number;
+  tf: unknown;
+}
+
 export interface ChartsApi {
   list(input?: {
     type?: string;
@@ -33,10 +39,17 @@ export interface ChartsApi {
     count?: number | string;
     mode?: 'forward';
   }): Promise<ChartBuiltResult>;
+  viewTimeframe(input: {
+    symbol: string;
+    period: string;
+    count?: number | string;
+    as_of?: string;
+  }): Promise<ChartViewTimeframeResult>;
 }
 
 export const chartsRoutes = defineRoutes<ChartsApi>('charts', {
   list: { method: 'GET', path: '/' },
+  viewTimeframe: { method: 'GET', path: '/view-timeframe' },
   get: { method: 'GET', path: '/:id' },
   create: { method: 'POST', path: '/', withMeta: true },
   update: { method: 'PATCH', path: '/:id', withMeta: true },

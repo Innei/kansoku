@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ChevronsRight, PictureInPicture2 } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronsRight, PictureInPicture2, TriangleAlert } from 'lucide-react';
 import { IntradayDashboard, IntradayTimeframeSwitch } from '../charts/intraday/IntradayDashboard';
+import { ChartLayerMenu } from '../charts/intraday/ChartLayerMenu';
+import { MaLinesMenu } from '../charts/intraday/MaLinesMenu';
+import { isViewPeriod, tfDataOf, withViewTimeframe } from '../charts/intraday/timeframes';
+import { useViewTimeframe } from '../charts/intraday/useViewTimeframe';
+import { IntradayControlsProvider } from '../charts/intraday/controlsContext';
 import { resolveIntradayTf, useIntradayDoc } from '../charts/intraday/useIntradayDoc';
 import type { SidebarTab } from '../charts/SidebarTabs';
 import { SepaDashboard } from '../charts/sepa/SepaDashboard';
@@ -8,7 +13,7 @@ import { getPopoutBridge } from '../desktop/desktopWindowsBridge';
 import { TopbarQuote } from '../quotes/QuoteBar';
 import { marketOfSymbol } from '../../lib/market';
 import { recordRecentSymbol } from '../charts/recentCharts';
-import { Dot, ErrorBox, MarketTime } from '../../ui';
+import { Dot, ErrorBox, MarketTime, Tooltip } from '../../ui';
 import { useTitle } from '../../lib/useTitle';
 import { useLiveQuote } from '../quotes/useLiveQuote';
 import { AnalysisRunDetails } from './AnalysisRunDetails';
@@ -96,6 +101,11 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   const { unread, latestAlert } = useAiUnreadBadge(sym, comments, commentsLoaded, activeTab);
 
   const intradaySidebar = doc?.built.kind === 'intraday' ? doc.built.sidebar : null;
+  const viewTimeframe = useViewTimeframe(sym, intradayTf ?? 'm15', {
+    asOf: live ? undefined : intradaySidebar?.asOf,
+    live,
+    liveQuote,
+  });
   const reassessNow = Date.now();
   const reassessNeeded =
     conclusionOutdated(
@@ -196,6 +206,8 @@ export function SymbolCockpit({ sym }: { sym: string }) {
     );
 
   const activeIntradayTf = resolveIntradayTf(doc.built, intradayTf);
+  const chartBuilt = withViewTimeframe(doc.built, activeIntradayTf, viewTimeframe.tf);
+  const sidebarTf = isViewPeriod(activeIntradayTf) ? doc.built.defaultTf : activeIntradayTf;
   const analysesRows = analyses;
 
   const sidebarTabs: SidebarTab[] = [
@@ -205,7 +217,7 @@ export function SymbolCockpit({ sym }: { sym: string }) {
       content: (
         <PredictionTab
           built={doc.built}
-          activeTf={activeIntradayTf}
+          activeTf={sidebarTf}
           predictionUpdatedAt={doc.prediction_updated_at}
           predictionStale={doc.prediction_stale}
           reassess={conclusionReassess}
@@ -239,76 +251,96 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   ];
 
   return (
-    <div className="fullpage">
-      <div className="detail-topbar">
-        <a href="/">
-          <ArrowLeft className="icon" size={13} /> 列表
-        </a>
-        <span className="title">{doc.title}</span>
-        <span className="meta">{sym}</span>
-        {degraded && <Dot tone="accent" pulse title="数据延迟：行情拉取失败，正在重试" />}
-        <span className="topbar-chart-ctrls">
-          <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />
-          {canLoadForward && (
-            <button
-              className="load-forward-btn"
-              disabled={forwardBusy}
-              onClick={loadForward}
-              title="历史图表默认冻结在分析时的走势，点击加载分析日之后的 K 线到最新"
-            >
-              <ChevronsRight size={14} className="load-forward-icon" />
-              <span>{forwardBusy ? '加载中…' : '加载后续 K 线'}</span>
-            </button>
-          )}
-        </span>
-        <span className="topbar-actions">
-          {hasNewer && (
-            <button className="badge badge--accent alert-badge" onClick={jumpToLatest}>
-              <Dot tone="accent" pulse />
-              <span className="alert-badge-text">有新分析，点击查看最新</span>
-            </button>
-          )}
-          <AnalysisTimeline
-            rows={analysesRows}
-            activeId={latestId}
-            mode={mode}
-            onLive={goToLive}
-            onSelect={goToAnalysis}
-          />
-          {latestAlert && (
-            <button
-              className={`badge badge--${latestAlert.level === 'alert' ? 'down' : 'accent'} alert-badge`}
-              onClick={() => setActiveTab('ai')}
-              aria-label={`AI ${latestAlert.level === 'alert' ? '警报' : '提醒'}：${latestAlert.text}`}
-            >
-              <Dot tone={latestAlert.level === 'alert' ? 'down' : 'accent'} pulse />
-              <span className="alert-badge-text">
-                AI {latestAlert.level === 'alert' ? '警报' : '提醒'}{' '}
-                <MarketTime value={latestAlert.ts} format="clock" market={market} /> ·{' '}
-                {latestAlert.trigger ?? latestAlert.text}
+    <IntradayControlsProvider>
+      <div className="fullpage">
+        <div className="detail-topbar detail-topbar--split">
+          <div className="topbar-chart">
+            <a href="/">
+              <ArrowLeft className="icon" size={13} /> 列表
+            </a>
+            <span className="meta">{sym}</span>
+            {degraded && <Dot tone="accent" pulse title="数据延迟：行情拉取失败，正在重试" />}
+            <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />
+            <AnalysisTimeline
+              rows={analysesRows}
+              activeId={latestId}
+              mode={mode}
+              onLive={goToLive}
+              onSelect={goToAnalysis}
+            />
+            {canLoadForward && (
+              <button
+                className="load-forward-btn"
+                disabled={forwardBusy}
+                onClick={loadForward}
+                title="历史图表默认冻结在分析时的走势，点击加载分析日之后的 K 线到最新"
+              >
+                <ChevronsRight size={14} className="load-forward-icon" />
+                <span>{forwardBusy ? '加载中…' : '加载后续 K 线'}</span>
+              </button>
+            )}
+            {viewTimeframe.error && (
+              <span className="tf-load-error" title={viewTimeframe.error}>
+                该周期加载失败
               </span>
-            </button>
-          )}
-          <PopoutButton sym={sym} />
-          {doc.symbol && <TopbarQuote quote={liveQuote} />}
-        </span>
+            )}
+            <span className="topbar-chart-tail">
+              <MaLinesMenu candles={tfDataOf(chartBuilt, activeIntradayTf)?.candles ?? []} />
+              <ChartLayerMenu built={chartBuilt} activeTf={activeIntradayTf} />
+            </span>
+          </div>
+          <div className="topbar-side">
+            {hasNewer && (
+              <button className="badge badge--accent alert-badge" onClick={jumpToLatest}>
+                <Dot tone="accent" pulse />
+                <span className="alert-badge-text">有新分析</span>
+              </button>
+            )}
+            {latestAlert && (
+              <Tooltip
+                content={
+                  <>
+                    AI {latestAlert.level === 'alert' ? '警报' : '提醒'}{' '}
+                    <MarketTime value={latestAlert.ts} format="clock" market={market} /> ·{' '}
+                    {latestAlert.trigger ?? latestAlert.text}
+                  </>
+                }
+              >
+                <button
+                  className={`badge badge--${latestAlert.level === 'alert' ? 'down' : 'accent'} alert-badge alert-badge--icon`}
+                  onClick={() => setActiveTab('ai')}
+                  aria-label={`AI ${latestAlert.level === 'alert' ? '警报' : '提醒'}：${latestAlert.text}`}
+                >
+                  <Dot tone={latestAlert.level === 'alert' ? 'down' : 'accent'} pulse />
+                  {latestAlert.level === 'alert' ? (
+                    <TriangleAlert className="icon" size={13} />
+                  ) : (
+                    <Bell className="icon" size={13} />
+                  )}
+                </button>
+              </Tooltip>
+            )}
+            <PopoutButton sym={sym} />
+            {doc.symbol && <TopbarQuote quote={liveQuote} />}
+          </div>
+        </div>
+        <div className="detail-body">
+          <IntradayDashboard
+            symbol={sym}
+            built={chartBuilt}
+            activeTf={activeIntradayTf}
+            predictionUpdatedAt={doc.prediction_updated_at}
+            predictionStale={doc.prediction_stale}
+            conclusionReassess={conclusionReassess}
+            onLoadHistory={loadHistory}
+            sidebarTabs={sidebarTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            dock={<ChatDock chartId={doc.id} docCreatedAt={doc.created_at} />}
+            liveQuote={live ? liveQuote : null}
+          />
+        </div>
       </div>
-      <div className="detail-body">
-        <IntradayDashboard
-          symbol={sym}
-          built={doc.built}
-          activeTf={activeIntradayTf}
-          predictionUpdatedAt={doc.prediction_updated_at}
-          predictionStale={doc.prediction_stale}
-          conclusionReassess={conclusionReassess}
-          onLoadHistory={loadHistory}
-          sidebarTabs={sidebarTabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          dock={<ChatDock chartId={doc.id} docCreatedAt={doc.created_at} />}
-          liveQuote={live ? liveQuote : null}
-        />
-      </div>
-    </div>
+    </IntradayControlsProvider>
   );
 }

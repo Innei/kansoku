@@ -302,7 +302,7 @@ export interface BuySellPoint {
   time: number;
   price: number;
   kind: BuySellPointKind;
-  timeframe: TimeframeKey;
+  timeframe: string;
   refBeichi?: { fromSegmentIdx: number; toSegmentIdx: number };
   refFirstPoint?: { time: number; price: number };
   refZhongshu?: { startTime: number; endTime: number };

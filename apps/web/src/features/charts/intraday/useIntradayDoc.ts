@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ChartBuilt, ChartDoc, IntradayBuilt, TimeframeKey } from '@kansoku/shared/types';
+import type { ChartBuilt, ChartDoc, IntradayBuilt } from '@kansoku/shared/types';
+import { isViewPeriod, type ChartTf } from './timeframes';
 import { useQuery } from '@web/lib/apiHooks';
 import { client } from '@web/lib/client';
 import { isCurrentSessionId } from '@web/lib/easternDate';
@@ -9,11 +10,8 @@ const LIVE_TYPES = new Set(['flow', 'intraday']);
 
 export type ChartDocView = ChartDoc & { prediction_stale?: boolean };
 
-export function resolveIntradayTf(
-  built: IntradayBuilt,
-  preferred: TimeframeKey | null,
-): TimeframeKey {
-  if (preferred && preferred in built.timeframes) return preferred;
+export function resolveIntradayTf(built: IntradayBuilt, preferred: ChartTf | null): ChartTf {
+  if (preferred && (isViewPeriod(preferred) || preferred in built.timeframes)) return preferred;
   if (built.defaultTf in built.timeframes) return built.defaultTf;
   return 'm15';
 }
@@ -21,7 +19,7 @@ export function resolveIntradayTf(
 export function useIntradayDoc(id: string | null) {
   const [doc, setDoc] = useState<ChartDocView | null>(null);
   const [viewCount, setViewCount] = useState<number | null>(null);
-  const [intradayTf, setIntradayTf] = useState<TimeframeKey | null>(null);
+  const [intradayTf, setIntradayTf] = useState<ChartTf | null>(null);
   const historyBusyRef = useRef(false);
   const historyExhaustedRef = useRef(false);
   const docRef = useRef<ChartDocView | null>(null);

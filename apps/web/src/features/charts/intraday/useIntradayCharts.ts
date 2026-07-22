@@ -16,7 +16,6 @@ import type {
   PriceRectangle,
   SecondBreakout,
   SeriesMarker,
-  TimeframeKey,
 } from '@kansoku/shared/types';
 import {
   addPriceLine,
@@ -36,6 +35,8 @@ import {
   type MarkerTooltipHandle,
 } from '../lw';
 import type { IndicatorToggleKey, MarkerRange } from './useIndicatorToggles';
+import { tfDataOf, tfShortLabel, type ChartTf } from './timeframes';
+import { MAX_MA_LINES, type MaSeries } from './useMaLines';
 import { AnchorBgPrimitive } from './anchorPrimitive';
 import { FvgPrimitive, fvgTooltip, type FvgTooltipHandle } from './fvgPrimitive';
 import { SessionBgPrimitive } from './sessionPrimitive';
@@ -147,18 +148,19 @@ export interface DrawingChartHandle {
 
 export function useIntradayCharts(
   built: IntradayBuilt,
-  activeTf: TimeframeKey,
+  activeTf: ChartTf,
   mainRef: RefObject<HTMLDivElement | null>,
   macdRef: RefObject<HTMLDivElement | null>,
   onNearLeftEdge: (() => void) | undefined,
   toggles: Record<IndicatorToggleKey, boolean>,
   markerRange: MarkerRange,
+  maSeries: MaSeries[],
   onHandle?: (h: DrawingChartHandle | null) => void,
 ): void {
   const handleRef = useRef<Handle | null>(null);
   const builtRef = useRef(built);
   builtRef.current = built;
-  const lastTfRef = useRef<TimeframeKey | null>(null);
+  const lastTfRef = useRef<ChartTf | null>(null);
   const lastBuiltRef = useRef<IntradayBuilt | null>(null);
   const barCountRef = useRef(0);
   const firstTimeRef = useRef<number | null>(null);
@@ -199,8 +201,7 @@ export function useIntradayCharts(
     const zhongshu = new ZhongshuPrimitive();
     candle.attachPrimitive(zhongshu);
 
-    const emaCount = builtRef.current.timeframes.m5?.emas?.length ?? 0;
-    const emaSeries = Array.from({ length: emaCount }, (_, i) =>
+    const emaSeries = Array.from({ length: MAX_MA_LINES }, (_, i) =>
       main.addSeries(LineSeries, {
         color: EMA_COLORS[i % EMA_COLORS.length],
         lineWidth: 1,
@@ -298,7 +299,7 @@ export function useIntradayCharts(
 
   useEffect(() => {
     const h = handleRef.current;
-    const d = built.timeframes[activeTf];
+    const d = tfDataOf(built, activeTf);
     if (!h || !d) return;
 
     h.dynamic.forEach(({ chart, series }) => {
@@ -319,8 +320,13 @@ export function useIntradayCharts(
     h.session.setData(d.offSession ?? []);
     h.macdSession.setData(d.offSession ?? []);
     h.emaSeries.forEach((s, i) => {
-      const emaLine = d.emas[i];
-      s.setData(toggles.ema && emaLine ? padLineData(emaLine.data, timeline) : []);
+      const ma = maSeries[i];
+      if (!ma || !ma.line.visible || !toggles.ema) {
+        s.setData([]);
+        return;
+      }
+      s.applyOptions({ color: ma.line.color });
+      s.setData(padLineData(ma.data, timeline));
     });
     const lastBarTime = d.candles.at(-1)?.time;
     const currentPrice = d.candles.at(-1)?.close;
@@ -328,7 +334,7 @@ export function useIntradayCharts(
     const fvgContext = {
       currentPrice,
       lastBarTime,
-      timeframeLabel: activeTf === 'h1' ? '1h' : activeTf === 'm15' ? '15m' : '5m',
+      timeframeLabel: tfShortLabel(activeTf),
     };
     h.vwapSeries.setData(toggles.vwap && d.vwap ? padLineData(d.vwap, timeline) : []);
     h.fvg.setData(fvgZones, fvgContext);
@@ -543,5 +549,5 @@ export function useIntradayCharts(
     lastBuiltRef.current = built;
     barCountRef.current = d.candles.length;
     firstTimeRef.current = timeline[0] ?? null;
-  }, [built, activeTf, toggles, markerRange]);
+  }, [built, activeTf, toggles, markerRange, maSeries]);
 }

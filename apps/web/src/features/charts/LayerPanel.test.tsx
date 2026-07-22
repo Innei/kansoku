@@ -75,6 +75,16 @@ describe('LayerPanel locks', () => {
     expect((emaCheckbox as HTMLInputElement).checked).toBe(true);
   });
 
+  it('toggles a row exactly once when its label text is clicked', () => {
+    const groups = makeGroups();
+    render(<LayerPanel groups={groups} checked={{ ema: true, vwap: false, sb: false }} />);
+
+    fireEvent.click(screen.getByText('VWAP'));
+
+    expect(groups[0].items[1].toggle).toHaveBeenCalledTimes(1);
+    expect(groups[0].items[1].toggle).toHaveBeenCalledWith(true);
+  });
+
   it('keeps SEPA-style usage without lock props unaffected', () => {
     const groups: LayerGroup[] = [
       {

@@ -1,4 +1,4 @@
-import type { ChanStructure, RawBar, TimeframeKey } from '@kansoku/shared/types';
+import type { ChanStructure, RawBar } from '@kansoku/shared/types';
 import { toTs } from '../indicators.js';
 import { detectBeichi } from './beichi.js';
 import { detectBi } from './bi.js';
@@ -11,7 +11,7 @@ import { detectZhongshu } from './zhongshu.js';
 export function computeChanStructure(
   candles: RawBar[],
   macdHist: (number | null)[],
-  timeframe: TimeframeKey,
+  timeframe: string,
 ): ChanStructure {
   const merged = mergeInclusion(candles);
   const fenxings = detectFenxing(merged);

@@ -9,6 +9,7 @@ import { TIMEFRAME_ORDER } from '../analysis/intraday/constants.js';
 import { validatePrediction } from '../analysis/predictionRules.js';
 import { predictionStale } from '../platform/staleness.js';
 import { createChart, deleteChart, listCharts, loadChart, saveChart } from './store.js';
+import { buildViewTimeframe } from './viewTimeframe.js';
 import { localizeChartDocName } from '../symbols/securityName.js';
 import { featureStateSync } from '../pro/features.js';
 
@@ -124,6 +125,10 @@ export const chartsService: ChartsApi = {
       return { built: rebuilt.built, count: mergedCount };
     }
     return { built: result.built, count };
+  },
+
+  async viewTimeframe(input) {
+    return await buildViewTimeframe(input);
   },
 
   async update(input) {

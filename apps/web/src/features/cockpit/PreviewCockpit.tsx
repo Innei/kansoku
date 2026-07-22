@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { QuoteCell, SymbolAnalysisRow } from '@kansoku/shared/types';
-import { IntradayDashboard, IntradayTimeframeSwitch } from '@web/features/charts/intraday/IntradayDashboard';
+import {
+  IntradayDashboard,
+  IntradayTimeframeSwitch,
+} from '@web/features/charts/intraday/IntradayDashboard';
+import { ChartLayerMenu } from '@web/features/charts/intraday/ChartLayerMenu';
+import { MaLinesMenu } from '@web/features/charts/intraday/MaLinesMenu';
+import {
+  isViewPeriod,
+  tfDataOf,
+  withViewTimeframe,
+} from '@web/features/charts/intraday/timeframes';
+import { useViewTimeframe } from '@web/features/charts/intraday/useViewTimeframe';
+import { IntradayControlsProvider } from '@web/features/charts/intraday/controlsContext';
 import { PredictionTab } from '@web/features/charts/intraday/tabs/PredictionTab';
 import { resolveIntradayTf } from '@web/features/charts/intraday/useIntradayDoc';
 import { useIntradayPreview } from '@web/features/charts/intraday/useIntradayPreview';
@@ -33,8 +45,15 @@ export function PreviewCockpit({
   liveQuote: QuoteCell | null;
 }) {
   const symLabel = sym.toUpperCase().replace(/\.US$/, '');
-  const { built, error, degraded, intradayTf, setIntradayTf, predictionUpdatedAt, predictionStale } =
-    useIntradayPreview(sym);
+  const {
+    built,
+    error,
+    degraded,
+    intradayTf,
+    setIntradayTf,
+    predictionUpdatedAt,
+    predictionStale,
+  } = useIntradayPreview(sym);
   useTitle(symLabel);
 
   const env = useCockpitEnv(sym);
@@ -49,6 +68,7 @@ export function PreviewCockpit({
   const [activeTab, setActiveTab] = useState('prediction');
   const { comments, error: commentsError, loaded: commentsLoaded } = useCockpitComments(sym);
   const { unread } = useAiUnreadBadge(sym, comments, commentsLoaded, activeTab);
+  const viewTimeframe = useViewTimeframe(sym, intradayTf ?? 'm15', { live: true, liveQuote });
 
   if (error) {
     return (
@@ -66,6 +86,8 @@ export function PreviewCockpit({
   if (!built) return <CockpitSkeleton />;
 
   const activeIntradayTf = resolveIntradayTf(built, intradayTf);
+  const chartBuilt = withViewTimeframe(built, activeIntradayTf, viewTimeframe.tf);
+  const sidebarTf = isViewPeriod(activeIntradayTf) ? built.defaultTf : activeIntradayTf;
 
   const sidebarTabs: SidebarTab[] = [
     {
@@ -75,25 +97,25 @@ export function PreviewCockpit({
         <>
           <PredictionTab
             built={built}
-            activeTf={activeIntradayTf}
+            activeTf={sidebarTf}
             predictionUpdatedAt={predictionUpdatedAt}
             predictionStale={predictionStale}
           />
           <GenerateAnalysis sym={sym} />
         </>
+      ) : analysesRows.length > 0 ? (
+        <>
+          <Empty>
+            当前为实时视图——图表会随行情更新；可从右上角切回历史分析，或生成一份当前分析
+          </Empty>
+          <GenerateAnalysis sym={sym} />
+        </>
       ) : (
-        analysesRows.length > 0 ? (
-          <>
-            <Empty>当前为实时视图——图表会随行情更新；可从右上角切回历史分析，或生成一份当前分析</Empty>
-            <GenerateAnalysis sym={sym} />
-          </>
-        ) : (
-          <GenerateAnalysisCta
-            sym={sym}
-            title="还没有 AI 分析"
-            desc="这只股票还没有分析报告——生成一份，图上会标出关键位和多空判断"
-          />
-        )
+        <GenerateAnalysisCta
+          sym={sym}
+          title="还没有 AI 分析"
+          desc="这只股票还没有分析报告——生成一份，图上会标出关键位和多空判断"
+        />
       ),
     },
     ...buildSharedSidebarTabs({
@@ -116,39 +138,49 @@ export function PreviewCockpit({
   ];
 
   return (
-    <div className="fullpage">
-      <div className="detail-topbar">
-        <a href="/">
-          <ArrowLeft className="icon" size={13} /> 列表
-        </a>
-        <span className="title">{symLabel}</span>
-        <span className="meta">{sym}</span>
-        {degraded && <Dot tone="accent" pulse title="数据延迟：行情拉取失败，正在重试" />}
-        <span className="topbar-chart-ctrls">
-          <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />
-        </span>
-        <span className="topbar-actions">
-          <AnalysisTimeline
-            rows={analysesRows}
-            activeId={null}
-            mode="live"
-            onLive={onLive}
-            onSelect={onSelectAnalysis}
+    <IntradayControlsProvider>
+      <div className="fullpage">
+        <div className="detail-topbar detail-topbar--split">
+          <div className="topbar-chart">
+            <a href="/">
+              <ArrowLeft className="icon" size={13} /> 列表
+            </a>
+            <span className="meta">{sym}</span>
+            {degraded && <Dot tone="accent" pulse title="数据延迟：行情拉取失败，正在重试" />}
+            <IntradayTimeframeSwitch activeTf={activeIntradayTf} onChange={setIntradayTf} />
+            <AnalysisTimeline
+              rows={analysesRows}
+              activeId={null}
+              mode="live"
+              onLive={onLive}
+              onSelect={onSelectAnalysis}
+            />
+            {viewTimeframe.error && (
+              <span className="tf-load-error" title={viewTimeframe.error}>
+                该周期加载失败
+              </span>
+            )}
+            <span className="topbar-chart-tail">
+              <MaLinesMenu candles={tfDataOf(chartBuilt, activeIntradayTf)?.candles ?? []} />
+              <ChartLayerMenu built={chartBuilt} activeTf={activeIntradayTf} />
+            </span>
+          </div>
+          <div className="topbar-side">
+            <TopbarQuote quote={liveQuote} />
+          </div>
+        </div>
+        <div className="detail-body">
+          <IntradayDashboard
+            symbol={sym}
+            built={chartBuilt}
+            activeTf={activeIntradayTf}
+            sidebarTabs={sidebarTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            liveQuote={liveQuote}
           />
-          <TopbarQuote quote={liveQuote} />
-        </span>
+        </div>
       </div>
-      <div className="detail-body">
-        <IntradayDashboard
-          symbol={sym}
-          built={built}
-          activeTf={activeIntradayTf}
-          sidebarTabs={sidebarTabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          liveQuote={liveQuote}
-        />
-      </div>
-    </div>
+    </IntradayControlsProvider>
   );
 }

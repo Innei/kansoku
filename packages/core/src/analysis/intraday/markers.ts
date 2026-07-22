@@ -250,7 +250,7 @@ export function pattern123Overlay(
   return { markers, priceConnectors, macdConnectors: [] };
 }
 
-export function chanOverlay(chan: ChanStructure, timeframe: TimeframeKey): TfOverlay {
+export function chanOverlay(chan: ChanStructure, timeframe: string): TfOverlay {
   const markers: SeriesMarker[] = [];
   const priceConnectors: Connector[] = [];
 

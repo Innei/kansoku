@@ -7,22 +7,21 @@ function Bone({ className }: { className: string }) {
 export function CockpitSkeleton() {
   return (
     <div className="fullpage cockpit-skeleton" aria-busy="true" aria-label="加载中">
-      <div className="detail-topbar">
-        <a href="/">
-          <ArrowLeft className="icon" size={13} /> 列表
-        </a>
-        <span className="title">
-          <Bone className="cockpit-skeleton-bone--title" />
-        </span>
-        <Bone className="cockpit-skeleton-bone--meta" />
-        <span className="topbar-chart-ctrls" aria-hidden="true">
-          <Bone className="cockpit-skeleton-bone--tf" />
-          <Bone className="cockpit-skeleton-bone--tf" />
-          <Bone className="cockpit-skeleton-bone--tf" />
-        </span>
-        <span className="topbar-actions" aria-hidden="true">
+      <div className="detail-topbar detail-topbar--split">
+        <div className="topbar-chart">
+          <a href="/">
+            <ArrowLeft className="icon" size={13} /> 列表
+          </a>
+          <Bone className="cockpit-skeleton-bone--meta" />
+          <span className="topbar-chart-ctrls" aria-hidden="true">
+            <Bone className="cockpit-skeleton-bone--tf" />
+            <Bone className="cockpit-skeleton-bone--tf" />
+            <Bone className="cockpit-skeleton-bone--tf" />
+          </span>
+        </div>
+        <div className="topbar-side" aria-hidden="true">
           <Bone className="cockpit-skeleton-bone--quote" />
-        </span>
+        </div>
       </div>
       <div className="detail-body">
         <div className="layout" aria-hidden="true">

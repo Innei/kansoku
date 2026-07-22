@@ -1,4 +1,4 @@
-import type { BuySellPoint, TimeframeKey, Xianduan, Zhongshu } from '@kansoku/shared/types';
+import type { BuySellPoint, Xianduan, Zhongshu } from '@kansoku/shared/types';
 import type { BeichiEvent } from './beichi.js';
 
 function segmentEndpoints(seg: Xianduan): number[] {
@@ -16,7 +16,7 @@ export function detectBuySellPoints(
   xianduans: Xianduan[],
   zhongshus: Zhongshu[],
   beichis: BeichiEvent[],
-  timeframe: TimeframeKey,
+  timeframe: string,
 ): BuySellPoint[] {
   const points: BuySellPoint[] = [];
 

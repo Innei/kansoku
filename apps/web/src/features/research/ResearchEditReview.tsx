@@ -7,7 +7,7 @@ import type {
 } from '@kansoku/core/contract/index';
 import { errorMessage } from '@web/lib/api';
 import { client } from '@web/lib/client';
-import { Button, openModal, Spinner } from '@web/ui';
+import { Button, Checkbox, openModal, Spinner } from '@web/ui';
 
 export const STATUS_LABEL: Record<ResearchEditProposal['status'], string> = {
   pending: '待审阅',
@@ -40,10 +40,7 @@ function OperationPreview({
     <section className={`research-edit-operation${selected ? ' selected' : ''}`}>
       <header>
         <label>
-          <input type="checkbox" checked={selected} disabled={disabled} onChange={onToggle} />
-          <span className="research-edit-check" aria-hidden="true">
-            {selected ? <Check size={13} /> : null}
-          </span>
+          <Checkbox checked={selected} disabled={disabled} onCheckedChange={onToggle} />
           <span>
             修改 {index + 1} · {operationLabel(operation)}
           </span>

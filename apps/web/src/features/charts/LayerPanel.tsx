@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react';
-import { SegmentedControl } from '@web/ui';
+import { Checkbox, SegmentedControl } from '@web/ui';
 
 export interface LayerItem {
   key: string;
@@ -34,6 +34,7 @@ export interface LayerPanelProps {
   onPreset?: (on: string[]) => void;
   range?: LayerRange;
   onRangeChange?: (range: LayerRange) => void;
+  inline?: boolean;
 }
 
 const RANGE_LABELS: Record<LayerRange, string> = { recent: '近期', all: '全部' };
@@ -49,6 +50,7 @@ export function LayerPanel({
   onPreset,
   range,
   onRangeChange,
+  inline = false,
 }: LayerPanelProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [customOpen, setCustomOpen] = useState(false);
@@ -120,11 +122,10 @@ export function LayerPanel({
           </div>
         ) : (
           <label key={it.key}>
-            <input
-              type="checkbox"
+            <Checkbox
+              size="sm"
               checked={isOn(it.key)}
-              onChange={(e) => {
-                const next = e.target.checked;
+              onCheckedChange={(next) => {
                 if (!controlled) {
                   setInternal((prev) => ({ ...prev, [it.key]: next }));
                 }
@@ -140,7 +141,10 @@ export function LayerPanel({
   ));
 
   return (
-    <div className={`layer-panel${collapsed ? ' collapsed' : ''}`} aria-label={title}>
+    <div
+      className={`layer-panel${collapsed ? ' collapsed' : ''}${inline ? ' layer-panel--inline' : ''}`}
+      aria-label={title}
+    >
       <div
         className="lp-header"
         role="button"

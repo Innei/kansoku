@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { IntradayBuilt, TimeframeKey } from '@kansoku/shared/types';
+import type { IntradayBuilt } from '@kansoku/shared/types';
+import type { ChartTf } from './timeframes';
 import { subscribeChannel } from '@web/lib/ws/wsHub';
 
 interface PreviewEnvelope {
@@ -41,8 +42,8 @@ export interface IntradayPreviewState {
   built: IntradayBuilt | null;
   error: string | null;
   degraded: boolean;
-  intradayTf: TimeframeKey | null;
-  setIntradayTf: (tf: TimeframeKey) => void;
+  intradayTf: ChartTf | null;
+  setIntradayTf: (tf: ChartTf) => void;
   predictionUpdatedAt: string | undefined;
   predictionStale: boolean | undefined;
 }
@@ -51,7 +52,7 @@ export function useIntradayPreview(sym: string): IntradayPreviewState {
   const [built, setBuilt] = useState<IntradayBuilt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [degraded, setDegraded] = useState(false);
-  const [intradayTf, setIntradayTf] = useState<TimeframeKey | null>(null);
+  const [intradayTf, setIntradayTf] = useState<ChartTf | null>(null);
   const [predictionUpdatedAt, setPredictionUpdatedAt] = useState<string | undefined>(undefined);
   const [predictionStale, setPredictionStale] = useState<boolean | undefined>(undefined);
   const hadBuiltRef = useRef(false);

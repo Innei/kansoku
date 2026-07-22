@@ -1,6 +1,8 @@
 export { Card } from './Card';
 export { Badge } from './Badge';
 export { Button } from './Button';
+export { Checkbox } from './Checkbox';
+export type { CheckboxSize } from './Checkbox';
 export { Chip } from './Chip';
 export { Input } from './Input';
 export { Kbd } from './Kbd';

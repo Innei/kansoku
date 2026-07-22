@@ -31,6 +31,17 @@ export class ChartsController {
     return { ok: true, data: result.data, meta: result.meta };
   }
 
+  @Get('/view-timeframe')
+  async viewTimeframe(@Query() query: QueryParams) {
+    const data = await chartsService.viewTimeframe({
+      symbol: query.symbol ?? '',
+      period: query.period ?? '',
+      count: query.count,
+      as_of: query.as_of,
+    });
+    return { ok: true, data };
+  }
+
   @Get('/:id/built')
   async built(@Param('id') id: string, @Query() query: QueryParams) {
     const data = await chartsService.built({
