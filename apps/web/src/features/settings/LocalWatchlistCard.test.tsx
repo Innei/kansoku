@@ -31,40 +31,40 @@ describe('LocalWatchlistCard', () => {
   });
 
   it('renders the fetched symbols', async () => {
-    getLocalWatchlist.mockResolvedValue({ symbols: ['MU', 'NVDA'] });
+    getLocalWatchlist.mockResolvedValue({ symbols: ['MU.US', 'NVDA.US'] });
 
     renderWithClient(<LocalWatchlistCard />);
 
-    expect(await screen.findByText('MU')).toBeTruthy();
-    expect(screen.getByText('NVDA')).toBeTruthy();
+    expect(await screen.findByText('MU.US')).toBeTruthy();
+    expect(screen.getByText('NVDA.US')).toBeTruthy();
   });
 
-  it('adding a symbol saves the updated list', async () => {
-    getLocalWatchlist.mockResolvedValue({ symbols: ['MU'] });
-    putLocalWatchlist.mockResolvedValue({ symbols: ['MU', 'TSM'] });
+  it('adding a symbol canonicalizes it to the server form before saving', async () => {
+    getLocalWatchlist.mockResolvedValue({ symbols: ['MU.US'] });
+    putLocalWatchlist.mockResolvedValue({ symbols: ['MU.US', 'TSM.US'] });
 
     renderWithClient(<LocalWatchlistCard />);
-    await screen.findByText('MU');
+    await screen.findByText('MU.US');
 
     fireEvent.change(screen.getByPlaceholderText('输入代码，如 MU'), {
       target: { value: 'tsm' },
     });
     fireEvent.click(screen.getByText('添加'));
 
-    expect(await screen.findByText('TSM')).toBeTruthy();
-    expect(putLocalWatchlist).toHaveBeenCalledWith({ symbols: ['MU', 'TSM'] });
+    expect(await screen.findByText('TSM.US')).toBeTruthy();
+    expect(putLocalWatchlist).toHaveBeenCalledWith({ symbols: ['MU.US', 'TSM.US'] });
   });
 
   it('removing a symbol saves the updated list', async () => {
-    getLocalWatchlist.mockResolvedValue({ symbols: ['MU', 'NVDA'] });
-    putLocalWatchlist.mockResolvedValue({ symbols: ['NVDA'] });
+    getLocalWatchlist.mockResolvedValue({ symbols: ['MU.US', 'NVDA.US'] });
+    putLocalWatchlist.mockResolvedValue({ symbols: ['NVDA.US'] });
 
     renderWithClient(<LocalWatchlistCard />);
-    await screen.findByText('MU');
+    await screen.findByText('MU.US');
 
-    fireEvent.click(screen.getByLabelText('移除 MU'));
+    fireEvent.click(screen.getByLabelText('移除 MU.US'));
 
-    expect(screen.queryByText('MU')).toBeNull();
-    expect(putLocalWatchlist).toHaveBeenCalledWith({ symbols: ['NVDA'] });
+    expect(screen.queryByText('MU.US')).toBeNull();
+    expect(putLocalWatchlist).toHaveBeenCalledWith({ symbols: ['NVDA.US'] });
   });
 });
