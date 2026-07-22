@@ -47,7 +47,7 @@ export function AgentKitUpdateDialog({
           继续保留
         </Button>
         <Button accent disabled={busy} onClick={() => void apply()}>
-          使用新模板覆盖（备份当前为 .bak）
+          使用新模板覆盖（备份当前为 .bak.&lt;旧模板 hash&gt;）
         </Button>
       </div>
     </div>
