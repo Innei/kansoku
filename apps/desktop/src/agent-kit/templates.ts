@@ -79,9 +79,10 @@ export function acceptConflictWithTemplate(input: {
   dataRoot: string;
   db: Db;
   render: (t: ManifestTemplate) => string;
+  backupSuffix?: string;
 }): TemplateState {
   const targetPath = join(input.dataRoot, input.template.dest);
-  const bakPath = `${targetPath}.bak`;
+  const bakPath = `${targetPath}.bak${input.backupSuffix ? `.${input.backupSuffix}` : ''}`;
   if (existsSync(targetPath)) copyFileSync(targetPath, bakPath);
   const content = input.render(input.template);
   mkdirSync(dirname(targetPath), { recursive: true });

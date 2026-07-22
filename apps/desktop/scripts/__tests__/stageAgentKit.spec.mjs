@@ -36,6 +36,10 @@ function buildFixtureSrc() {
   writeFileSync(join(srcRoot, 'templates', 'CLAUDE.md.tpl'), '# CLAUDE\nhello\n');
   writeFileSync(join(srcRoot, 'templates', 'AGENTS.md.tpl'), '# CLAUDE\nhello\n');
   writeFileSync(join(srcRoot, 'templates', 'env.tpl'), 'FRED_API_KEY=\n');
+  writeFileSync(
+    join(srcRoot, 'render-version.json'),
+    `${JSON.stringify({ personalMd: 'app-config-v1' }, null, 2)}\n`,
+  );
 
   const shimPath = join(srcRoot, 'bin', 'kansoku-cli');
   writeFileSync(shimPath, '#!/bin/sh\necho hi\n');

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createDb } from '@kansoku/core/db/index';
 import { watchedMarketsSettings } from '@kansoku/core/db/schema';
@@ -23,5 +25,12 @@ describe('renderPersonalMd', () => {
 
   it('exposes a stable render-version constant matching the manifest app-config sentinel', () => {
     expect(PERSONAL_MD_RENDER_VERSION).toBe('app-config-v1');
+  });
+
+  it('matches the shared render-version.json that stageAgentKit.mjs reads at build time', () => {
+    const shared = JSON.parse(
+      readFileSync(join(import.meta.dirname, '../../agent-kit-src/render-version.json'), 'utf8'),
+    ) as { personalMd: string };
+    expect(PERSONAL_MD_RENDER_VERSION).toBe(shared.personalMd);
   });
 });

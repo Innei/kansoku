@@ -1,4 +1,4 @@
-import { rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { app } from 'electron';
 import { IpcMethod, IpcService } from 'electron-ipc-decorator';
@@ -11,6 +11,7 @@ import {
   readState,
   removeConflict,
   removeUpdate,
+  sha256,
   upsertTemplate,
   writeState,
   type AgentKitDataState,
@@ -103,12 +104,14 @@ export class AgentKitIpc extends IpcService {
       const template = templateFor(input.dest);
       const state = requireState();
       const db = getDb();
+      const oldTemplateHash = state.templates[input.dest]?.sourceTemplateHash;
       const templateState = acceptConflictWithTemplate({
         template,
         resourcesPath: resourcesPath(),
         dataRoot,
         db,
         render: makeRender(resourcesPath(), db),
+        backupSuffix: (oldTemplateHash ?? 'unknown').slice(0, 8),
       });
       writeState(dataRoot, removeUpdate(upsertTemplate(state, input.dest, templateState), input.dest));
       return { dest: input.dest };
@@ -118,7 +121,20 @@ export class AgentKitIpc extends IpcService {
   @IpcMethod()
   clean() {
     return toEnvelope('agentKit.clean', () => {
+      const state = readState(dataRoot);
+      if (state) {
+        for (const [dest, templateState] of Object.entries(state.templates)) {
+          if (templateState.kept) continue;
+          const targetPath = join(dataRoot, dest);
+          if (!existsSync(targetPath)) continue;
+          if (sha256(readFileSync(targetPath)) === templateState.initialContentHash) {
+            rmSync(targetPath, { force: true });
+          }
+        }
+      }
       rmSync(join(dataRoot, '.kansoku-agent-kit'), { recursive: true, force: true });
+      const store = defaultAgentKitStore(app);
+      store.write({ ...store.read(), enabled: false });
       return { cleaned: true };
     });
   }

@@ -49,7 +49,7 @@ process.env.TRADE_PROJECT_ROOT = dataRoot;
 
 export const IS_DEV = __DESKTOP_DEV__;
 
-if (defaultAgentKitStore(app).read().enabled) {
+if (isPackaged && process.platform === 'darwin' && defaultAgentKitStore(app).read().enabled) {
   void (async () => {
     try {
       const { getDb } = await import('@kansoku/core/db/index');

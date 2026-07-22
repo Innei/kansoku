@@ -25,6 +25,7 @@ export function stageAgentKit({ srcRoot, destRoot, pkg }) {
   }
 
   const manifest = JSON.parse(readFileSync(join(srcRoot, 'manifest.template.json'), 'utf8'));
+  const renderVersion = JSON.parse(readFileSync(join(srcRoot, 'render-version.json'), 'utf8'));
   const version = kitVersion(pkg.version);
   manifest.kitVersion = version;
   manifest.appVersion = pkg.version;
@@ -32,7 +33,7 @@ export function stageAgentKit({ srcRoot, destRoot, pkg }) {
   let templateCount = 0;
   for (const entry of manifest.templates) {
     if (entry.source === 'app-config') {
-      entry.sha256 = 'app-config-v1';
+      entry.sha256 = renderVersion.personalMd;
       continue;
     }
     const filePath = join(srcRoot, entry.path);

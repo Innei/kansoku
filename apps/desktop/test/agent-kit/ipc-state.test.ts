@@ -140,7 +140,7 @@ describe('agent-kit ipc state mutations', () => {
     expect(state?.pendingConflicts).toBeUndefined();
   });
 
-  it('applyUpdate backs up the target, writes the new template, and clears the pending update', async () => {
+  it('applyUpdate backs up the target under a hash-suffixed name, writes the new template, and clears the pending update', async () => {
     const instance = new AgentKitIpc();
     await instance.forceSync();
     expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V1);
@@ -157,11 +157,113 @@ describe('agent-kit ipc state mutations', () => {
     const applyResult = await instance.applyUpdate({ dest: 'CLAUDE.md' });
     expect(applyResult).toEqual({ ok: true, data: { dest: 'CLAUDE.md' } });
 
-    expect(await readFile(join(dataRoot, 'CLAUDE.md.bak'), 'utf8')).toBe(TEMPLATE_V1);
+    const expectedSuffix = 'sha-claude-v1'.slice(0, 8);
+    expect(await readFile(join(dataRoot, `CLAUDE.md.bak.${expectedSuffix}`), 'utf8')).toBe(TEMPLATE_V1);
+    expect(existsSync(join(dataRoot, 'CLAUDE.md.bak'))).toBe(false);
     expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V2);
 
     const state = readState(dataRoot);
     expect(state?.templates['CLAUDE.md']?.sourceTemplateHash).toBe('sha-claude-v2');
     expect(state?.pendingUpdates).toBeUndefined();
+  });
+
+  it('applyUpdate after a resolved conflict backs up under a distinct suffix, not the conflict .bak', async () => {
+    await writeFile(join(dataRoot, 'CLAUDE.md'), 'PRE-KIT USER FILE\n', 'utf8');
+
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+    await instance.resolveConflict({ dest: 'CLAUDE.md', choice: 'use-template' });
+    expect(await readFile(join(dataRoot, 'CLAUDE.md.bak'), 'utf8')).toBe('PRE-KIT USER FILE\n');
+    expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V1);
+
+    await writeFile(join(resourcesPath, 'kansoku-agent-kit', 'templates', 'CLAUDE.md.tpl'), TEMPLATE_V2, 'utf8');
+    await writeManifest(resourcesPath, 'sha-claude-v2');
+    await instance.forceSync();
+
+    await instance.applyUpdate({ dest: 'CLAUDE.md' });
+
+    const expectedSuffix = 'sha-claude-v1'.slice(0, 8);
+    expect(await readFile(join(dataRoot, `CLAUDE.md.bak.${expectedSuffix}`), 'utf8')).toBe(TEMPLATE_V1);
+    expect(await readFile(join(dataRoot, 'CLAUDE.md.bak'), 'utf8')).toBe('PRE-KIT USER FILE\n');
+    expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe(TEMPLATE_V2);
+  });
+});
+
+describe('agent-kit ipc clean', () => {
+  let dataRoot: string;
+  let resourcesPath: string;
+  let userDataPath: string;
+
+  beforeEach(async () => {
+    dataRoot = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-data-'));
+    resourcesPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-resources-'));
+    userDataPath = await mkdtemp(join(tmpdir(), 'agent-kit-ipc-userdata-'));
+    env.dataRoot = dataRoot;
+    env.userDataPath = userDataPath;
+    setResourcesPath(resourcesPath);
+
+    await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'templates'), { recursive: true });
+    await mkdir(join(resourcesPath, 'kansoku-agent-kit', 'bin'), { recursive: true });
+    await writeFile(join(resourcesPath, 'kansoku-agent-kit', 'templates', 'CLAUDE.md.tpl'), TEMPLATE_V1, 'utf8');
+    await writeFile(join(resourcesPath, 'kansoku-agent-kit', 'bin', 'kansoku-cli'), '#!/bin/sh\necho cli\n', 'utf8');
+    await writeManifest(resourcesPath, 'sha-claude-v1');
+  });
+
+  afterEach(async () => {
+    await rm(dataRoot, { recursive: true, force: true });
+    await rm(resourcesPath, { recursive: true, force: true });
+    await rm(userDataPath, { recursive: true, force: true });
+  });
+
+  it('deletes a Kit-owned template file the user has not modified', async () => {
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+    expect(existsSync(join(dataRoot, 'CLAUDE.md'))).toBe(true);
+
+    const result = await instance.clean();
+    expect(result).toEqual({ ok: true, data: { cleaned: true } });
+    expect(existsSync(join(dataRoot, 'CLAUDE.md'))).toBe(false);
+  });
+
+  it('leaves a template file the user edited after Kit wrote it', async () => {
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+    await writeFile(join(dataRoot, 'CLAUDE.md'), 'USER EDITED AFTER SYNC\n', 'utf8');
+
+    await instance.clean();
+
+    expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe('USER EDITED AFTER SYNC\n');
+  });
+
+  it('leaves a template the user explicitly kept via resolveConflict(keep-original)', async () => {
+    await writeFile(join(dataRoot, 'CLAUDE.md'), 'USER OWNED CONTENT\n', 'utf8');
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+    await instance.resolveConflict({ dest: 'CLAUDE.md', choice: 'keep-original' });
+
+    await instance.clean();
+
+    expect(await readFile(join(dataRoot, 'CLAUDE.md'), 'utf8')).toBe('USER OWNED CONTENT\n');
+  });
+
+  it('removes the .kansoku-agent-kit directory', async () => {
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+    expect(existsSync(join(dataRoot, '.kansoku-agent-kit'))).toBe(true);
+
+    await instance.clean();
+
+    expect(existsSync(join(dataRoot, '.kansoku-agent-kit'))).toBe(false);
+  });
+
+  it('flips store.enabled to false', async () => {
+    await writeFile(join(userDataPath, 'agent-kit.json'), JSON.stringify({ enabled: true }), 'utf8');
+    const instance = new AgentKitIpc();
+    await instance.forceSync();
+
+    await instance.clean();
+
+    const storeRaw = JSON.parse(await readFile(join(userDataPath, 'agent-kit.json'), 'utf8'));
+    expect(storeRaw.enabled).toBe(false);
   });
 });
