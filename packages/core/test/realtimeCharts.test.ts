@@ -485,13 +485,15 @@ describe('subscribePreview', () => {
     vi.useRealTimers();
   });
 
-  it('builds via the provider and pushes an initial data envelope with no prediction fields', async () => {
+  it('loads all sessions so an unanalyzed symbol preview keeps extended-hours shading', async () => {
     const events: string[] = [];
     const unsub = await subscribePreview('PQQ1.US', (e) => events.push(e));
 
-    expect(build.buildChart).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'intraday', symbol: 'PQQ1.US' }),
-    );
+    expect(build.buildChart).toHaveBeenCalledWith({
+      type: 'intraday',
+      symbol: 'PQQ1.US',
+      session: 'all',
+    });
     const parsed = JSON.parse(events[0]);
     expect(parsed.type).toBe('data');
     expect(parsed.data.built.kind).toBe('intraday');

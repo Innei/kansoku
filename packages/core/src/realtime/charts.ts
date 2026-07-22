@@ -372,7 +372,7 @@ export async function subscribePreview(
   const key = `preview:${normalized}`;
 
   const handle = await getOrCreatePoller(key, async () => {
-    const result = await buildChart({ type: 'intraday', symbol: normalized, session: 'intraday' });
+    const result = await buildChart({ type: 'intraday', symbol: normalized, session: 'all' });
     chartMarkets.set(key, marketOf(normalized));
     setupPreviewCandleState(key, normalized, result.input, result.title);
     const initialState = candleStates.get(key);
