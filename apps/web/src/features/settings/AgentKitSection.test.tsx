@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ModalHost, resetModalStoreForTests } from '@web/ui';
 import { AgentKitSection } from './AgentKitSection';
 
 function mockDesktop(handlers: Record<string, (input?: unknown) => unknown>) {
@@ -16,6 +17,7 @@ function mockDesktop(handlers: Record<string, (input?: unknown) => unknown>) {
 describe('AgentKitSection', () => {
   afterEach(() => {
     cleanup();
+    resetModalStoreForTests();
     delete (window as { desktop?: unknown }).desktop;
   });
 
@@ -39,7 +41,7 @@ describe('AgentKitSection', () => {
     expect(screen.getByText(/2026-07-22T00:00:00\.000Z/)).toBeTruthy();
   });
 
-  it('shows pending conflict and update counts', async () => {
+  it('renders a row with an action button per pending conflict and update', async () => {
     mockDesktop({
       'agentKit.getStatus': () => ({
         ok: true,
@@ -55,8 +57,44 @@ describe('AgentKitSection', () => {
 
     render(<AgentKitSection />);
 
-    expect(await screen.findByText(/1 个文件需要处理冲突/)).toBeTruthy();
-    expect(screen.getByText(/1 个模板有新版可用/)).toBeTruthy();
+    expect(await screen.findByText(/a\.md/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: '处理' })).toBeTruthy();
+    expect(screen.getByText(/b\.md/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: '查看' })).toBeTruthy();
+  });
+
+  it('resolving a conflict from the dialog closes it and reloads status', async () => {
+    const getStatus = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        data: {
+          enabled: true,
+          pendingConflicts: [{ dest: 'a.md', templatePath: 't/a.md', reason: 'target-exists-no-state' }],
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, data: { enabled: true } });
+    const resolveConflict = vi.fn(() => ({ ok: true, data: { dest: 'a.md' } }));
+    mockDesktop({
+      'agentKit.getStatus': () => getStatus(),
+      'agentKit.resolveConflict': (input) => resolveConflict(input),
+    });
+
+    render(
+      <>
+        <AgentKitSection />
+        <ModalHost />
+      </>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: '处理' }));
+    expect(await screen.findByText(/处理冲突/)).toBeTruthy();
+
+    fireEvent.click(screen.getByText(/使用 Kit 模板覆盖/));
+
+    await vi.waitFor(() => expect(getStatus).toHaveBeenCalledTimes(2));
+    expect(resolveConflict).toHaveBeenCalledWith({ dest: 'a.md', choice: 'use-template' });
+    await vi.waitFor(() => expect(screen.queryByText(/处理冲突/)).toBeNull());
   });
 
   it('toggling the switch calls setEnabled then reloads status', async () => {

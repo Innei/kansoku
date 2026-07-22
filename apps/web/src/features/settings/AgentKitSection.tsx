@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Badge, Button, Switch } from '@web/ui';
-import { getDesktopAgentKitBridge, type AgentKitStatus } from './desktopAgentKit';
+import type { CSSProperties } from 'react';
+import { Badge, Button, openModal, Switch } from '@web/ui';
+import { AgentKitConflictDialog } from './AgentKitConflictDialog';
+import { AgentKitUpdateDialog } from './AgentKitUpdateDialog';
+import {
+  getDesktopAgentKitBridge,
+  type AgentKitStatus,
+  type PendingConflict,
+  type PendingUpdate,
+} from './desktopAgentKit';
+
+const pendingRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 8,
+};
 
 export function AgentKitSection() {
   const [bridge] = useState(() => getDesktopAgentKitBridge());
@@ -38,6 +53,22 @@ export function AgentKitSection() {
     }
   };
 
+  const openConflict = (conflict: PendingConflict) =>
+    openModal({
+      title: <>处理冲突 · {conflict.dest}</>,
+      body: (close) => (
+        <AgentKitConflictDialog conflict={conflict} bridge={bridge} onResolved={reload} close={close} />
+      ),
+    });
+
+  const openUpdate = (update: PendingUpdate) =>
+    openModal({
+      title: <>新模板可用 · {update.dest}</>,
+      body: (close) => (
+        <AgentKitUpdateDialog update={update} bridge={bridge} onResolved={reload} close={close} />
+      ),
+    });
+
   const run = async (action: 'forceSync' | 'clean') => {
     if (action === 'clean' && !window.confirm('确定要清理 Agent Kit 吗？这会删除本地生成的引导文件与 kansoku-cli 入口。')) {
       return;
@@ -54,9 +85,6 @@ export function AgentKitSection() {
       setBusy(false);
     }
   };
-
-  const conflictCount = status?.pendingConflicts?.length ?? 0;
-  const updateCount = status?.pendingUpdates?.length ?? 0;
 
   return (
     <section className="settings-conn-section settings-conn-longbridge">
@@ -90,17 +118,19 @@ export function AgentKitSection() {
         <div className="note-block">加载中…</div>
       )}
 
-      {conflictCount > 0 ? (
-        <div className="settings-warning-strip">
-          {conflictCount} 个文件需要处理冲突，待 T7 实现对话框
+      {status?.pendingConflicts?.map((conflict) => (
+        <div key={conflict.dest} style={pendingRowStyle}>
+          <span>⚠ {conflict.dest}</span>
+          <Button onClick={() => openConflict(conflict)}>处理</Button>
         </div>
-      ) : null}
+      ))}
 
-      {updateCount > 0 ? (
-        <div className="settings-test-result settings-test-result--ok">
-          {updateCount} 个模板有新版可用，待 T7 实现对话框
+      {status?.pendingUpdates?.map((update) => (
+        <div key={update.dest} style={pendingRowStyle}>
+          <span>ℹ {update.dest}</span>
+          <Button onClick={() => openUpdate(update)}>查看</Button>
         </div>
-      ) : null}
+      ))}
 
       {error ? <div className="settings-test-result settings-test-result--fail">{error}</div> : null}
 
