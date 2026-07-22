@@ -27,6 +27,7 @@ import {
   CONTEXT_STANCES,
   PATTERN_LABEL_SUFFIX,
   PATTERN_STATUS_TEXT,
+  SESSIONLESS_PERIODS,
   TIMEFRAME_LABELS,
   TIMEFRAME_ORDER,
 } from './constants.js';
@@ -205,10 +206,12 @@ export function buildTimeframeView(
     secondBreakouts: tf.secondBreakouts,
     fvgZones: tf.fvgZones,
     chanStructure: tf.chanStructure,
-    offSession: offSessionSegments(
-      tf.candles.map((c) => c.time),
-      marketOf(symbol),
-    ),
+    offSession: SESSIONLESS_PERIODS.has(key)
+      ? []
+      : offSessionSegments(
+          tf.candles.map((c) => c.time),
+          marketOf(symbol),
+        ),
   };
 }
 

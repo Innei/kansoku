@@ -73,6 +73,12 @@ export const barTimeShort = (t: number) => formatMarketMonthDayTime(t, true);
 
 export const VWAP_TIMEFRAMES = new Set<string>(['m5', 'm15', '1m']);
 
+// A daily-or-longer bar spans whole sessions, so a pre/post/overnight mask is
+// meaningless on it — and classifySession would read the bar's clock time
+// (midnight for a daily bar, plus weekends) and paint the entire series as
+// overnight.
+export const SESSIONLESS_PERIODS = new Set<string>(['day', 'week', 'month', 'year']);
+
 export const AI_AUTO_MERGE_BAR_WINDOW = 2;
 
 export const AI_ICON_TO_AUTO_GROUP: Record<string, 'divergence' | 'macdBeichi'> = {

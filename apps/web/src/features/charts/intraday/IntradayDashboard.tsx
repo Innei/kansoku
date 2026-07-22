@@ -8,7 +8,14 @@ import type { ConclusionReassess } from './ConclusionCard';
 import { IntradaySidebar } from './IntradaySidebar';
 import { useIntradayControls } from './controlsContext';
 import { TimeframeSettingsMenu } from './TimeframeSettingsMenu';
-import { isViewPeriod, tfDataOf, tfLabel, tfShortLabel, type ChartTf } from './timeframes';
+import {
+  isSessionlessTf,
+  isViewPeriod,
+  tfDataOf,
+  tfLabel,
+  tfShortLabel,
+  type ChartTf,
+} from './timeframes';
 import { useMaSeries } from './useMaLines';
 import { useIntradayCharts } from './useIntradayCharts';
 
@@ -135,14 +142,18 @@ export function IntradayChartOnly({
                 {s.last !== null && ` $${fmt(s.last)}`}
               </span>
             ))}
-          <span>
-            <span className="swatch" style={{ background: 'rgba(232,232,232,0.3)' }} />
-            盘前/盘后
-          </span>
-          <span>
-            <span className="swatch" style={{ background: 'rgba(70,100,180,0.7)' }} />
-            夜盘
-          </span>
+          {!isSessionlessTf(activeTf) && (
+            <>
+              <span>
+                <span className="swatch" style={{ background: 'rgba(232,232,232,0.3)' }} />
+                盘前/盘后
+              </span>
+              <span>
+                <span className="swatch" style={{ background: 'rgba(70,100,180,0.7)' }} />
+                夜盘
+              </span>
+            </>
+          )}
         </div>
         <DrawingToolbar api={drawingsApi} />
         <div ref={mainRef} className="chart-host" />

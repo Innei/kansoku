@@ -36,6 +36,10 @@ export const tfShortLabel = (tf: ChartTf): string =>
 
 export const isViewPeriod = (tf: ChartTf): tf is ViewPeriod => !ANALYSIS_SET.has(tf);
 
+const SESSIONLESS = new Set<string>(['day', 'week', 'month']);
+
+export const isSessionlessTf = (tf: ChartTf): boolean => SESSIONLESS.has(tf);
+
 export const tfDataOf = (built: IntradayBuilt, tf: ChartTf): IntradayTfData | undefined =>
   (built.timeframes as Record<string, IntradayTfData | undefined>)[tf];
 

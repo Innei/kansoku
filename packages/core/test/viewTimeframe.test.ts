@@ -10,7 +10,9 @@ vi.mock('../src/marketdata/registry.js', () => ({
 
 const { buildViewTimeframe, VIEW_PERIODS } = await import('../src/charts/viewTimeframe.js');
 
-function bars(count: number, startMs = Date.parse('2026-07-20T13:30:00.000Z')): RawBar[] {
+// 11:00Z is 07:00 in New York — pre-market — so a 300-minute run crosses into
+// the regular session and exercises the off-session mask.
+function bars(count: number, startMs = Date.parse('2026-07-20T11:00:00.000Z')): RawBar[] {
   return Array.from({ length: count }, (_, i) => {
     const close = 100 + Math.sin(i / 3) * 5;
     return {
@@ -71,6 +73,20 @@ describe('buildViewTimeframe', () => {
     expect(tf.autoBeichi).toEqual([]);
     expect(tf.pattern123).toEqual([]);
     expect(tf.secondBreakouts).toEqual([]);
+  });
+
+  it('leaves daily-and-longer bars unmasked — a pre/post/overnight band makes no sense there', async () => {
+    for (const period of ['day', 'week', 'month'] as const) {
+      const { tf } = await buildViewTimeframe({ symbol: `MASK.US?${period}`, period });
+
+      expect(tf.offSession).toEqual([]);
+    }
+  });
+
+  it('still masks off-hours on intraday view periods', async () => {
+    const { tf } = await buildViewTimeframe({ symbol: 'MASK1M.US', period: '1m' });
+
+    expect(tf.offSession?.length ?? 0).toBeGreaterThan(0);
   });
 
   it('computes an intraday VWAP for 1m but not for daily bars', async () => {
