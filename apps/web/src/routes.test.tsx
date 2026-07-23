@@ -32,8 +32,6 @@ vi.mock('@web/features/research/ResearchPage', () => ({
 vi.mock('@web/features/assistant/AssistantChatPage', () => ({
   AssistantChatPage: () => <div data-testid="chat-page" />,
 }));
-const loadProComposition = vi.hoisted(() => vi.fn());
-vi.mock('@web/features/edition/pro', () => ({ loadProComposition }));
 
 function renderRoute(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
@@ -45,7 +43,6 @@ afterEach(() => {
   cleanup();
   setActiveRouter(null);
   capabilities = { pro: null, licensed: false };
-  loadProComposition.mockReset();
   resetProCompositionForTests();
   resetLicenseModalStoreForTests();
 });

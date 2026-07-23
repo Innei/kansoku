@@ -145,6 +145,7 @@ describe('ResearchAssistant available branch', () => {
     );
 
     expect(screen.getByTestId('pro-panel').textContent).toBe('MRVL');
+    expect(screen.queryByText(/关联资料/)).toBeNull();
     expect(received).toEqual({
       document,
       selected: document,

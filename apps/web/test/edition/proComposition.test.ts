@@ -12,7 +12,7 @@ describe('web loadProComposition', () => {
     if (result === null) return;
 
     expect(result).toEqual(
-      expect.objectContaining({ routes: expect.any(Object) }),
+      expect.objectContaining({ researchAssistantPanel: expect.any(Function) }),
     );
   });
 });
