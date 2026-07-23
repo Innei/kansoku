@@ -11,6 +11,7 @@ const getAi = vi.fn();
 const getCatalog = vi.fn();
 const getUsageToday = vi.fn();
 const getWatchedMarkets = vi.fn();
+const getLocalWatchlist = vi.fn();
 const getSubscribeUrl = vi.fn();
 const credentialsStatus = vi.fn();
 const capabilitiesGet = vi.fn();
@@ -24,6 +25,7 @@ vi.mock('@web/lib/client', () => ({
       getCatalog: (...args: unknown[]) => getCatalog(...args),
       getUsageToday: (...args: unknown[]) => getUsageToday(...args),
       getWatchedMarkets: (...args: unknown[]) => getWatchedMarkets(...args),
+      getLocalWatchlist: (...args: unknown[]) => getLocalWatchlist(...args),
       getSubscribeUrl: (...args: unknown[]) => getSubscribeUrl(...args),
     },
     credentials: {
@@ -81,6 +83,7 @@ describe('SettingsPage', () => {
       getCatalog,
       getUsageToday,
       getWatchedMarkets,
+      getLocalWatchlist,
       getSubscribeUrl,
       credentialsStatus,
       capabilitiesGet,
@@ -105,6 +108,7 @@ describe('SettingsPage', () => {
       total: { calls: 0, cost: 0 },
     });
     getWatchedMarkets.mockResolvedValue({ markets: ['US'] });
+    getLocalWatchlist.mockResolvedValue({ symbols: [] });
     getSubscribeUrl.mockResolvedValue({ subscribeUrl: null });
     credentialsStatus.mockResolvedValue({ configured: false, path: null });
     capabilitiesGet.mockResolvedValue({

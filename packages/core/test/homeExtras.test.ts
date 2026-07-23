@@ -1,8 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDb } from '../src/db/index.js';
+import {
+  createLocalWatchlistStore,
+  setActiveLocalWatchlistStore,
+} from '../src/marketdata/localWatchlistStore.js';
 import type { MarketDataProvider } from '../src/marketdata/types.js';
 import {
   buildHomeExtras,
   flowEligible,
+  getWatchSymbols,
   netInflow,
   resetHomeExtrasForTests,
 } from '../src/overview/homeExtras.js';
@@ -92,5 +101,27 @@ describe('buildHomeExtras', () => {
     expect(extras.flows['NVDA.US']).toBeNull();
     expect(extras.flows_at).toBeNull();
     expect(extras.market).toBeNull();
+  });
+});
+
+describe('getWatchSymbols falls back to the local watchlist', () => {
+  let dbDir: string;
+
+  afterEach(() => {
+    setActiveLocalWatchlistStore(null);
+    if (dbDir) rmSync(dbDir, { recursive: true, force: true });
+  });
+
+  it('reads the local watchlist when the provider has no getWatchlistSymbols', async () => {
+    dbDir = mkdtempSync(join(tmpdir(), 'home-extras-local-watchlist-'));
+    const store = createLocalWatchlistStore(createDb(join(dbDir, 'app.db')));
+    store.set(['TSM', 'ASML']);
+    setActiveLocalWatchlistStore(store);
+
+    provider.getWatchlistSymbols = undefined;
+    resetHomeExtrasForTests();
+
+    const symbols = await getWatchSymbols();
+    expect(symbols).toEqual(expect.arrayContaining(['TSM.US', 'ASML.US']));
   });
 });

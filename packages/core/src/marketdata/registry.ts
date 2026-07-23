@@ -5,17 +5,46 @@ import { getLongbridgeStream, resetLongbridgeStream } from './longbridgeStream.j
 import type { QuoteStream } from './quoteStream.js';
 import { resetSharedQuoteSocket } from './sharedSocket.js';
 import type { MarketDataProvider } from './types.js';
+import { yahooProvider } from './yahoo/provider.js';
+import { getYahooStream, resetYahooStream } from './yahoo/stream.js';
 
 const providers: Record<string, MarketDataProvider> = {
   longbridge: longbridgeProvider,
+  yahoo: yahooProvider,
 };
 
 const streamFactories: Record<string, () => QuoteStream> = {
   longbridge: getLongbridgeStream,
+  yahoo: getYahooStream,
 };
 
+let defaultProviderName = 'longbridge';
+
+const routingChangeListeners = new Set<() => void>();
+
+export function setDefaultProviderName(name: string): void {
+  defaultProviderName = name;
+}
+
+export function getDefaultProviderName(): string {
+  return defaultProviderName;
+}
+
+export function onProviderRoutingChanged(listener: () => void): () => void {
+  routingChangeListeners.add(listener);
+  return () => {
+    routingChangeListeners.delete(listener);
+  };
+}
+
+export function emitProviderRoutingChanged(): void {
+  for (const listener of routingChangeListeners) listener();
+}
+
 function resolveProviderName(market: Market): string {
-  return process.env[`MARKET_PROVIDER_${market}`] || process.env.MARKET_PROVIDER || 'longbridge';
+  return (
+    process.env[`MARKET_PROVIDER_${market}`] || process.env.MARKET_PROVIDER || defaultProviderName
+  );
 }
 
 export function getProvider(market: Market = 'US'): MarketDataProvider {
@@ -48,5 +77,6 @@ export function listProviders(): string[] {
 
 export function disposeMarketData(): void {
   resetLongbridgeStream();
+  resetYahooStream();
   resetSharedQuoteSocket();
 }

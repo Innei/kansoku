@@ -9,6 +9,7 @@ import { AgentKitSection } from './AgentKitSection';
 import { DataRootSection } from './DataRootSection';
 import { DiagnosticsSection } from './DiagnosticsSection';
 import { LicenseSection } from './LicenseSection';
+import { LocalWatchlistCard } from './LocalWatchlistCard';
 import { LongbridgeSection } from './LongbridgeSection';
 import { ProviderCredentialsSection } from './ProviderCredentialsSection';
 import { RoleModelsCard } from './RoleModelsCard';
@@ -95,6 +96,7 @@ function SettingsWorkspace({
           <LicenseSection />
           <TimeDisplaySettingsCard />
           <WatchedMarketsCard />
+          <LocalWatchlistCard />
           <Card className="settings-connections-card">
             <div className="settings-card-heading">
               <SectionTitle>连接</SectionTitle>

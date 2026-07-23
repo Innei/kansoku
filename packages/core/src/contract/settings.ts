@@ -39,6 +39,8 @@ export interface SettingsApi {
   resetCredentials(): Promise<{ reset: true }>;
   getWatchedMarkets(): Promise<{ markets: Market[] }>;
   putWatchedMarkets(input: { markets: unknown }): Promise<{ markets: Market[] }>;
+  getLocalWatchlist(): Promise<{ symbols: string[] }>;
+  putLocalWatchlist(input: { symbols: unknown }): Promise<{ symbols: string[] }>;
   getSubscribeUrl(): Promise<{
     subscribeUrl: string | null;
     priceLabel: string | null;
@@ -64,5 +66,7 @@ export const settingsRoutes = defineRoutes<SettingsApi>('settings', {
   resetCredentials: { method: 'POST', path: '/ai/reset-credentials' },
   getWatchedMarkets: { method: 'GET', path: '/watched-markets' },
   putWatchedMarkets: { method: 'PUT', path: '/watched-markets' },
+  getLocalWatchlist: { method: 'GET', path: '/local-watchlist' },
+  putLocalWatchlist: { method: 'PUT', path: '/local-watchlist' },
   getSubscribeUrl: { method: 'GET', path: '/subscribe-url' },
 });

@@ -71,6 +71,18 @@ export class SettingsController {
     return { ok: true, data };
   }
 
+  @Get('/local-watchlist')
+  async getLocalWatchlist() {
+    const data = await settingsService.getLocalWatchlist();
+    return { ok: true, data };
+  }
+
+  @Put('/local-watchlist')
+  async putLocalWatchlist(@Body() body: { symbols?: unknown } | null) {
+    const data = await settingsService.putLocalWatchlist({ symbols: body?.symbols });
+    return { ok: true, data };
+  }
+
   @Get('/subscribe-url')
   async getSubscribeUrl() {
     const data = await settingsService.getSubscribeUrl();

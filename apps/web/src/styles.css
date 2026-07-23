@@ -5336,6 +5336,48 @@ a.zone-item:hover {
   grid-template-columns: 1fr 1fr;
 }
 
+.local-watchlist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 11px 11px;
+}
+.local-watchlist-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.local-watchlist-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.local-watchlist-chip-remove:hover {
+  color: var(--text-primary);
+}
+.local-watchlist-add-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 11px 11px;
+}
+.local-watchlist-add-row .input {
+  min-width: 0;
+  flex: 1;
+}
+
 .settings-primary-row {
   padding: 11px;
   border-bottom: 1px solid var(--border);
@@ -7240,6 +7282,13 @@ a.zone-item:hover {
   justify-content: center;
   margin-top: 14px;
 }
+.onboarding-skip-hint {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 
 .onboarding-shell {
   max-width: 480px;
@@ -7478,6 +7527,44 @@ a.zone-item:hover {
   padding: 0 4px;
 }
 .restricted-banner-dismiss:hover {
+  color: var(--text-primary);
+}
+
+.delayed-quotes-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-element);
+  border-bottom: 1px solid var(--accent);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  font-size: var(--fs-base);
+}
+.delayed-quotes-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.delayed-quotes-banner-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+.delayed-quotes-banner-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  padding: 0 4px;
+}
+.delayed-quotes-banner-dismiss:hover {
   color: var(--text-primary);
 }
 

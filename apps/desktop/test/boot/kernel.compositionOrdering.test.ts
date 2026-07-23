@@ -44,6 +44,16 @@ vi.mock('@kansoku/core/marketdata/watchedMarketsStore', () => ({
   setActiveWatchedMarketsStore,
 }));
 
+const createLocalWatchlistStore = vi.hoisted(() => vi.fn(() => ({})));
+const setActiveLocalWatchlistStore = vi.hoisted(() => vi.fn());
+vi.mock('@kansoku/core/marketdata/localWatchlistStore', () => ({
+  createLocalWatchlistStore,
+  setActiveLocalWatchlistStore,
+}));
+
+const stampDefaultProvider = vi.hoisted(() => vi.fn(async () => 'longbridge' as const));
+vi.mock('@kansoku/core/marketdata/defaultProvider', () => ({ stampDefaultProvider }));
+
 const initAuthUrlOpener = vi.hoisted(() => vi.fn());
 vi.mock('@kansoku/core/credentials/authUrlOpener', () => ({ initAuthUrlOpener }));
 

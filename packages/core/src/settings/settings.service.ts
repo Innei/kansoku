@@ -1,5 +1,9 @@
 import { resolveSubscription } from '../license/subscription.js';
 import {
+  getActiveLocalWatchlistStore,
+  validateLocalWatchlist,
+} from '../marketdata/localWatchlistStore.js';
+import {
   getActiveWatchedMarketsStore,
   validateWatchedMarkets,
 } from '../marketdata/watchedMarketsStore.js';
@@ -43,6 +47,16 @@ export const settingsService: SettingsApi = {
     const store = getActiveWatchedMarketsStore();
     store.set(validateWatchedMarkets(input.markets));
     return { markets: store.get() };
+  },
+
+  async getLocalWatchlist() {
+    return { symbols: getActiveLocalWatchlistStore().get() };
+  },
+
+  async putLocalWatchlist(input) {
+    const store = getActiveLocalWatchlistStore();
+    store.set(validateLocalWatchlist(input.symbols));
+    return { symbols: store.get() };
   },
 
   async getSubscribeUrl() {

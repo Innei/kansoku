@@ -1,6 +1,7 @@
 import type { MarketTemp } from '@kansoku/shared/types';
 import type { FlowRow } from '../analysis/simple.js';
 import { getProvider } from '../marketdata/registry.js';
+import { watchlistSymbols } from '../marketdata/watchlist.js';
 
 const FLOW_TTL_MS = 60_000;
 const OPTION_SYMBOL_RE = /\d{6}[CP]\d+/;
@@ -111,7 +112,7 @@ export async function getWatchSymbols(): Promise<string[]> {
   const provider = getProvider();
   const set = new Set<string>();
   const [watchlist, positions] = await Promise.allSettled([
-    provider.getWatchlistSymbols?.() ?? Promise.resolve([]),
+    watchlistSymbols(provider),
     provider.getPositions?.() ?? Promise.resolve([]),
   ]);
   if (watchlist.status === 'fulfilled') for (const s of watchlist.value) set.add(s);
