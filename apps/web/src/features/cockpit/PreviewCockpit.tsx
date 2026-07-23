@@ -10,6 +10,7 @@ import { MaLinesMenu } from '@web/features/charts/intraday/MaLinesMenu';
 import {
   isViewPeriod,
   tfDataOf,
+  withPreviewLevels,
   withViewTimeframe,
 } from '@web/features/charts/intraday/timeframes';
 import { useViewTimeframe } from '@web/features/charts/intraday/useViewTimeframe';
@@ -90,7 +91,14 @@ export function PreviewCockpit({
   if (!built) return <CockpitSkeleton />;
 
   const activeIntradayTf = resolveIntradayTf(built, intradayTf);
-  const chartBuilt = withViewTimeframe(built, activeIntradayTf, viewTimeframe.tf);
+  const previewLevels = built.sidebar.prediction
+    ? undefined
+    : (analystRunStatus?.sections?.technical?.levels ??
+      analystRunLastEnded?.sections?.technical?.levels);
+  const chartBuilt = withPreviewLevels(
+    withViewTimeframe(built, activeIntradayTf, viewTimeframe.tf),
+    previewLevels,
+  );
   const sidebarTf = isViewPeriod(activeIntradayTf) ? built.defaultTf : activeIntradayTf;
 
   const sidebarTabs: SidebarTab[] = [

@@ -17,6 +17,7 @@ let previewState: {
 
 let analystRunStatus: RunningReassessStatus | null = null;
 let analystRunLastEnded: AnalystRunLastEnded | null = null;
+let capturedBuilt: IntradayBuilt | null = null;
 
 vi.mock('@web/features/charts/intraday/useIntradayPreview', () => ({
   useIntradayPreview: () => previewState,
@@ -64,12 +65,17 @@ vi.mock('./GenerateAnalysis', () => ({
 }));
 vi.mock('@web/features/charts/intraday/IntradayDashboard', () => ({
   IntradayDashboard: ({
+    built,
     sidebarTabs,
     activeTab,
   }: {
+    built: IntradayBuilt;
     sidebarTabs: { key: string; content: ReactNode }[];
     activeTab: string;
-  }) => <div>{sidebarTabs.find((t) => t.key === activeTab)?.content}</div>,
+  }) => {
+    capturedBuilt = built;
+    return <div>{sidebarTabs.find((t) => t.key === activeTab)?.content}</div>;
+  },
   IntradayTimeframeSwitch: () => null,
 }));
 
@@ -79,7 +85,13 @@ afterEach(() => {
   cleanup();
   analystRunStatus = null;
   analystRunLastEnded = null;
+  capturedBuilt = null;
 });
+
+const technicalLevels = [
+  { price: 101.5, label: '阻力' },
+  { price: 98.2, label: '支撑' },
+];
 
 const baseBuilt = {
   kind: 'intraday',
@@ -349,5 +361,84 @@ describe('PreviewCockpit prediction tab', () => {
     expect(screen.getByTestId('analyst-run-feed')).toBeTruthy();
     expect(screen.getByTestId('generate-analysis')).toBeTruthy();
     expect(screen.queryByText(/当前为实时视图/)).toBeNull();
+  });
+});
+
+describe('PreviewCockpit preview levels overlay', () => {
+  const runningWithLevels: RunningReassessStatus = {
+    running: true,
+    origin: 'manual',
+    phase: 'writing',
+    activity: '正在整理关键位',
+    startedAt: '2026-07-21T09:00:00Z',
+    updatedAt: '2026-07-21T09:00:00Z',
+    sections: { technical: { trends: [], levels: technicalLevels, summary: '' } },
+  };
+
+  const renderWith = (built: IntradayBuilt) => {
+    previewState = {
+      built,
+      error: null,
+      degraded: false,
+      intradayTf: null,
+      setIntradayTf: () => {},
+      predictionUpdatedAt: undefined,
+      predictionStale: undefined,
+    };
+    render(
+      <PreviewCockpit
+        sym="MRVL.US"
+        analysesRows={[]}
+        onLive={() => {}}
+        onSelectAnalysis={() => {}}
+        liveQuote={null}
+      />,
+    );
+  };
+
+  it('grafts a running run technical levels onto the chart built', () => {
+    analystRunStatus = runningWithLevels;
+
+    renderWith(baseBuilt);
+
+    expect(capturedBuilt?.previewLevels).toEqual(technicalLevels);
+  });
+
+  it('grafts a lastEnded snapshot technical levels when no run is active', () => {
+    analystRunLastEnded = {
+      activities: [],
+      sections: { technical: { trends: [], levels: technicalLevels, summary: '' } },
+      endedAt: '2026-07-21T09:06:00Z',
+    };
+
+    renderWith(baseBuilt);
+
+    expect(capturedBuilt?.previewLevels).toEqual(technicalLevels);
+  });
+
+  it('leaves the built free of preview levels when nothing carries them', () => {
+    renderWith(baseBuilt);
+
+    expect(capturedBuilt?.previewLevels).toBeUndefined();
+  });
+
+  it('suppresses preview levels once a real prediction is on the chart', () => {
+    analystRunStatus = runningWithLevels;
+
+    renderWith({
+      ...baseBuilt,
+      sidebar: {
+        ...baseBuilt.sidebar,
+        prediction: {
+          direction: 'long',
+          anchor: null,
+          scenarios: [],
+          signals: [],
+          range_bound_plan: null,
+        },
+      },
+    } as unknown as IntradayBuilt);
+
+    expect(capturedBuilt?.previewLevels).toBeUndefined();
   });
 });
