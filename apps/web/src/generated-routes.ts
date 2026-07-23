@@ -14,12 +14,11 @@ const lazy4 = () => import("./pages/chat")
 const lazy5 = () => import("./pages/logs")
 const lazy6 = () => import("./pages/overview")
 const lazy7 = () => import("./pages/popout/symbol/[sym]")
-const lazy8 = () => import("./pages/research/assistant")
-const lazy9 = () => import("./pages/research/index")
-const lazy10 = () => import("./pages/settings")
-const lazy11 = () => import("./pages/symbol/[sym]")
-const lazy12 = () => import("./pages/symbol/sepa/[sym]")
-const lazy13 = () => import("./pages/index")
+const lazy8 = () => import("./pages/research/index")
+const lazy9 = () => import("./pages/settings")
+const lazy10 = () => import("./pages/symbol/[sym]")
+const lazy11 = () => import("./pages/symbol/sepa/[sym]")
+const lazy12 = () => import("./pages/index")
 
 // Generated route configuration
 export const routes: RouteObject[] = [
@@ -74,32 +73,28 @@ export const routes: RouteObject[] = [
     "path": "research",
     "children": [
       {
-        "path": "assistant",
-        "lazy": lazy8
-      },
-      {
         "path": "",
-        "lazy": lazy9
+        "lazy": lazy8
       }
     ]
   },
   {
     "path": "settings",
-    "lazy": lazy10
+    "lazy": lazy9
   },
   {
     "path": "symbol",
     "children": [
       {
         "path": ":sym",
-        "lazy": lazy11
+        "lazy": lazy10
       },
       {
         "path": "sepa",
         "children": [
           {
             "path": ":sym",
-            "lazy": lazy12
+            "lazy": lazy11
           }
         ]
       }
@@ -107,7 +102,7 @@ export const routes: RouteObject[] = [
   },
   {
     "path": "",
-    "lazy": lazy13
+    "lazy": lazy12
   }
 ]
 

@@ -1,6 +1,6 @@
-import { ArrowUpRight } from 'lucide-react';
 import type { ResearchDocument, ResearchDocumentMeta } from '@kansoku/core/contract/index';
 import { useFeature } from '@web/features/edition/useFeature';
+import { useProComposition } from '@web/features/edition/useProComposition';
 import { LockedAiNotice } from '../cockpit/LockedAiNotice';
 import { RelatedMaterialsCard } from './RelatedMaterialsCard';
 
@@ -12,8 +12,15 @@ export interface ResearchAssistantProps {
   onDocumentChanged: (document?: ResearchDocument) => void;
 }
 
-export function ResearchAssistant({ document, selected, related, onSelect }: ResearchAssistantProps) {
+export function ResearchAssistant({
+  document,
+  selected,
+  related,
+  onSelect,
+  onDocumentChanged,
+}: ResearchAssistantProps) {
   const { state } = useFeature('research-ai');
+  const { status, composition } = useProComposition();
 
   if (state === 'absent') {
     return (
@@ -32,15 +39,22 @@ export function ResearchAssistant({ document, selected, related, onSelect }: Res
     );
   }
 
+  const Panel = composition?.researchAssistantPanel;
+  if (status === 'loading' || !Panel) {
+    return (
+      <div className="research-assistant research-assistant--locked">
+        <RelatedMaterialsCard selected={selected} related={related} onSelect={onSelect} />
+      </div>
+    );
+  }
+
   return (
-    <div className="research-assistant">
-      <RelatedMaterialsCard selected={selected} related={related} onSelect={onSelect} />
-      <a
-        className="btn research-assistant-open-link"
-        href={`/research/assistant?path=${encodeURIComponent(document.path)}`}
-      >
-        打开 AI 助手 <ArrowUpRight size={14} />
-      </a>
-    </div>
+    <Panel
+      document={document}
+      selected={selected}
+      related={related}
+      onSelect={onSelect}
+      onDocumentChanged={onDocumentChanged}
+    />
   );
 }

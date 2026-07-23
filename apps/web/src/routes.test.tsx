@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
-import type { ReactElement } from 'react';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { routes } from './generated-routes';
@@ -8,7 +7,7 @@ import {
   getLicenseModalStateForTests,
   resetLicenseModalStoreForTests,
 } from './features/edition/licenseModalStore';
-import { resetProRoutesForTests } from './features/edition/useProRoutes';
+import { resetProCompositionForTests } from './features/edition/useProComposition';
 import { setActiveRouter } from './lib/router';
 
 let capabilities: { pro: boolean | null; licensed: boolean } = { pro: null, licensed: false };
@@ -47,7 +46,7 @@ afterEach(() => {
   setActiveRouter(null);
   capabilities = { pro: null, licensed: false };
   loadProComposition.mockReset();
-  resetProRoutesForTests();
+  resetProCompositionForTests();
   resetLicenseModalStoreForTests();
 });
 
@@ -132,39 +131,5 @@ describe('AI routes render unconditionally', () => {
     renderRoute('/research');
     expect(await screen.findByTestId('research-page')).toBeTruthy();
     expect(getLicenseModalStateForTests().open).toBe(false);
-  });
-});
-
-describe('pro-supplied /research/assistant route', () => {
-  it('renders nothing while the pro composition is still loading', async () => {
-    let resolveComposition!: (
-      value: { routes: Record<string, () => ReactElement> } | null,
-    ) => void;
-    loadProComposition.mockReturnValue(
-      new Promise((resolve) => {
-        resolveComposition = resolve;
-      }),
-    );
-    renderRoute('/research/assistant');
-    expect(screen.queryByTestId('research-page')).toBeNull();
-    expect(screen.queryByTestId('pro-research-assistant')).toBeNull();
-    resolveComposition({ routes: {} });
-    await waitFor(() => expect(screen.getByTestId('research-page')).toBeTruthy());
-  });
-
-  it('renders the pro component once the composition supplies it', async () => {
-    loadProComposition.mockResolvedValue({
-      routes: { '/research/assistant': () => <div data-testid="pro-research-assistant" /> },
-    });
-    renderRoute('/research/assistant');
-    await waitFor(() => expect(screen.getByTestId('pro-research-assistant')).toBeTruthy());
-  });
-
-  it('redirects to /research when the composition supplies no routes', async () => {
-    loadProComposition.mockResolvedValue({ routes: {} });
-    renderRoute('/research/assistant');
-    await waitFor(() => expect(loadProComposition).toHaveBeenCalled());
-    await waitFor(() => expect(screen.getByTestId('research-page')).toBeTruthy());
-    expect(screen.queryByTestId('pro-research-assistant')).toBeNull();
   });
 });
