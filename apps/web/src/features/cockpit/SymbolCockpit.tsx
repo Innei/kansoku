@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Bell, ChevronsRight, PictureInPicture2, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronsRight, TriangleAlert } from 'lucide-react';
 import { IntradayDashboard, IntradayTimeframeSwitch } from '../charts/intraday/IntradayDashboard';
 import { ChartLayerMenu } from '../charts/intraday/ChartLayerMenu';
 import { MaLinesMenu } from '../charts/intraday/MaLinesMenu';
@@ -9,7 +9,6 @@ import { IntradayControlsProvider } from '../charts/intraday/controlsContext';
 import { resolveIntradayTf, useIntradayDoc } from '../charts/intraday/useIntradayDoc';
 import type { SidebarTab } from '../charts/SidebarTabs';
 import { SepaDashboard } from '../charts/sepa/SepaDashboard';
-import { getPopoutBridge } from '../desktop/desktopWindowsBridge';
 import { TopbarQuote } from '../quotes/QuoteBar';
 import { marketOfSymbol } from '../../lib/market';
 import { recordRecentSymbol } from '../charts/recentCharts';
@@ -32,25 +31,6 @@ import { useCockpitEnv } from './useCockpitEnv';
 import { useAnalystRun } from './useAnalystRun';
 import { useCockpitReviewState } from './useCockpitReviewState';
 import { useLatestAnalysis } from './useLatestAnalysis';
-
-function PopoutButton({ sym }: { sym: string }) {
-  const bridge = getPopoutBridge();
-  if (!bridge) return null;
-
-  return (
-    <button
-      className="popout-open-btn"
-      type="button"
-      title="弹出盯盘小窗"
-      aria-label="弹出盯盘小窗"
-      onClick={() => {
-        void bridge.openPopout(sym);
-      }}
-    >
-      <PictureInPicture2 className="icon" size={14} />
-    </button>
-  );
-}
 
 export function SymbolCockpit({ sym }: { sym: string }) {
   const symLabel = sym.toUpperCase().replace(/\.US$/, '');
@@ -188,7 +168,6 @@ export function SymbolCockpit({ sym }: { sym: string }) {
           <span className="title">{doc.title}</span>
           <span className="meta">{sym}</span>
           <span className="topbar-actions">
-            <PopoutButton sym={sym} />
             {doc.symbol && <TopbarQuote quote={liveQuote} />}
           </span>
         </div>
@@ -324,7 +303,6 @@ export function SymbolCockpit({ sym }: { sym: string }) {
                 </button>
               </Tooltip>
             )}
-            <PopoutButton sym={sym} />
             {doc.symbol && <TopbarQuote quote={liveQuote} />}
           </div>
         </div>

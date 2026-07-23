@@ -431,13 +431,25 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
 }
 .topbar-quote {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--fs-md);
+}
+.topbar-quote-time {
+  margin-left: auto;
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .chart-row {
@@ -526,25 +538,6 @@ a:hover {
 .detail-topbar .meta {
   color: var(--text-secondary);
   font-size: var(--fs-base);
-}
-
-.popout-open-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  box-sizing: border-box;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.popout-open-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
 }
 
 .popout-shell {
@@ -2021,11 +2014,9 @@ a.zone-item:hover {
 }
 .analyst-run-feed-dot {
   flex: 0 0 auto;
-  align-self: center;
 }
 .analyst-run-feed-dot--static {
   flex: 0 0 auto;
-  align-self: center;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -4568,6 +4559,9 @@ a.zone-item:hover {
   flex: 1;
   height: 100%;
 }
+.desktop-tabstrip > .scroll-area-scrollbar {
+  display: none;
+}
 @property --tabstrip-fade-start {
   syntax: '<length>';
   inherits: false;
@@ -4599,6 +4593,7 @@ a.zone-item:hover {
 }
 .desktop-tabstrip-viewport {
   -webkit-app-region: drag;
+  scrollbar-width: none;
   mask-image: linear-gradient(
     to right,
     transparent 0,
@@ -4609,6 +4604,9 @@ a.zone-item:hover {
   animation-name: tabstrip-fade-start, tabstrip-fade-end;
   animation-timing-function: linear;
   animation-timeline: scroll(self inline);
+}
+.desktop-tabstrip-viewport::-webkit-scrollbar {
+  display: none;
 }
 .desktop-tabstrip-content {
   display: flex;
@@ -4881,8 +4879,8 @@ a.zone-item:hover {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding-right: 7px;
+  gap: 0;
+  padding-right: 4px;
   -webkit-app-region: no-drag;
 }
 .desktop-update-badge {
@@ -4906,7 +4904,7 @@ a.zone-item:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  width: 30px;
   height: 40px;
   padding: 0;
   color: var(--text-muted);
