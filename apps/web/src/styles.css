@@ -5152,6 +5152,9 @@ a.zone-item:hover {
   gap: 14px;
   min-width: 360px;
 }
+.create-research-modal-panel {
+  width: min(440px, 100%);
+}
 .create-research-seg {
   grid-auto-flow: column;
   grid-auto-columns: 1fr;

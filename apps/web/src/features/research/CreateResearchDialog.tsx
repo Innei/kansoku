@@ -124,6 +124,7 @@ export function openCreateResearchDialog(
 ): void {
   openModal({
     title: '新建研究',
+    panelClassName: 'create-research-modal-panel',
     body: (close) => (
       <CreateResearchDialog initialKind={initialKind} close={close} onCreated={onCreated} />
     ),
