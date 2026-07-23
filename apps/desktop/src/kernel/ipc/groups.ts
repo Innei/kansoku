@@ -8,6 +8,7 @@ export const KERNEL_IPC_GROUPS = [
   'annotations',
   'positions',
   'research',
+  'hypotheses',
   'overview',
   'settings',
   'credentials',
