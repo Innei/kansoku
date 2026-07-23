@@ -169,6 +169,48 @@ describe('submit_section schema', () => {
       Check(submitSectionSchema, { ...validTechnical, trends: [...trends, trends[0]] }),
     ).toBe(false);
   });
+
+  it('rejects a technical payload that also carries bias', () => {
+    const payload = { ...validTechnical, bias: 'bullish' as const };
+    expect(Check(submitSectionSchema, payload)).toBe(true);
+    expect(validateSubmitSection(payload)).not.toEqual([]);
+  });
+
+  it('rejects a context payload that also carries trends or levels', () => {
+    const withTrends = { ...validContext, trends: validTechnical.trends };
+    expect(Check(submitSectionSchema, withTrends)).toBe(true);
+    expect(validateSubmitSection(withTrends)).not.toEqual([]);
+
+    const withLevels = { ...validContext, levels: validTechnical.levels };
+    expect(Check(submitSectionSchema, withLevels)).toBe(true);
+    expect(validateSubmitSection(withLevels)).not.toEqual([]);
+  });
+
+  it('rejects a technical payload missing trends or levels', () => {
+    const { trends: _trends, ...missingTrends } = validTechnical;
+    expect(Check(submitSectionSchema, missingTrends)).toBe(true);
+    expect(validateSubmitSection(missingTrends as SubmitSectionParams)).not.toEqual([]);
+
+    const { levels: _levels, ...missingLevels } = validTechnical;
+    expect(Check(submitSectionSchema, missingLevels)).toBe(true);
+    expect(validateSubmitSection(missingLevels as SubmitSectionParams)).not.toEqual([]);
+  });
+
+  it('rejects a context payload missing bias', () => {
+    const { bias: _bias, ...missingBias } = validContext;
+    expect(Check(submitSectionSchema, missingBias)).toBe(true);
+    expect(validateSubmitSection(missingBias as SubmitSectionParams)).not.toEqual([]);
+  });
+
+  it('registers submit_section with a non-empty top-level input schema', () => {
+    const tool = buildSubmitSectionTool('REGRESSION.US', { now: () => Date.now() });
+    const schema = tool.parameters as { properties?: Record<string, unknown>; required?: string[] };
+    expect(schema.properties).toBeTruthy();
+    expect(Object.keys(schema.properties ?? {})).toEqual(expect.arrayContaining(['kind', 'summary']));
+    expect(schema.required).toBeTruthy();
+    expect(schema.required?.length).toBeGreaterThan(0);
+    expect(schema.required).toEqual(expect.arrayContaining(['kind', 'summary']));
+  });
 });
 
 describe('submit_section tool handler', () => {

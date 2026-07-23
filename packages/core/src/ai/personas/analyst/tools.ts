@@ -210,9 +210,9 @@ export function buildSubmitSectionTool(
         params.kind === 'technical'
           ? {
               kind: 'technical',
-              data: { trends: params.trends, levels: params.levels, summary: params.summary },
+              data: { trends: params.trends ?? [], levels: params.levels ?? [], summary: params.summary },
             }
-          : { kind: 'context', data: { summary: params.summary, bias: params.bias } },
+          : { kind: 'context', data: { summary: params.summary, bias: params.bias ?? 'neutral' } },
         hooks.now,
       );
       return textResult(`${params.kind} section recorded`);
