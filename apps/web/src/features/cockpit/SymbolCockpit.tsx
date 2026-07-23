@@ -13,7 +13,7 @@ import { getPopoutBridge } from '../desktop/desktopWindowsBridge';
 import { TopbarQuote } from '../quotes/QuoteBar';
 import { marketOfSymbol } from '../../lib/market';
 import { recordRecentSymbol } from '../charts/recentCharts';
-import { Dot, ErrorBox, MarketTime, Tooltip } from '../../ui';
+import { Button, Dot, ErrorBox, MarketTime, Spinner, Tooltip } from '../../ui';
 import { useTitle } from '../../lib/useTitle';
 import { useLiveQuote } from '../quotes/useLiveQuote';
 import { AnalysisRunDetails } from './AnalysisRunDetails';
@@ -30,6 +30,7 @@ import { useCockpitComments } from './useCockpitComments';
 import { useCockpitEnv } from './useCockpitEnv';
 import { useAnalystRun } from './useAnalystRun';
 import { useCockpitReviewState } from './useCockpitReviewState';
+import { useSepaRefresh } from './useSepaRefresh';
 import { useLatestAnalysis } from './useLatestAnalysis';
 
 function PopoutButton({ sym }: { sym: string }) {
@@ -70,6 +71,7 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   const {
     doc,
     error,
+    reload,
     degraded,
     live,
     canLoadForward,
@@ -79,6 +81,7 @@ export function SymbolCockpit({ sym }: { sym: string }) {
     setIntradayTf,
     loadHistory,
   } = useIntradayDoc(mode === 'live' ? null : latestId);
+  const sepaRefresh = useSepaRefresh(doc, reload);
 
   useTitle(doc ? doc.title || symLabel : latestChecked && !latestId ? symLabel : undefined);
 
@@ -178,6 +181,8 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   if (!doc) return <CockpitSkeleton />;
 
   if (doc.built.kind === 'sepa') {
+    const isResearchSepa = doc.input.origin === 'research';
+    const sepaDataDate = doc.built.sidebar.asOf.slice(0, 10);
     return (
       <div className="fullpage">
         <div className="detail-topbar">
@@ -186,7 +191,21 @@ export function SymbolCockpit({ sym }: { sym: string }) {
           </a>
           <span className="title">{doc.title}</span>
           <span className="meta">{sym}</span>
+          {sepaRefresh.refreshing ? (
+            <span className="ai-hint">
+              <Spinner /> 正在更新到最新数据…
+            </span>
+          ) : (
+            sepaRefresh.error && (
+              <span className="ai-hint">更新失败，展示的是 {sepaDataDate} 的数据</span>
+            )
+          )}
           <span className="topbar-actions">
+            {isResearchSepa && (
+              <Button onClick={() => void sepaRefresh.refresh()} disabled={sepaRefresh.refreshing}>
+                更新数据
+              </Button>
+            )}
             <PopoutButton sym={sym} />
             {doc.symbol && <TopbarQuote quote={liveQuote} />}
           </span>
