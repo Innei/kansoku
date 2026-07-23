@@ -189,6 +189,8 @@ export function runAnalyst({ symbol, origin, deps }: RunAnalystInput): StartResu
     activity: '正在准备分析环境',
     startedAt,
     updatedAt: startedAt,
+    activities: [],
+    sections: {},
   };
   analystRunStates.set(symbol, initialStatus);
   emitAnalystRunChange(symbol, initialStatus);
