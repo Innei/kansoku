@@ -59,7 +59,6 @@ export function CreateResearchDialog({
   return (
     <div className="create-research-dialog">
       <SegmentedControl
-        className="create-research-seg"
         ariaLabel="新建研究类型"
         value={kind}
         onChange={changeKind}
@@ -124,7 +123,7 @@ export function openCreateResearchDialog(
 ): void {
   openModal({
     title: '新建研究',
-    panelClassName: 'create-research-modal-panel',
+    size: 'sm',
     body: (close) => (
       <CreateResearchDialog initialKind={initialKind} close={close} onCreated={onCreated} />
     ),
