@@ -38,7 +38,7 @@ describe('createResearchDocument: stock', () => {
     const written = readFileSync(join(root, 'stocks/MRVL.md'), 'utf8');
     expect(written).toContain('# MRVL — Marvell Technology');
     expect(written).toContain(`建档日期：${localToday()}`);
-    expect(written).toContain('[SEPA 仪表盘](/symbol/MRVL.US?analysis=chart-1)');
+    expect(written).toContain('[SEPA 仪表盘](/symbol/sepa/MRVL.US)');
   });
 
   it('creates the stocks/ directory when absent', async () => {

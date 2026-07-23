@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Bell, ChevronsRight, PictureInPicture2, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronsRight, TriangleAlert } from 'lucide-react';
 import { IntradayDashboard, IntradayTimeframeSwitch } from '../charts/intraday/IntradayDashboard';
 import { ChartLayerMenu } from '../charts/intraday/ChartLayerMenu';
 import { MaLinesMenu } from '../charts/intraday/MaLinesMenu';
@@ -8,12 +8,11 @@ import { useViewTimeframe } from '../charts/intraday/useViewTimeframe';
 import { IntradayControlsProvider } from '../charts/intraday/controlsContext';
 import { resolveIntradayTf, useIntradayDoc } from '../charts/intraday/useIntradayDoc';
 import type { SidebarTab } from '../charts/SidebarTabs';
-import { SepaDashboard } from '../charts/sepa/SepaDashboard';
-import { getPopoutBridge } from '../desktop/desktopWindowsBridge';
+import { SepaCockpit, type SepaDocView } from '../charts/sepa/SepaCockpit';
 import { TopbarQuote } from '../quotes/QuoteBar';
 import { marketOfSymbol } from '../../lib/market';
 import { recordRecentSymbol } from '../charts/recentCharts';
-import { Button, Dot, ErrorBox, MarketTime, Spinner, Tooltip } from '../../ui';
+import { Dot, ErrorBox, MarketTime, Tooltip } from '../../ui';
 import { useTitle } from '../../lib/useTitle';
 import { useLiveQuote } from '../quotes/useLiveQuote';
 import { AnalysisRunDetails } from './AnalysisRunDetails';
@@ -21,6 +20,7 @@ import { CockpitSkeleton } from './CockpitSkeleton';
 import { AnalysisTimeline } from './AnalysisTimeline';
 import { ChatDock } from './chat/ChatDock';
 import { GenerateAnalysisCta } from './GenerateAnalysisCta';
+import { PopoutButton } from './PopoutButton';
 import { PreviewCockpit } from './PreviewCockpit';
 import { conclusionOutdated } from '../charts/intraday/ConclusionCard';
 import { PredictionTab } from '../charts/intraday/tabs/PredictionTab';
@@ -30,27 +30,7 @@ import { useCockpitComments } from './useCockpitComments';
 import { useCockpitEnv } from './useCockpitEnv';
 import { useAnalystRun } from './useAnalystRun';
 import { useCockpitReviewState } from './useCockpitReviewState';
-import { useSepaRefresh } from './useSepaRefresh';
 import { useLatestAnalysis } from './useLatestAnalysis';
-
-function PopoutButton({ sym }: { sym: string }) {
-  const bridge = getPopoutBridge();
-  if (!bridge) return null;
-
-  return (
-    <button
-      className="popout-open-btn"
-      type="button"
-      title="弹出盯盘小窗"
-      aria-label="弹出盯盘小窗"
-      onClick={() => {
-        void bridge.openPopout(sym);
-      }}
-    >
-      <PictureInPicture2 className="icon" size={14} />
-    </button>
-  );
-}
 
 export function SymbolCockpit({ sym }: { sym: string }) {
   const symLabel = sym.toUpperCase().replace(/\.US$/, '');
@@ -81,7 +61,6 @@ export function SymbolCockpit({ sym }: { sym: string }) {
     setIntradayTf,
     loadHistory,
   } = useIntradayDoc(mode === 'live' ? null : latestId);
-  const sepaRefresh = useSepaRefresh(doc, reload);
 
   useTitle(doc ? doc.title || symLabel : latestChecked && !latestId ? symLabel : undefined);
 
@@ -181,41 +160,8 @@ export function SymbolCockpit({ sym }: { sym: string }) {
   if (!doc) return <CockpitSkeleton />;
 
   if (doc.built.kind === 'sepa') {
-    const isResearchSepa = doc.input.origin === 'research';
-    const sepaDataDate = doc.built.sidebar.asOf.slice(0, 10);
-    return (
-      <div className="fullpage">
-        <div className="detail-topbar">
-          <a href="/">
-            <ArrowLeft className="icon" size={13} /> 列表
-          </a>
-          <span className="title">{doc.title}</span>
-          <span className="meta">{sym}</span>
-          {isResearchSepa &&
-            (sepaRefresh.refreshing ? (
-              <span className="ai-hint">
-                <Spinner /> 正在更新到最新数据…
-              </span>
-            ) : (
-              sepaRefresh.error && (
-                <span className="ai-hint">更新失败，展示的是 {sepaDataDate} 的数据</span>
-              )
-            ))}
-          <span className="topbar-actions">
-            {isResearchSepa && (
-              <Button onClick={() => void sepaRefresh.refresh()} disabled={sepaRefresh.refreshing}>
-                更新数据
-              </Button>
-            )}
-            <PopoutButton sym={sym} />
-            {doc.symbol && <TopbarQuote quote={liveQuote} />}
-          </span>
-        </div>
-        <div className="detail-body">
-          <SepaDashboard built={doc.built} />
-        </div>
-      </div>
-    );
+    const sepaDoc: SepaDocView = { ...doc, built: doc.built };
+    return <SepaCockpit sym={sym} doc={sepaDoc} reload={reload} liveQuote={liveQuote} />;
   }
 
   if (doc.built.kind !== 'intraday')

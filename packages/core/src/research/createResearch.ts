@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { symbolSepaPath } from '@kansoku/shared/chartUrl';
 import type { ResearchCreateInput, ResearchCreateResult } from '../contract/research.js';
 import { localToday } from '../charts/build.js';
 import { chartsService } from '../charts/charts.service.js';
@@ -63,7 +64,7 @@ async function createStockDocument(
     symbol: fileSymbol,
     name: chart.name ?? fileSymbol,
     date: localToday(),
-    sepaUrl: `/symbol/${encodeURIComponent(fullSymbol)}?analysis=${chart.id}`,
+    sepaUrl: symbolSepaPath(fullSymbol),
   });
 
   await writeNewMarkdownFile(resolve(deps.rootDir, relativePath), markdown);
