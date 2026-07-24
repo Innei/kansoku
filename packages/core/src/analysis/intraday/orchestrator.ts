@@ -276,6 +276,8 @@ export function buildIntraday(input: IntradayInput): { built: IntradayBuilt; met
     );
     entryPlan.entry_status = st?.status ?? null;
     entryPlan.entry_status_note = st?.note ?? null;
+    entryPlan.triggered_at =
+      st?.triggered_at != null ? new Date(st.triggered_at * 1000).toISOString() : null;
   }
 
   const timeframes = {} as Record<TimeframeKey, IntradayTfData>;

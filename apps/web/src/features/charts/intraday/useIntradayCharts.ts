@@ -39,6 +39,7 @@ import { tfDataOf, tfShortLabel, type ChartTf } from './timeframes';
 import { MAX_MA_LINES, type MaSeries } from './useMaLines';
 import { AnchorBgPrimitive } from './anchorPrimitive';
 import { FvgPrimitive, fvgTooltip, type FvgTooltipHandle } from './fvgPrimitive';
+import { PositionBoxPrimitive } from './positionBoxPrimitive';
 import { SessionBgPrimitive } from './sessionPrimitive';
 import { ZhongshuPrimitive } from './zhongshuPrimitive';
 import { filterVisibleOverlayItems, selectVisibleMarkers } from './markerSelection';
@@ -81,6 +82,7 @@ interface Handle {
   fvgTip: FvgTooltipHandle;
   anchorBg: AnchorBgPrimitive;
   zhongshu: ZhongshuPrimitive;
+  positionBox: PositionBoxPrimitive;
 }
 
 const NEAR_LEFT_BARS = 10;
@@ -96,6 +98,18 @@ const zoneTitle = (z: IntradayPriceZone, edge?: '上沿' | '下沿') =>
   `${z.label}${edge ? edge : ''} $${(edge === '上沿' ? z.high : z.low).toFixed(2)}`;
 
 const RECENT_SB_COUNT = 2;
+
+function firstTouchTime(
+  candles: { time: number; high: number; low: number }[],
+  entry: number,
+  anchorTs: number | null,
+): number | null {
+  for (const c of candles) {
+    if (anchorTs != null && c.time < anchorTs) continue;
+    if (c.low <= entry && entry <= c.high) return c.time;
+  }
+  return null;
+}
 
 const secondBreakoutMarkers = (sbs: SecondBreakout[]): SeriesMarker[] => {
   const markers: SeriesMarker[] = [];
@@ -201,6 +215,8 @@ export function useIntradayCharts(
     candle.attachPrimitive(anchorBg);
     const zhongshu = new ZhongshuPrimitive();
     candle.attachPrimitive(zhongshu);
+    const positionBox = new PositionBoxPrimitive();
+    candle.attachPrimitive(positionBox);
 
     const emaSeries = Array.from({ length: MAX_MA_LINES }, (_, i) =>
       main.addSeries(LineSeries, {
@@ -278,6 +294,7 @@ export function useIntradayCharts(
       fvgTip,
       anchorBg,
       zhongshu,
+      positionBox,
     };
     lastTfRef.current = null;
     firstTimeRef.current = null;
@@ -405,46 +422,78 @@ export function useIntradayCharts(
       );
     }
     const ep = built.entryPlan;
+    const boxEligible =
+      !!ep &&
+      toggles.levels &&
+      lastBarTime !== undefined &&
+      (ep.entry_status === 'triggered' || ep.entry_status === 'stopped');
+    let boxTriggeredAt: number | null = null;
+    if (boxEligible && ep) {
+      if (ep.triggered_at) {
+        const parsed = Date.parse(ep.triggered_at);
+        boxTriggeredAt = Number.isFinite(parsed) ? Math.floor(parsed / 1000) : null;
+      }
+      if (boxTriggeredAt == null) {
+        const anchorTs = anchor ? Math.floor(Date.parse(anchor.time) / 1000) : null;
+        boxTriggeredAt = firstTouchTime(d.candles, ep.entry, anchorTs);
+      }
+    }
+    const useBox = boxEligible && boxTriggeredAt != null;
+    if (useBox && ep && lastBarTime !== undefined && boxTriggeredAt != null) {
+      h.positionBox.setData({
+        startTime: boxTriggeredAt,
+        endTime: lastBarTime,
+        entry: ep.entry,
+        stop: ep.stop,
+        target1: ep.target1,
+        target2: ep.target2,
+        dimmed: ep.entry_status === 'stopped',
+      });
+    } else {
+      h.positionBox.setData(null);
+    }
     if (ep && toggles.levels) {
       const planDead = ep.entry_status === 'invalidated' || ep.entry_status === 'stopped';
       const deadColor = '#6e7681';
       const suffix = ep.entry_status ? (ENTRY_STATUS_SUFFIX[ep.entry_status] ?? '') : '';
-      h.planLines.push(
-        addPriceLine(h.candle, {
-          price: ep.entry,
-          color: planDead ? deadColor : theme.accent,
-          lineWidth: 2,
-          lineStyle: planDead ? 2 : 0,
-          title: `入场 $${ep.entry.toFixed(2)}${suffix}`,
-        }),
-      );
-      h.planLines.push(
-        addPriceLine(h.candle, {
-          price: ep.stop,
-          color: planDead ? deadColor : theme.down,
-          lineWidth: 2,
-          lineStyle: 2,
-          title: `止损 $${ep.stop.toFixed(2)}`,
-        }),
-      );
-      h.planLines.push(
-        addPriceLine(h.candle, {
-          price: ep.target1,
-          color: planDead ? deadColor : theme.up,
-          lineWidth: 1,
-          lineStyle: 2,
-          title: `T1 $${ep.target1.toFixed(2)}`,
-        }),
-      );
-      h.planLines.push(
-        addPriceLine(h.candle, {
-          price: ep.target2,
-          color: planDead ? deadColor : seriesPalette[1],
-          lineWidth: 1,
-          lineStyle: 2,
-          title: `T2 $${ep.target2.toFixed(2)}`,
-        }),
-      );
+      if (!useBox) {
+        h.planLines.push(
+          addPriceLine(h.candle, {
+            price: ep.entry,
+            color: planDead ? deadColor : theme.accent,
+            lineWidth: 2,
+            lineStyle: planDead ? 2 : 0,
+            title: `入场 $${ep.entry.toFixed(2)}${suffix}`,
+          }),
+        );
+        h.planLines.push(
+          addPriceLine(h.candle, {
+            price: ep.stop,
+            color: planDead ? deadColor : theme.down,
+            lineWidth: 2,
+            lineStyle: 2,
+            title: `止损 $${ep.stop.toFixed(2)}`,
+          }),
+        );
+        h.planLines.push(
+          addPriceLine(h.candle, {
+            price: ep.target1,
+            color: planDead ? deadColor : theme.up,
+            lineWidth: 1,
+            lineStyle: 2,
+            title: `T1 $${ep.target1.toFixed(2)}`,
+          }),
+        );
+        h.planLines.push(
+          addPriceLine(h.candle, {
+            price: ep.target2,
+            color: planDead ? deadColor : seriesPalette[1],
+            lineWidth: 1,
+            lineStyle: 2,
+            title: `T2 $${ep.target2.toFixed(2)}`,
+          }),
+        );
+      }
       (ep.price_zones ?? [])
         .filter((z) => z.kind === 'resistance')
         .forEach((z) => {

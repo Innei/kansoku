@@ -13,7 +13,7 @@ export function resolveEntryPlanStatus(
   direction: 'long' | 'short' | 'neutral',
   anchorTs: number | null,
   candles: { time: number; high: number; low: number; close: number }[],
-): { status: EntryPlanStatus; note: string | null } | null {
+): { status: EntryPlanStatus; note: string | null; triggered_at: number | null } | null {
   if (direction === 'neutral' || anchorTs === null) return null;
   const midpoint = (plan.entry + plan.stop) / 2;
   const towardStop = (c: { low: number; high: number; close: number }) =>
@@ -25,19 +25,25 @@ export function resolveEntryPlanStatus(
   const hitsStop = (c: { low: number; high: number }) =>
     direction === 'long' ? c.low <= plan.stop : c.high >= plan.stop;
 
-  let triggered = false;
+  let triggeredAt: number | null = null;
   for (const c of candles) {
     if (c.time < anchorTs) continue;
-    if (!triggered) {
-      if (touchesEntry(c)) triggered = true;
+    if (triggeredAt === null) {
+      if (touchesEntry(c)) triggeredAt = c.time;
       else if (towardStop(c))
-        return { status: 'invalidated', note: ENTRY_STATUS_NOTES.invalidated };
+        return {
+          status: 'invalidated',
+          note: ENTRY_STATUS_NOTES.invalidated,
+          triggered_at: null,
+        };
     } else if (hitsStop(c)) {
-      return { status: 'stopped', note: ENTRY_STATUS_NOTES.stopped };
+      return { status: 'stopped', note: ENTRY_STATUS_NOTES.stopped, triggered_at: triggeredAt };
     }
   }
-  if (triggered) return { status: 'triggered', note: ENTRY_STATUS_NOTES.triggered };
-  return { status: 'waiting', note: null };
+  if (triggeredAt !== null) {
+    return { status: 'triggered', note: ENTRY_STATUS_NOTES.triggered, triggered_at: triggeredAt };
+  }
+  return { status: 'waiting', note: null, triggered_at: null };
 }
 
 export function computeIntradayEntryPlan(

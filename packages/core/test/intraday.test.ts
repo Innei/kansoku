@@ -174,19 +174,27 @@ describe('intraday parity vs python golden fixture', () => {
 
     // never touches entry, closes below the entry-stop midpoint (1002.25) → invalidated
     const falling = [bar(0, 1010, 1005, 1006), bar(1, 1006, 998, 999.5)];
-    expect(resolveEntryPlanStatus(plan, 'long', 1000, falling)?.status).toBe('invalidated');
+    const invalidated = resolveEntryPlanStatus(plan, 'long', 1000, falling);
+    expect(invalidated?.status).toBe('invalidated');
+    expect(invalidated?.triggered_at).toBeNull();
 
     // touches entry then holds → triggered
     const held = [bar(0, 1015, 1010, 1012), bar(1, 1013, 1008, 1010)];
-    expect(resolveEntryPlanStatus(plan, 'long', 1000, held)?.status).toBe('triggered');
+    const triggered = resolveEntryPlanStatus(plan, 'long', 1000, held);
+    expect(triggered?.status).toBe('triggered');
+    expect(triggered?.triggered_at).toBe(held[0].time);
 
-    // touches entry then hits the stop → stopped
+    // touches entry then hits the stop → stopped (triggered_at preserved from first touch)
     const stoppedOut = [bar(0, 1015, 1010, 1012), bar(1, 1012, 990, 991)];
-    expect(resolveEntryPlanStatus(plan, 'long', 1000, stoppedOut)?.status).toBe('stopped');
+    const stopped = resolveEntryPlanStatus(plan, 'long', 1000, stoppedOut);
+    expect(stopped?.status).toBe('stopped');
+    expect(stopped?.triggered_at).toBe(stoppedOut[0].time);
 
     // hovers between midpoint and entry → waiting
     const hovering = [bar(0, 1012, 1006, 1010)];
-    expect(resolveEntryPlanStatus(plan, 'long', 1000, hovering)?.status).toBe('waiting');
+    const waiting = resolveEntryPlanStatus(plan, 'long', 1000, hovering);
+    expect(waiting?.status).toBe('waiting');
+    expect(waiting?.triggered_at).toBeNull();
 
     // bars before the anchor are ignored
     expect(resolveEntryPlanStatus(plan, 'long', 2000, falling)?.status).toBe('waiting');
@@ -194,7 +202,15 @@ describe('intraday parity vs python golden fixture', () => {
     // short mirror: entry 990, stop 1000, price rallies past midpoint 995 without touching entry
     const shortPlan = { entry: 990, stop: 1000 };
     const rally = [bar(0, 993, 991, 992), bar(1, 998, 992, 997)];
-    expect(resolveEntryPlanStatus(shortPlan, 'short', 1000, rally)?.status).toBe('invalidated');
+    const shortInvalid = resolveEntryPlanStatus(shortPlan, 'short', 1000, rally);
+    expect(shortInvalid?.status).toBe('invalidated');
+    expect(shortInvalid?.triggered_at).toBeNull();
+
+    // short triggered: entry 990 sits inside the first bar's [988, 992] range
+    const shortTouch = [bar(0, 992, 988, 989), bar(1, 989, 985, 986)];
+    const shortTriggered = resolveEntryPlanStatus(shortPlan, 'short', 1000, shortTouch);
+    expect(shortTriggered?.status).toBe('triggered');
+    expect(shortTriggered?.triggered_at).toBe(shortTouch[0].time);
 
     expect(resolveEntryPlanStatus(plan, 'neutral', 1000, falling)).toBeNull();
     expect(resolveEntryPlanStatus(plan, 'long', null, falling)).toBeNull();
